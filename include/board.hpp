@@ -72,7 +72,7 @@ void printBoard() const;
 // Generate Zobrist hash key from board poistion
 uint64_t genHashKey();
 
-
+bool parseFen(char *fen);
 
 Colour m_side;
 Square m_enPas;

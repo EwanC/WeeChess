@@ -40,6 +40,9 @@ uint8_t countBits(bitboard b) {
   return r;
 }
 
+
+
+
 void printBitboard(bitboard bb) {
 
 	uint64_t shiftMe = 1ULL;
@@ -56,13 +59,13 @@ void printBitboard(bitboard bb) {
 				std::cout<<'-';
 				
 		}
-	std::cout<<std::endl;
+	   std::cout<<std::endl;
 	}  
 	std::cout<<std::endl<<std::endl;
 }
 
 
-}
+} //namespace
 
 const char* Board::PceChar = ".PNBRQKpnbrqk";
 const char* Board::SideChar = "wb-";
@@ -79,6 +82,108 @@ Board::Board()
     // Setup starting board position
     clearBoard();
 }
+
+bool Board::parseFen(char *fen) 
+{
+	
+	assert(fen!=NULL && "FEN is null");
+	
+	int rank = RANK_8;
+    int file = FILE_A;
+    Piece  piece;
+    uint32_t count = 0;
+	
+	clearBoard();
+	
+	while ((rank >= RANK_1) && *fen) {
+	    count = 1;
+		switch (*fen) {
+            case 'p': piece = bP; break;
+            case 'r': piece = bR; break;
+            case 'n': piece = bN; break;
+            case 'b': piece = bB; break;
+            case 'k': piece = bK; break;
+            case 'q': piece = bQ; break;
+            case 'P': piece = wP; break;
+            case 'R': piece = wR; break;
+            case 'N': piece = wN; break;
+            case 'B': piece = wB; break;
+            case 'K': piece = wK; break;
+            case 'Q': piece = wQ; break;
+
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+                piece = EMPTY;
+                count = *fen - '0';
+                break;
+
+            case '/':
+            case ' ':
+                rank--;
+                file = FILE_A;
+                fen++;
+                continue;              
+
+            default:
+                std::cout<<"FEN error \n";
+                return false;
+        }		
+		
+		for (uint32_t i = 0; i < count; i++) {			
+            uint8_t sq64 = rank * 8 + file;
+			uint8_t sq120 = SQ120(sq64);
+            if (piece != EMPTY) {
+                m_board[sq120] = piece;
+            }
+			file++;
+        }
+		fen++;
+	}
+	
+	assert(*fen == 'w' || *fen == 'b' && "invalid Fen");
+	
+	m_side = (*fen == 'w') ? WHITE : BLACK;
+	fen += 2;
+	
+	for (uint8_t i = 0; i < 4; i++) {
+        if (*fen == ' ') {
+            break;
+        }		
+		switch(*fen) {
+			case 'K': m_castling |= WKCA; break;
+			case 'Q': m_castling |= WQCA; break;
+			case 'k': m_castling |= BKCA; break;
+			case 'q': m_castling |= BQCA; break;
+			default:	     break;
+        }
+		fen++;
+	}
+	fen++;
+	
+	assert(m_castling>=0 && m_castling <= 15 && "Fen has invalid castling");
+	
+	if (*fen != '-') {        
+		file = fen[0] - 'a';
+		rank = fen[1] - '1';
+		
+		assert(file>=FILE_A && file <= FILE_H && "Fen invalid file");
+		assert(rank>=RANK_1 && rank <= RANK_8 && "Fen invalid rank");
+		
+		m_enPas = static_cast<Square>(FR2SQ(file,rank));	
+    }
+	
+	m_posHash= genHashKey(); 
+	
+	return true;
+}
+
+
 
 void Board::clearBoard()
 {
