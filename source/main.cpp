@@ -7,6 +7,7 @@ int main(int argc, char* argv[])
   
   Board b;
   //b.printBoard();
+  //Bitboard::printBitboard(0xFFFF00000000FFFF);
 
   return 0;
 

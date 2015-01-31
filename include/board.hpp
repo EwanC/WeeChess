@@ -35,7 +35,13 @@ const bitboard Rank6_Mask = Rank1_Mask << (8 * 5);
 const bitboard Rank7_Mask = Rank1_Mask << (8 * 6);
 const bitboard Rank8_Mask = Rank1_Mask << (8 * 7);
 
-}
+uint8_t popBit(bitboard *bb);
+
+uint8_t countBits(bitboard b);
+
+void printBitboard(bitboard bb);
+
+} // namespace
 
 class Board {
 private:
