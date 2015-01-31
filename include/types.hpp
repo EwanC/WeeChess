@@ -10,7 +10,7 @@ typedef unsigned char uchar;
 enum Piece  { EMPTY =0, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK  };
 enum File   { FILE_A=0, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H, FILE_NONE };
 enum Rank   { RANK_1=0, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
-enum Colour { WHITE, BLACK, BOTH };
+enum Colour { WHITE=0, BLACK, BOTH };
 
 enum Square {
   A1 = 21, B1, C1, D1, E1, F1, G1, H1,
@@ -24,9 +24,9 @@ enum Square {
 };
 
 //Castling flags
-#define WKCA = 1
-#define WQCA = 2 
-#define BKCA = 4 
-#define BQCA = 8
+#define WKCA 1
+#define WQCA 2 
+#define BKCA 4 
+#define BQCA 8
 
 #endif //TYPES_H

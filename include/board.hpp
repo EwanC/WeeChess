@@ -38,7 +38,6 @@ const bitboard Rank8_Mask = Rank1_Mask << (8 * 7);
 }
 
 class Board {
-
 private:
 // Disable copy and assign
 Board& operator=(const Board&);
@@ -52,10 +51,17 @@ uint64_t castleKeys[16];
 void seedRandNums();
 void initBitMasks() const; // Generate Masks for Bitboards
 void init120To64() const; // Generate 120 to 64 bit mapping
+void clearBoard();
+
+static const char* PceChar;
+static const char* SideChar;
+static const char* RankChar;
+static const char* FileChar;
 
 public:
 
 Board();
+void printBoard() const;
 
 // Generate Zobrist hash key from board poistion
 uint64_t genHashKey();
@@ -66,6 +72,21 @@ Colour m_side;
 Square m_enPas;
 Piece m_board[TOTAL_SQUARES];
 uchar m_castling;
+Square m_kingSq[2];
+uint32_t m_fiftyMove;
+
+uint32_t m_ply;
+uint32_t m_hisply;
+
+uint64_t m_posHash;
+
+uint64_t m_pawns[2];
+uint32_t m_bigPce[2];
+uint32_t m_majPce[2];
+uint32_t m_minPce[2];
+
+uint32_t m_pceNum[13];
+uint32_t m_material[2];
 
 
 }; //Board
