@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 
+// Generate random unsigned 64 bit int
 #define RAND_64 ((uint64_t)rand() | \
 			     (uint64_t)rand() << 15 | \
 				 (uint64_t)rand() << 30 | \
@@ -17,9 +18,9 @@ namespace Bitboard{
 uint64_t SetMask[64];
 uint64_t ClearMask[64];
 
-uint8_t Sq120ToSq64[TOTAL_SQUARES];
-uint8_t Sq64ToSq120[64];
-
+uint8_t Sq120ToSq64[TOTAL_SQUARES];  // Map of base 120 indexes to base 64
+uint8_t Sq64ToSq120[64];             // Map of base 64 indexes to base 120
+ 
 const uint8_t BitTable[64] = {
   63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
   51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
@@ -27,6 +28,7 @@ const uint8_t BitTable[64] = {
   58, 20, 37, 17, 36, 8
 };
 
+// returns the index of least signifcant bit and sets it to zero
 uint8_t popBit(bitboard *bb) {
   uint64_t b = *bb ^ (*bb - 1);
   uint32_t fold = (uint32_t) ((b & 0xffffffff) ^ (b >> 32));
@@ -34,24 +36,23 @@ uint8_t popBit(bitboard *bb) {
   return BitTable[(fold * 0x783a9b23) >> 26];
 }
 
+// Counts the number of bits in the bitboard
 uint8_t countBits(bitboard b) {
   uint8_t r;
   for(r = 0; b; r++, b &= b - 1);
   return r;
 }
 
-
-
-
+// Prints bitboard to standard out
 void printBitboard(bitboard bb) {
 
-	uint64_t shiftMe = 1ULL;
+	uint64_t shiftMe = 1;
 	
 	std::cout<<std::endl;
 	for(int rank = RANK_8; rank >= RANK_1; --rank) {
 		for(int file = FILE_A; file <= FILE_H; ++file) {
 			uint8_t sq = FR2SQ(file,rank);	// 120 based		
-			uint8_t sq64 = SQ64(sq); // 64 based
+			uint8_t sq64 = SQ64(sq);        // 64 based
 			
 			if((shiftMe << sq64) & bb) 
 				std::cout<<'X';
@@ -67,22 +68,103 @@ void printBitboard(bitboard bb) {
 
 } //namespace
 
+/* 
+   Static members
+*/
+
+// Strings for pretty printing
 const char* Board::PceChar = ".PNBRQKpnbrqk";
 const char* Board::SideChar = "wb-";
 const char* Board::RankChar = "12345678";
 const char* Board::FileChar = "abcdefgh";
 
+// Piece Directions
+const int Board::KnDir[8] = { -8, -19,	-21, -12, 8, 19, 21, 12 };
+const int Board::RkDir[4] = { -1, -10,	1, 10 };
+const int Board::BiDir[4] = { -9, -11, 11, 9 };
+const int Board::KiDir[8] = { -1, -10,	1, 10, -9, -11, 11, 9 };
+
+// Major Pieces, i.e. Rook, Queen, King
+bool Board::PieceMaj[13] = { false, false, false, false, true, true, true, false, false, false, true, true, true };
+
+// Min Pieces, i.e Bishop, Knight
+bool Board::PieceMin[13] = { false, false, true, true, false, false, false, false, true, true, false, false, false };
+
+// Piece Values
+unsigned int Board::PieceVal[13]= { 0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000  };
+
+//Piece Colours
+Colour Board::PieceCol[13] = { BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK };
+	
+// Piece Types
+bool Board::PieceKnight[13] = { false, false, true, false, false, false, false, false, true, false, false, false, false };
+bool Board::PieceKing[13] = { false, false, false, false, false, false, true, false, false, false, false, false, true };
+bool Board::PieceRookQueen[13] = { false, false, false, false, true, true, false, false, false, false, true, true, false };
+bool Board::PieceBishopQueen[13] = { false, false, false, true, false, true, false, false, false, true, false, true, false };
+
 
 Board::Board()
 {
-    seedRandNums();
+    seedRandNums(); // Seed data for random number gen
     initBitMasks(); // Generate Masks for Bitboards
-    init120To64(); // Generate 120 to 64 bit mapping
+    init120To64();  // Generate 120 to 64 bit mapping
+    initFilesRanksBrd(); // init file and ranks for each square
 
     // Setup starting board position
     clearBoard();
 }
 
+// sets m_FilesBrd and m_RanksBrd
+void Board::initFilesRanksBrd()
+{
+	
+	for(int index = 0; index < TOTAL_SQUARES; ++index) {
+		m_FilesBrd[index] = OFFBOARD;
+		m_RanksBrd[index] = OFFBOARD;
+	}
+	
+	for(int rank = RANK_1; rank <= RANK_8; ++rank) {
+		for(int file = FILE_A; file <= FILE_H; ++file) {
+			int sq = FR2SQ(file,rank);
+			m_FilesBrd[sq] = file;
+			m_RanksBrd[sq] = rank;
+		}
+	}
+
+}
+
+// update material member data
+void Board::updateListsMaterial()
+{
+	
+	for(int index = 0; index < TOTAL_SQUARES; ++index) {
+		uint8_t sq = index;
+		Piece piece = m_board[index];
+		if(piece!= EMPTY) {
+			Colour colour = PieceCol[piece];
+			
+		    if( Board::PieceMin[piece] == true) m_minPce[colour]++;
+		    if( Board::PieceMaj[piece] == true) m_majPce[colour]++;
+			
+			m_material[colour] += Board::PieceVal[piece];
+			
+			SETBIT(m_pList[piece], SQ64(sq));
+			m_pceNum[piece]++;
+			
+			if(piece==wK) m_kingSq[WHITE] = static_cast<Square>(sq);
+			if(piece==bK) m_kingSq[BLACK] = static_cast<Square>(sq);	
+			
+			if(piece==wP) {
+				SETBIT(m_pList[Piece::wP],SQ64(sq));
+			} else if(piece==bP) {
+				SETBIT(m_pList[Piece::bP],SQ64(sq));
+			}
+		}
+	}
+
+}
+
+// Sets up board based on FEN string
 bool Board::parseFen(char *fen) 
 {
 	
@@ -183,8 +265,81 @@ bool Board::parseFen(char *fen)
 	return true;
 }
 
+// Returns true if given square is attacked by colour paramter
+bool Board::sqAttacked(const uint8_t sq, Colour side)
+{
+  	
+	// pawns
+	if(side == WHITE) {
+		if(m_board[sq-11] == wP || m_board[sq-9] == wP) {
+			return true;
+		}
+	} else {
+		if(m_board[sq+11] == bP || m_board[sq+9] == bP) {
+			return true;
+		}	
+	}
+	
+	// knights
+	for(int index = 0; index < 8; ++index) {		
+		Piece pce = m_board[sq + Board::KnDir[index]];
+		if(Board::PieceKnight[pce] && Board::PieceCol[pce]==side) {
+			return true;
+		}
+	}
+	
+	// rooks, queens
+	for(int index = 0; index < 4; ++index) {		
+		int dir = Board::RkDir[index];
+		int t_sq = sq + dir;
+		Piece pce = m_board[t_sq];
+		while(!isOffboard(t_sq)) { 
+			if(pce != EMPTY) {
+				if(Board::PieceRookQueen[pce] && Board::PieceCol[pce] == side) {
+					return true;
+				}
+				break;
+			}
+			t_sq += dir;
+			pce = m_board[t_sq];
+		}
+	}
+	
+	// bishops, queens
+	for(int index = 0; index < 4; ++index) {		
+		int dir = Board::BiDir[index];
+		int t_sq = sq + dir;
+		Piece pce = m_board[t_sq];
+		while(!isOffboard(t_sq)) {
+			if(pce != EMPTY) {
+				if(Board::PieceBishopQueen[pce] && Board::PieceCol[pce] == side) {
+					return true;
+				}
+				break;
+			}
+			t_sq += dir;
+			pce = m_board[t_sq];
+		}
+	}
+	
+	// kings
+	for(int index = 0; index < 8; ++index) {		
+		Piece pce = m_board[sq + Board::KiDir[index]];
+		if(Board::PieceKing[pce] && Board::PieceCol[pce]==side) {
+			return true;
+		}
+	}
+	
+	return false;
 
+}
 
+inline bool Board::isOffboard(const uint8_t sq120) const
+{
+  return (sq120 < 21 || sq120 > 98 || sq120 % 10 == 0 || (sq120 + 1) == 0);
+}
+
+// Clears all member data
 void Board::clearBoard()
 {
 	
@@ -193,15 +348,14 @@ void Board::clearBoard()
 	}
 	
 	for(uint8_t index = 0; index < 2; ++index) {
-		m_bigPce[index] = 0;
 		m_majPce[index] = 0;
 		m_minPce[index] = 0;
 	    m_material[index] = 0;
-		m_pawns[index] = 0ULL;
 	}
 	
 	for(uint8_t index = 0; index < 13; ++index) {
 		m_pceNum[index] = 0;
+		m_pList[index] = 0;
 	}
 	
 	m_kingSq[WHITE] = m_kingSq[BLACK] = NO_SQ;
@@ -219,6 +373,7 @@ void Board::clearBoard()
 
 }
 
+// Prints board to stdout
 void Board::printBoard() const 
 {
 	
@@ -255,6 +410,7 @@ void Board::printBoard() const
 	std::cout<<"PosKey:"<<std::hex<<m_posHash<<std::endl;
 }
 
+// Seed rand() and set keys for hashing
 void Board::seedRandNums()
 {
     srand(time(NULL));
@@ -264,12 +420,13 @@ void Board::seedRandNums()
 			pieceKeys[index][index2] = RAND_64;
 		}
 	}
+
 	sideKey = RAND_64;
+
 	for(uint8_t index = 0; index < 16; ++index) {
 		castleKeys[index] = RAND_64;
 	}
  
-
 }
 
 
@@ -313,7 +470,7 @@ void Board::init120To64() const
 
 }
 
-
+// Generate zorbist hash of position
 uint64_t Board::genHashKey()
 {
 	uint64_t finalKey = 0;
@@ -342,3 +499,85 @@ uint64_t Board::genHashKey()
 	return finalKey;
 }
 
+// Returns true if board has a valid position
+bool Board::checkBoard()
+{
+
+	int t_pceNum[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int t_majPce[2] = { 0, 0};
+	int t_minPce[2] = { 0, 0};
+	int t_material[2] = { 0, 0};
+	
+	bitboard t_pawns[3] = {0ULL, 0ULL, 0ULL};
+	
+
+	t_pawns[WHITE] = m_pList[Piece::wP];
+	t_pawns[BLACK] = m_pList[Piece::bP];
+	t_pawns[BOTH] = m_pList[Piece::wP] | m_pList[Piece::bP];
+	
+
+	// check piece lists
+	for(int t_piece = wP; t_piece <= bK; ++t_piece) {
+		bitboard bbCopy = m_pList[t_piece];
+		for(int t_pce_num = 0; t_pce_num < m_pceNum[t_piece]; ++t_pce_num) {
+			int sq120 = SQ120(Bitboard::popBit(&bbCopy));
+			assert(m_board[sq120]==t_piece);
+		}	
+	}
+	
+	// check piece count and other counters	
+	for(int sq64 = 0; sq64 < 64; ++sq64) {
+		int sq120 = SQ120(sq64);
+		int t_piece = m_board[sq120];
+		t_pceNum[t_piece]++;
+		Colour colour = PieceCol[t_piece];
+		if( PieceMin[t_piece] == true) t_minPce[colour]++;
+		if( PieceMaj[t_piece] == true) t_majPce[colour]++;
+		
+		t_material[colour] += PieceVal[t_piece];
+	}
+	
+	for(int t_piece = wP; t_piece <= bK; ++t_piece) {
+		assert(t_pceNum[t_piece]==m_pceNum[t_piece]);	
+	}
+	
+	// check bitboards count
+	int pcount = Bitboard::countBits(t_pawns[WHITE]);
+	assert(pcount == m_pceNum[wP]);
+	pcount = Bitboard::countBits(t_pawns[BLACK]);
+	assert(pcount == m_pceNum[bP]);
+	pcount = Bitboard::countBits(t_pawns[BOTH]);
+	assert(pcount == (m_pceNum[bP] + m_pceNum[wP]));
+	
+	// check bitboards squares
+	while(t_pawns[WHITE]) {
+		int sq64 = Bitboard::popBit(&t_pawns[WHITE]);
+		assert(m_board[SQ120(sq64)] == wP);
+	}
+	
+	while(t_pawns[BLACK]) {
+		int sq64 = Bitboard::popBit(&t_pawns[BLACK]);
+		assert(m_board[SQ120(sq64)] == bP);
+	}
+	
+	while(t_pawns[BOTH]) {
+		int sq64 = Bitboard::popBit(&t_pawns[BOTH]);
+		assert( (m_board[SQ120(sq64)] == bP) || (m_board[SQ120(sq64)] == wP) );
+	}
+	
+	assert(t_material[WHITE]==m_material[WHITE] && t_material[BLACK]==m_material[BLACK]);
+	assert(t_minPce[WHITE]==m_minPce[WHITE] && t_minPce[BLACK]==m_minPce[BLACK]);
+	assert(t_majPce[WHITE]==m_majPce[WHITE] && t_majPce[BLACK]==m_majPce[BLACK]);
+	
+	assert(m_side==WHITE || m_side==BLACK);
+	assert(genHashKey()==m_posHash);
+	
+	assert(m_enPas==NO_SQ || ( m_RanksBrd[m_enPas]==RANK_6 && m_side == WHITE)
+		 || ( m_RanksBrd[m_enPas]==RANK_3 && m_side == BLACK));
+	
+	assert(m_board[m_kingSq[WHITE]] == wK);
+	assert(m_board[m_kingSq[BLACK]] == bK);
+		 
+	return true;
+
+}
