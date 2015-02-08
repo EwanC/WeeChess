@@ -25,6 +25,13 @@ int main(int argc, char* argv[])
   b.printBoard();
   std::cout << "success : "<< b.checkBoard()<<std::endl;
 
+  for(int i = 0; i < 13; i++)
+  {
+    std::cout << Board::PceChar[i] << " Bitboard:\n";
+    Bitboard::printBitboard(b.m_pList[i]);
+  }
+
+
   return 0;
 
 }

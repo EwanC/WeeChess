@@ -149,16 +149,13 @@ void Board::updateListsMaterial()
 			m_material[colour] += Board::PieceVal[piece];
 			
 			SETBIT(m_pList[piece], SQ64(sq));
+			SETBIT(m_pList[Piece::EMPTY], SQ64(sq));
+
 			m_pceNum[piece]++;
 			
 			if(piece==wK) m_kingSq[WHITE] = static_cast<Square>(sq);
 			if(piece==bK) m_kingSq[BLACK] = static_cast<Square>(sq);	
 			
-			if(piece==wP) {
-				SETBIT(m_pList[Piece::wP],SQ64(sq));
-			} else if(piece==bP) {
-				SETBIT(m_pList[Piece::bP],SQ64(sq));
-			}
 		}
 	}
 
@@ -261,7 +258,8 @@ bool Board::parseFen(char *fen)
     }
 	
 	m_posHash= genHashKey(); 
-	
+    updateListsMaterial();
+
 	return true;
 }
 

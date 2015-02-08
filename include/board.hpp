@@ -69,14 +69,6 @@ void initFilesRanksBrd();   // sets m_FilesBrd and m_RanksBrd
 inline bool isOffboard(const uint8_t sq120) const; // is square offboard
 
 /*
-  Strings for pretty printing
-*/
-static const char* PceChar;
-static const char* SideChar;
-static const char* RankChar;
-static const char* FileChar;
-
-/*
   Piece Directions
 */
 static const int KnDir[8];
@@ -143,6 +135,14 @@ bitboard m_pList[13];           // Bitboards for each piece type
 uint8_t m_FilesBrd[TOTAL_SQUARES]; // file index of each square
 uint8_t m_RanksBrd[TOTAL_SQUARES]; // rank index of each square
 
+
+/*
+  Strings for pretty printing
+*/
+static const char* PceChar;
+static const char* SideChar;
+static const char* RankChar;
+static const char* FileChar;
 
 }; //Board
 
