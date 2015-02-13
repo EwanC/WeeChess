@@ -3,5 +3,8 @@ set(BUILD_DIR ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Src files.
-file(GLOB SOURCE_FILES_LIST "*.cpp")
-add_executable(${EXE_NAME} ${SOURCE_FILES_LIST})
+add_executable(${EXE_NAME}
+               main.cpp
+               board.cpp
+               move.cpp
+)

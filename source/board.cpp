@@ -68,10 +68,9 @@ void printBitboard(bitboard bb) {
 
 } //namespace
 
-/* 
-   Static members
-*/
-
+/*
+   Static data
+ */
 // Strings for pretty printing
 const char* Board::PceChar = ".PNBRQKpnbrqk";
 const char* Board::SideChar = "wb-";
@@ -85,52 +84,52 @@ const int Board::BiDir[4] = { -9, -11, 11, 9 };
 const int Board::KiDir[8] = { -1, -10,	1, 10, -9, -11, 11, 9 };
 
 // Major Pieces, i.e. Rook, Queen, King
-bool Board::PieceMaj[13] = { false, false, false, false, true, true, true, false, false, false, true, true, true };
+const bool Board::PieceMaj[13] = { false, false, false, false, true, true, true, false, false, false, true, true, true };
 
 // Min Pieces, i.e Bishop, Knight
-bool Board::PieceMin[13] = { false, false, true, true, false, false, false, false, true, true, false, false, false };
+const bool Board::PieceMin[13] = { false, false, true, true, false, false, false, false, true, true, false, false, false };
 
 // Piece Values
-unsigned int Board::PieceVal[13]= { 0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000  };
+const unsigned int Board::PieceVal[13]= { 0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000  };
 
 //Piece Colours
-Colour Board::PieceCol[13] = { BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK };
+const Colour Board::PieceCol[13] = { BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK };
 	
 // Piece Types
-bool Board::PieceKnight[13] = { false, false, true, false, false, false, false, false, true, false, false, false, false };
-bool Board::PieceKing[13] = { false, false, false, false, false, false, true, false, false, false, false, false, true };
-bool Board::PieceRookQueen[13] = { false, false, false, false, true, true, false, false, false, false, true, true, false };
-bool Board::PieceBishopQueen[13] = { false, false, false, true, false, true, false, false, false, true, false, true, false };
+const bool Board::PieceKnight[13] = { false, false, true, false, false, false, false, false, true, false, false, false, false };
+const bool Board::PieceKing[13] = { false, false, false, false, false, false, true, false, false, false, false, false, true };
+const bool Board::PieceRookQueen[13] = { false, false, false, false, true, true, false, false, false, false, true, true, false };
+const bool Board::PieceBishopQueen[13] = { false, false, false, true, false, true, false, false, false, true, false, true, false };
 
+uint8_t Board::FilesBrd[TOTAL_SQUARES] = {0}; // file index of each square
+uint8_t Board::RanksBrd[TOTAL_SQUARES] = {0}; // rank index of each square
 
 Board::Board()
 {
     seedRandNums(); // Seed data for random number gen
     initBitMasks(); // Generate Masks for Bitboards
     init120To64();  // Generate 120 to 64 bit mapping
-    initFilesRanksBrd(); // init file and ranks for each square
 
     // Setup starting board position
     clearBoard();
 }
 
-// sets m_FilesBrd and m_RanksBrd
-void Board::initFilesRanksBrd()
+// Initalizes static members
+void Board::initStaticMembers()
 {
 	
 	for(int index = 0; index < TOTAL_SQUARES; ++index) {
-		m_FilesBrd[index] = OFFBOARD;
-		m_RanksBrd[index] = OFFBOARD;
+		Board::FilesBrd[index] = OFFBOARD;
+		Board::RanksBrd[index] = OFFBOARD;
 	}
 	
 	for(int rank = RANK_1; rank <= RANK_8; ++rank) {
 		for(int file = FILE_A; file <= FILE_H; ++file) {
 			int sq = FR2SQ(file,rank);
-			m_FilesBrd[sq] = file;
-			m_RanksBrd[sq] = rank;
+			Board::FilesBrd[sq] = file;
+			Board::RanksBrd[sq] = rank;
 		}
 	}
-
 }
 
 // update material member data
@@ -570,12 +569,83 @@ bool Board::checkBoard()
 	assert(m_side==WHITE || m_side==BLACK);
 	assert(genHashKey()==m_posHash);
 	
-	assert(m_enPas==NO_SQ || ( m_RanksBrd[m_enPas]==RANK_6 && m_side == WHITE)
-		 || ( m_RanksBrd[m_enPas]==RANK_3 && m_side == BLACK));
+	assert(m_enPas==NO_SQ || ( Board::RanksBrd[m_enPas]==RANK_6 && m_side == WHITE)
+		 || ( Board::RanksBrd[m_enPas]==RANK_3 && m_side == BLACK));
 	
 	assert(m_board[m_kingSq[WHITE]] == wK);
 	assert(m_board[m_kingSq[BLACK]] == bK);
 		 
 	return true;
 
+}
+
+bool Board::isSquareAttacked(const Square& sq, const Colour& side)
+{
+
+    assert(Board::FilesBrd[sq] != OFFBOARD);
+    assert(side == WHITE || side == BLACK);
+    assert(checkBoard());
+
+    // pawns
+    if(side == Colour::WHITE) {
+        if(m_board[sq-11] == wP || m_board[sq-9] == wP) {
+            return true;
+        }
+    } else {
+        if(m_board[sq+11] == bP || m_board[sq+9] == bP) {
+            return true;
+        }
+    }
+
+	// knights
+	for(int index = 0; index < 8; ++index) {
+		Piece pce = m_board[sq + KnDir[index]];
+		if(Board::PieceKnight[pce] && PieceCol[pce]==side) {
+			return true;
+		}
+	}
+
+	// rooks, queens
+	for(int index = 0; index < 4; ++index) {
+		int dir = RkDir[index];
+		int t_sq = sq + dir;
+		Piece pce = m_board[t_sq];
+		while(!isOffboard(t_sq)) {
+			if(pce != EMPTY) {
+				if(Board::PieceRookQueen[pce] && PieceCol[pce] == side) {
+					return true;
+				}
+				break;
+			}
+			t_sq += dir;
+			pce = m_board[t_sq];
+		}
+	}
+
+	// bishops, queens
+	for(int index = 0; index < 4; ++index) {
+		int dir = BiDir[index];
+		int t_sq = sq + dir;
+		int pce = m_board[t_sq];
+		while(!isOffboard(t_sq)) {
+			if(pce != EMPTY) {
+				if(Board::PieceBishopQueen[pce] && PieceCol[pce] == side) {
+					return true;
+				}
+				break;
+			}
+			t_sq += dir;
+			pce = m_board[t_sq];
+		}
+	}
+
+	// kings
+	for(int index = 0; index < 8; ++index) {
+		Piece pce = m_board[sq + KiDir[index]];
+		if(Board::PieceKing[pce] && PieceCol[pce]==side) {
+			return true;
+		}
+	}
+
+	return false;
 }

@@ -65,8 +65,10 @@ void seedRandNums();        // Seed rand() and set keys for hashing
 void initBitMasks() const;  // Generate Masks for Bitboards
 void init120To64() const;   // Generate 120 to 64 bit mapping
 void clearBoard();          // Clears all member data
-void initFilesRanksBrd();   // sets m_FilesBrd and m_RanksBrd
 inline bool isOffboard(const uint8_t sq120) const; // is square offboard
+
+public:
+
 
 /*
   Piece Directions
@@ -80,19 +82,31 @@ static const int KiDir[8];
    Arrays of form {  EMPTY, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK };
                        0     1   2   3   4   5   6   7   8   9  10  11  12
 */
-static bool PieceMaj[13];         // King, Queen, Rook,
-static bool PieceMin[13];         // Knight, Bishop
-static unsigned int PieceVal[13]; // Piece values
-static Colour PieceCol[13];       // Piece Colours
+static const bool PieceMaj[13];         // King, Queen, Rook,
+static const bool PieceMin[13];         // Knight, Bishop
+static const unsigned int PieceVal[13]; // Piece values
+static const Colour PieceCol[13];       // Piece Colours
 
-static bool PieceKnight[13];      // Knights
-static bool PieceKing[13];        // Kings
-static bool PieceRookQueen[13];   // Rooks and Queens
-static bool PieceBishopQueen[13]; // Bishops and Queens
+static const bool PieceKnight[13];      // Knights
+static const bool PieceKing[13];        // Kings
+static const bool PieceRookQueen[13];   // Rooks and Queens
+static const bool PieceBishopQueen[13]; // Bishops and Queens
 
-public:
+static uint8_t FilesBrd[TOTAL_SQUARES]; // file index of each square
+static uint8_t RanksBrd[TOTAL_SQUARES]; // rank index of each square
+
+/*
+  Strings for pretty printing
+*/
+static const char* PceChar;
+static const char* SideChar;
+static const char* RankChar;
+static const char* FileChar;
 
 Board();
+
+static void initStaticMembers();   // sets m_FilesBrd and m_RanksBrd
+
 
 // Prints board to stdout
 void printBoard() const;
@@ -111,6 +125,9 @@ bool checkBoard();
 
 // update material member data
 void updateListsMaterial();
+
+// Returns true if Square 'sq' is attacked by a piece of Colour side
+bool isSquareAttacked(const Square& sq, const Colour& side);
 
 Colour m_side;                 // Side to play colour
 Square m_enPas;                // Square available for en Passent
@@ -132,17 +149,6 @@ uint32_t m_material[2];        // total peiece values of players pieces
 
 bitboard m_pList[13];           // Bitboards for each piece type
 
-uint8_t m_FilesBrd[TOTAL_SQUARES]; // file index of each square
-uint8_t m_RanksBrd[TOTAL_SQUARES]; // rank index of each square
-
-
-/*
-  Strings for pretty printing
-*/
-static const char* PceChar;
-static const char* SideChar;
-static const char* RankChar;
-static const char* FileChar;
 
 }; //Board
 
