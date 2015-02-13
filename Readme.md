@@ -1,24 +1,20 @@
 ### WeeChess - C++ chess engine
 
-Ewan Crawford<ewan.cr@gmail.com>, Jan 2015
+Ewan Crawford <ewan.cr@gmail.com>, Jan 2015
 
 Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
 
-### TODO
-CALCULATE STATIC BOARD Members
-
-
 ### Roadmap
 
-Board Representation +
-Parse FEN            +
-Setup a Position     +
+Board Representation + <br>
+Parse FEN            +<br>
+Setup a Position     +<br>
 
-Move Generator
-Perft Test
+Move Generator <br>
+Perft Test<br>
 
-Evalutation
-Search
+Evalutation<br>
+Search<br>
 
-Connect GUI
+Connect GUI<br>
