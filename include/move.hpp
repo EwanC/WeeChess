@@ -4,7 +4,9 @@
 #include <stdint.h> //Standard Integer Types
 #include <string>
 #include <vector>
+#include "types.hpp"
 
+class Board;
 /* GAME MOVE 
   
    0000 0000 0000 0000 0000 0111 1111 -> From [0x7F]
@@ -29,6 +31,10 @@
 #define MFLAGCAP 0x7C000   // Move flag captured
 #define MFLAGPROM 0xF00000 // Move flag promoted
 
+// Generates move int for paramters
+#define MOVE(f,t,ca,pro,fl) ( (f) | ((t) << 7) | ( (ca) << 14 ) | ( (pro) << 20 ) | (fl))
+#define SQOFFBOARD(sq) (Board::FilesBrd[(sq)]==OFFBOARD)
+
 class Move {
 
 public:
@@ -42,7 +48,21 @@ public:
 };
 
 class MoveList {
-	std::vector<Move> m_move_vec;
+ public:
+ 	void genAllMoves(const Board& b);
+    void addQuietMove(const Board& b, uint32_t move);
+    void addCaptureMove(const Board& b, uint32_t move);
+    void addEnPassMove(const Board& b, uint32_t move);
+
+    void printList() const;
+
+    template<Colour colour>
+    void addPawnMove( const Board& b, const int from, const int to );
+
+    template<Colour colour>
+    void addPawnCapMove( const Board& b, const int from, const int to, const Piece cap );
+
+    std::vector<Move> m_move_vec;
 };
 
 

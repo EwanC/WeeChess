@@ -147,7 +147,7 @@ uint32_t m_minPce[2];          // Number of minor pieces
 uint32_t m_pceNum[13];         // Number of each peice type on board
 uint32_t m_material[2];        // total peiece values of players pieces
 
-bitboard m_pList[13];           // Bitboards for each piece type
+bitboard m_pList[13];          // Bitboards for each piece type
 
 
 }; //Board
