@@ -92,6 +92,7 @@ static const bool PieceKing[13];        // Kings
 static const bool PieceRookQueen[13];   // Rooks and Queens
 static const bool PieceBishopQueen[13]; // Bishops and Queens
 
+static const bool PieceSlides[13]; // piece is a sliding piece, i.e. queen, rook, bishop
 static uint8_t FilesBrd[TOTAL_SQUARES]; // file index of each square
 static uint8_t RanksBrd[TOTAL_SQUARES]; // rank index of each square
 
@@ -112,7 +113,7 @@ static void initStaticMembers();   // sets m_FilesBrd and m_RanksBrd
 void printBoard() const;
 
 // Generate Zobrist hash key from board poistion
-uint64_t genHashKey();
+uint64_t genHashKey() const; 
 
 // Sets up board based on FEN string
 bool parseFen(char *fen);
@@ -121,13 +122,13 @@ bool parseFen(char *fen);
 bool sqAttacked(const uint8_t sq, Colour size);
 
 // Returns true if board has a valid position
-bool checkBoard();
+bool checkBoard() const;
 
 // update material member data
 void updateListsMaterial();
 
 // Returns true if Square 'sq' is attacked by a piece of Colour side
-bool isSquareAttacked(const Square& sq, const Colour& side);
+bool isSquareAttacked(const Square& sq, const Colour& side) const;
 
 Colour m_side;                 // Side to play colour
 Square m_enPas;                // Square available for en Passent

@@ -5,6 +5,30 @@
 #include <cassert>
 
 
+ // Directions that each piece can move in
+ static const int PceDir[13][8] = {
+	{ 0, 0, 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0, 0, 0 },
+	{ -8, -19,	-21, -12, 8, 19, 21, 12 },
+	{ -9, -11, 11, 9, 0, 0, 0, 0 },
+	{ -1, -10,	1, 10, 0, 0, 0, 0 },
+	{ -1, -10,	1, 10, -9, -11, 11, 9 },
+	{ -1, -10,	1, 10, -9, -11, 11, 9 },
+	{ 0, 0, 0, 0, 0, 0, 0 },
+	{ -8, -19,	-21, -12, 8, 19, 21, 12 },
+	{ -9, -11, 11, 9, 0, 0, 0, 0 },
+	{ -1, -10,	1, 10, 0, 0, 0, 0 },
+	{ -1, -10,	1, 10, -9, -11, 11, 9 },
+	{ -1, -10,	1, 10, -9, -11, 11, 9 }
+};
+
+// How many directinons each piece has
+static const int NumDir[13] = {
+ 0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
+};
+
+
+
  Move::Move():m_move(0),m_score(0)
  {
 
@@ -50,6 +74,14 @@
  */
 
 void MoveList::genAllMoves(const Board& b) {
+   
+    static const Piece SlidePce[2][3] = {
+       {wB, wR, wQ},{bB, bR, bQ}
+    };
+
+    static const Piece NonSlidePce[2][2] = {
+       {wN, wK},{bN, bK}
+    };
 
 	if(b.m_side == WHITE) {
 		bitboard wpBitboard = b.m_pList[wP];
@@ -79,6 +111,22 @@ void MoveList::genAllMoves(const Board& b) {
 			}
 		}
 		
+		// castling
+		if(b.m_castling & WKCA) {
+			if(b.m_board[F1] == EMPTY && b.m_board[G1] == EMPTY) {
+				if(!b.isSquareAttacked(E1,BLACK) && !b.isSquareAttacked(F1,BLACK) ) {
+					addQuietMove(b, MOVE(E1, G1, EMPTY, EMPTY, MFLAGCA));
+				}
+			}
+		}
+		
+		if(b.m_castling & WQCA) {
+			if(b.m_board[D1] == EMPTY && b.m_board[C1] == EMPTY && b.m_board[B1] == EMPTY) {
+				if(!b.isSquareAttacked(E1,BLACK) && !b.isSquareAttacked(D1,BLACK) ) {
+					addQuietMove(b, MOVE(E1, C1, EMPTY, EMPTY, MFLAGCA));
+				}
+			}
+		}
 		
 	} else {
 		
@@ -108,9 +156,85 @@ void MoveList::genAllMoves(const Board& b) {
 			if(sq - 11 == b.m_enPas) {
 				addCaptureMove(b, MOVE(sq,sq - 11,EMPTY,EMPTY,MFLAGEP));
 			}
+		}
+
+
+		// castling
+		if(b.m_castling &  BKCA) {
+			if(b.m_board[F8] == EMPTY && b.m_board[G8] == EMPTY) {
+				if(!b.isSquareAttacked(E8,WHITE) && !b.isSquareAttacked(F8,WHITE) ) {
+					addQuietMove(b, MOVE(E8, G8, EMPTY, EMPTY, MFLAGCA));
+				}
+			}
+		}
+		
+		if(b.m_castling &  BQCA) {
+			if(b.m_board[D8] == EMPTY && b.m_board[C8] == EMPTY && b.m_board[B8] == EMPTY) {
+				if(!b.isSquareAttacked(E8,WHITE) && !b.isSquareAttacked(D8,WHITE) ) {
+					addQuietMove(b, MOVE(E8, C8, EMPTY, EMPTY, MFLAGCA));
+				}
+			}
 		}		
 	
 	}
+   
+    /* Loop for slide pieces */
+
+ 	for(Piece pce : SlidePce[b.m_side]) {
+		assert(pce >= wP && pce <= bK);		
+		bitboard bb = b.m_pList[static_cast<int>(pce)];
+		for(int pceNum = 0; pceNum < b.m_pceNum[pce]; ++pceNum) {
+			int sq = Bitboard::popBit(&bb);
+			assert(!SQOFFBOARD(sq));
+			
+			for(int index = 0; index < NumDir[pce]; ++index) {
+				int dir = PceDir[pce][index];
+				int t_sq = sq + dir;
+				
+				while(!SQOFFBOARD(t_sq)) {				
+					// BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+					if(b.m_board[t_sq] != EMPTY) {
+						if( Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
+							addCaptureMove(b, MOVE(sq, t_sq, b.m_board[t_sq], EMPTY, 0));
+						}
+						break;
+					}	
+					addQuietMove(b, MOVE(sq, t_sq, EMPTY, EMPTY, 0));
+					t_sq += dir;
+				}
+			}
+		}
+	}
+
+	/* Loop for non slide */
+ 	for(Piece pce : NonSlidePce[b.m_side]) {
+		assert(pce >= wP && pce <= bK);		
+	    bitboard bb = b.m_pList[static_cast<int>(pce)];
+		
+		for(int pceNum = 0; pceNum < b.m_pceNum[pce]; ++pceNum) {
+			int sq = Bitboard::popBit(&bb);
+			assert(!SQOFFBOARD(sq));
+			
+			for(int index = 0; index < NumDir[pce]; ++index) {
+				int dir = PceDir[pce][index];
+				int t_sq = sq + dir;
+				
+				if(SQOFFBOARD(t_sq)) {				    
+					continue;
+				}
+				
+				// BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+				if(b.m_board[t_sq] != EMPTY) {
+					if( Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
+						addCaptureMove(b, MOVE(sq, t_sq, b.m_board[t_sq], EMPTY, 0));
+					}
+					continue;
+				}	
+				addQuietMove(b, MOVE(sq, t_sq, EMPTY, EMPTY, 0));
+			}
+		}
+	}
+
 }
 
 template<Colour colour>

@@ -100,6 +100,7 @@ const bool Board::PieceKnight[13] = { false, false, true, false, false, false, f
 const bool Board::PieceKing[13] = { false, false, false, false, false, false, true, false, false, false, false, false, true };
 const bool Board::PieceRookQueen[13] = { false, false, false, false, true, true, false, false, false, false, true, true, false };
 const bool Board::PieceBishopQueen[13] = { false, false, false, true, false, true, false, false, false, true, false, true, false };
+const bool Board::PieceSlides[13] = { false, false, false, true, true, true, false, false, false, true, true, true, false };
 
 uint8_t Board::FilesBrd[TOTAL_SQUARES] = {0}; // file index of each square
 uint8_t Board::RanksBrd[TOTAL_SQUARES] = {0}; // rank index of each square
@@ -468,7 +469,7 @@ void Board::init120To64() const
 }
 
 // Generate zorbist hash of position
-uint64_t Board::genHashKey()
+uint64_t Board::genHashKey() const
 {
 	uint64_t finalKey = 0;
 	
@@ -497,7 +498,7 @@ uint64_t Board::genHashKey()
 }
 
 // Returns true if board has a valid position
-bool Board::checkBoard()
+bool Board::checkBoard() const
 {
 
 	int t_pceNum[13] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -579,7 +580,7 @@ bool Board::checkBoard()
 
 }
 
-bool Board::isSquareAttacked(const Square& sq, const Colour& side)
+bool Board::isSquareAttacked(const Square& sq, const Colour& side) const
 {
 
     assert(Board::FilesBrd[sq] != OFFBOARD);
