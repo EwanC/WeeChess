@@ -19,6 +19,13 @@ typedef uint64_t bitboard; // bitboard type
 
 namespace Bitboard{
 
+static uint64_t SetMask[64];
+static uint64_t ClearMask[64];
+
+static uint8_t Sq120ToSq64[TOTAL_SQUARES];  // Map of base 120 indexes to base 64
+static uint8_t Sq64ToSq120[64];             // Map of base 64 indexes to base 120
+
+
 // Dark square bitboard mask
 const bitboard DarkSquares = 0xAA55AA55AA55AA55;
 
@@ -55,11 +62,6 @@ private:
 // Disable copy and assign
 Board& operator=(const Board&);
 Board(const Board&);
-
-// Rand hashing vals
-uint64_t pieceKeys[13][TOTAL_SQUARES];
-uint64_t sideKey;
-uint64_t castleKeys[16];
 
 void seedRandNums();        // Seed rand() and set keys for hashing
 void initBitMasks() const;  // Generate Masks for Bitboards
@@ -145,11 +147,19 @@ uint64_t m_posHash;            // Zorbist has of the position
 uint32_t m_majPce[2];          // Number of major pieces
 uint32_t m_minPce[2];          // Number of minor pieces
 
-uint32_t m_pceNum[13];         // Number of each peice type on board
+// CAN THIS BE REMOVED USING COUNT BITBOARD BITS INSTEAD
+uint32_t m_pceNum[13];         // Number of each peice type on board 
+//
+///////////////////////////////////////////////////////////////////
+
 uint32_t m_material[2];        // total peiece values of players pieces
 
 bitboard m_pList[13];          // Bitboards for each piece type
 
+// Rand hashing vals
+uint64_t pieceKeys[13][TOTAL_SQUARES];
+uint64_t sideKey;
+uint64_t castleKeys[16];
 
 }; //Board
 

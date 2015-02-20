@@ -35,6 +35,12 @@ class Board;
 #define MOVE(f,t,ca,pro,fl) ( (f) | ((t) << 7) | ( (ca) << 14 ) | ( (pro) << 20 ) | (fl))
 #define SQOFFBOARD(sq) (Board::FilesBrd[(sq)]==OFFBOARD)
 
+// Hashing macros
+#define HASH_PCE(pce,sq) (b.m_posHash ^= (b.pieceKeys[(pce)][(sq)])) // hash piece
+#define HASH_CA (b.m_posHash ^= (b.castleKeys[(b.m_castling)]))      // hash castling
+#define HASH_SIDE (b.m_posHash ^= (b.sideKey))                       // hash side
+#define HASH_EP (b.m_posHash ^= (b.pieceKeys[EMPTY][(b.m_enPas)]))   // hash enpassent
+
 class Move {
 
 public:

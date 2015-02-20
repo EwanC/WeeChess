@@ -22,6 +22,24 @@
 	{ -1, -10,	1, 10, -9, -11, 11, 9 }
 };
 
+// Castle Permission Array 
+// All initally set to 0xF apart from a1,e1,h1,a8,e8, and h8
+// Every time a piece is moved the permission &= castlePerm[form/to]
+static const int CastlePerm[120] = {
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 13, 15, 15, 15, 12, 15, 15, 14, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15,  7, 15, 15, 15,  3, 15, 15, 11, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+};
+
 // How many directinons each piece has
 static const int NumDir[13] = {
  0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8
@@ -147,7 +165,7 @@ void MoveList::genAllMoves(const Board& b) {
 			} 
 			
 			if(!SQOFFBOARD(sq - 11) && Board::PieceCol[b.m_board[sq - 11]] == WHITE) {
-				addPawnCapMove<BLACK>(b, sq, sq-11, b.m_board[sq - 1]);
+				addPawnCapMove<BLACK>(b, sq, sq-11, b.m_board[sq - 11]);
 			} 
 			
 			if(sq - 9 == b.m_enPas) {
@@ -317,5 +335,78 @@ void MoveList::printList() const
    	  std::cout << "Move " << count << ": "<<std::hex<<itr->m_move <<std::dec << " score: "<<itr->m_score<<std::endl;
    }
 
+
+}
+
+void ClearPiece(const int sq, Board& b) {
+
+	assert(!SQOFFBOARD(sq));
+	
+    Piece pce = b.m_board[sq];
+	
+    assert(pce >= wP && pce <= bK);
+	
+	Colour colour = Board::PieceCol[pce];
+	
+    HASH_PCE(pce,sq);
+	
+	b.m_board[sq] = EMPTY;
+    b.m_material[colour] -= Board::PieceVal[pce];
+	b.m_pceNum[pce]--;		
+
+	if(pce != wP && pce != bP) {
+		if(Board::PieceMaj[pce]) {
+			b.m_majPce[colour]--;
+		} else {
+			b.m_minPce[colour]--;
+		}
+	} 
+	
+	CLRBIT(b.m_pList[pce],SQ64(sq));
+	
+}
+
+void AddPiece(const int sq, Board& b, const Piece pce) {
+
+    assert(pce >= wP && pce <= bK);
+	assert(!SQOFFBOARD(sq));
+	
+	Colour colour = Board::PieceCol[pce];
+
+    HASH_PCE(pce,sq);
+	
+	b.m_board[sq] = pce;
+
+    if(pce != wP && pce != bP) {
+		if(Board::PieceMaj[pce]) {
+			b.m_majPce[colour]++;
+		} else {
+			b.m_minPce[colour]++;
+		}
+	} 
+
+	SETBIT(b.m_pList[pce],SQ64(sq));
+
+	b.m_material[colour] += Board::PieceVal[pce];
+	
+}
+
+void MovePiece(const int from, const int to, Board& b) {
+
+	assert(!SQOFFBOARD(from));
+	assert(!SQOFFBOARD(to));
+	
+	Piece pce = b.m_board[from];	
+	Colour col = Board::PieceCol[pce];
+	
+	HASH_PCE(pce,from);
+	b.m_board[from] = EMPTY;
+	
+	HASH_PCE(pce,to);
+	b.m_board[to] = pce;
+	
+	   
+	CLRBIT(b.m_pList[pce],SQ64(from));
+	SETBIT(b.m_pList[pce],SQ64(to));
 
 }

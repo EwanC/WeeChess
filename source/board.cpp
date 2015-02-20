@@ -15,12 +15,7 @@
 
 namespace Bitboard{
 
-uint64_t SetMask[64];
-uint64_t ClearMask[64];
 
-uint8_t Sq120ToSq64[TOTAL_SQUARES];  // Map of base 120 indexes to base 64
-uint8_t Sq64ToSq120[64];             // Map of base 64 indexes to base 120
- 
 const uint8_t BitTable[64] = {
   63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
   51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
