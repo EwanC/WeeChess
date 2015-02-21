@@ -17,7 +17,7 @@
 namespace Bitboard{
 
 
-const uint8_t BitTable[64] = {
+const int BitTable[64] = {
   63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
   51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
   26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
@@ -25,7 +25,7 @@ const uint8_t BitTable[64] = {
 };
 
 // returns the index of least signifcant bit and sets it to zero
-uint8_t popBit(bitboard *bb) {
+int popBit(bitboard *bb) {
   uint64_t b = *bb ^ (*bb - 1);
   uint32_t fold = (uint32_t) ((b & 0xffffffff) ^ (b >> 32));
   *bb &= (*bb - 1);
@@ -33,8 +33,8 @@ uint8_t popBit(bitboard *bb) {
 }
 
 // Counts the number of bits in the bitboard
-uint8_t countBits(bitboard b) {
-  uint8_t r;
+int countBits(bitboard b) {
+  int r;
   for(r = 0; b; r++, b &= b - 1);
   return r;
 }
@@ -47,8 +47,8 @@ void printBitboard(bitboard bb) {
 	std::cout<<std::endl;
 	for(int rank = RANK_8; rank >= RANK_1; --rank) {
 		for(int file = FILE_A; file <= FILE_H; ++file) {
-			uint8_t sq = FR2SQ(file,rank);	// 120 based		
-			uint8_t sq64 = SQ64(sq);        // 64 based
+			int sq = FR2SQ(file,rank);	// 120 based		
+			int sq64 = SQ64(sq);        // 64 based
 			
 			if((shiftMe << sq64) & bb) 
 				std::cout<<'X';
@@ -98,14 +98,12 @@ const bool Board::PieceRookQueen[13] = { false, false, false, false, true, true,
 const bool Board::PieceBishopQueen[13] = { false, false, false, true, false, true, false, false, false, true, false, true, false };
 const bool Board::PieceSlides[13] = { false, false, false, true, true, true, false, false, false, true, true, true, false };
 
-uint8_t Board::FilesBrd[TOTAL_SQUARES] = {0}; // file index of each square
-uint8_t Board::RanksBrd[TOTAL_SQUARES] = {0}; // rank index of each square
+int Board::FilesBrd[TOTAL_SQUARES] = {0}; // file index of each square
+int Board::RanksBrd[TOTAL_SQUARES] = {0}; // rank index of each square
 
 Board::Board()
 {
     seedRandNums(); // Seed data for random number gen
-    initBitMasks(); // Generate Masks for Bitboards
-    init120To64();  // Generate 120 to 64 bit mapping
 
     // Setup starting board position
     clearBoard();
@@ -134,7 +132,7 @@ void Board::updateListsMaterial()
 {
 	
 	for(int index = 0; index < TOTAL_SQUARES; ++index) {
-		uint8_t sq = index;
+		int sq = index;
 		Piece piece = m_board[index];
 		if(piece!= EMPTY) {
 			Colour colour = PieceCol[piece];
@@ -146,8 +144,6 @@ void Board::updateListsMaterial()
 			
 			SETBIT(m_pList[piece], SQ64(sq));
 			SETBIT(m_pList[Piece::EMPTY], SQ64(sq));
-
-			m_pceNum[piece]++;
 			
 			if(piece==wK) m_kingSq[WHITE] = static_cast<Square>(sq);
 			if(piece==bK) m_kingSq[BLACK] = static_cast<Square>(sq);	
@@ -212,8 +208,8 @@ bool Board::parseFen(std::string fen_str)
         }		
 		
 		for (uint32_t i = 0; i < count; i++) {			
-            uint8_t sq64 = rank * 8 + file;
-			uint8_t sq120 = SQ120(sq64);
+            int sq64 = rank * 8 + file;
+			int sq120 = SQ120(sq64);
             if (piece != EMPTY) {
                 m_board[sq120] = piece;
             }
@@ -227,7 +223,7 @@ bool Board::parseFen(std::string fen_str)
 	m_side = (*fen == 'w') ? WHITE : BLACK;
 	fen += 2;
 	
-	for (uint8_t i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) {
         if (*fen == ' ') {
             break;
         }		
@@ -261,7 +257,7 @@ bool Board::parseFen(std::string fen_str)
 }
 
 // Returns true if given square is attacked by colour paramter
-bool Board::sqAttacked(const uint8_t sq, Colour side)
+bool Board::sqAttacked(const int sq, Colour side)
 {
   	
 	// pawns
@@ -329,7 +325,7 @@ bool Board::sqAttacked(const uint8_t sq, Colour side)
 
 }
 
-inline bool Board::isOffboard(const uint8_t sq120) const
+inline bool Board::isOffboard(const int sq120) const
 {
   return (sq120 < 21 || sq120 > 98 || sq120 % 10 == 0 || (sq120 + 1) == 0);
 }
@@ -338,18 +334,17 @@ inline bool Board::isOffboard(const uint8_t sq120) const
 void Board::clearBoard()
 {
 	
-	for(uint8_t index = 0; index < TOTAL_SQUARES; ++index) {
+	for(int index = 0; index < TOTAL_SQUARES; ++index) {
 		m_board[index] = EMPTY;
 	}
 	
-	for(uint8_t index = 0; index < 2; ++index) {
+	for(int index = 0; index < 2; ++index) {
 		m_majPce[index] = 0;
 		m_minPce[index] = 0;
 	    m_material[index] = 0;
 	}
 	
-	for(uint8_t index = 0; index < 13; ++index) {
-		m_pceNum[index] = 0;
+	for(int index = 0; index < 13; ++index) {
 		m_pList[index] = 0;
 	}
 	
@@ -378,8 +373,8 @@ void Board::printBoard() const
 	for(int rank = RANK_8; rank >= RANK_1; rank--) {
 		std::cout<< rank+1 << " ";
 		for(int file = FILE_A; file <= FILE_H; file++) {
-			uint8_t sq = FR2SQ(file,rank);
-			uint8_t piece = m_board[sq];
+			int sq = FR2SQ(file,rank);
+			int piece = m_board[sq];
 			std::cout<<std::setw(3)<<PceChar[piece];
 		}
 		std::cout <<std::endl;
@@ -410,67 +405,27 @@ void Board::seedRandNums()
 {
     srand(time(NULL));
    
-	for(uint8_t index = 0; index < 13; ++index) {
-		for(uint8_t index2 = 0; index2 < 120; ++index2) {
+	for(int index = 0; index < 13; ++index) {
+		for(int index2 = 0; index2 < 120; ++index2) {
 			pieceKeys[index][index2] = RAND_64;
 		}
 	}
 
 	sideKey = RAND_64;
 
-	for(uint8_t index = 0; index < 16; ++index) {
+	for(int index = 0; index < 16; ++index) {
 		castleKeys[index] = RAND_64;
 	}
  
 }
 
 
-// TODO - Set these at compile time, can't use constexpr currently
-void Board::initBitMasks() const
-{
-	
-	for(uint8_t index = 0; index < 64; index++) {
-		Bitboard::SetMask[index] = 0ULL;
-		Bitboard::ClearMask[index] = 0ULL;
-	}
-	
-	for(uint8_t index = 0; index < 64; index++) {
-		Bitboard::SetMask[index] |= (1ULL << index);
-		Bitboard::ClearMask[index] = ~Bitboard::SetMask[index];
-	}
-
-}
-
-//TODO - Set these at compile time, can't use constexpr currently
-void Board::init120To64() const
-{   
-	int sq = A1;
-	int sq64 = 0;
-	for(uint8_t index = 0; index < TOTAL_SQUARES; ++index) {
-		Bitboard::Sq120ToSq64[index] = 65;
-	}
-	
-	for(uint8_t index = 0; index < 64; ++index) {
-		Bitboard::Sq64ToSq120[index] = 120;
-	}
-	
-	for(uint8_t rank = RANK_1; rank <= RANK_8; ++rank) {
-		for(uint8_t file = FILE_A; file <= FILE_H; ++file) {
-			uint8_t sq = FR2SQ(file,rank);
-			Bitboard::Sq64ToSq120[sq64] = sq;
-			Bitboard::Sq120ToSq64[sq] = sq64;
-			sq64++;
-		}
-	}
-
-}
-
 // Generate zorbist hash of position
 uint64_t Board::genHashKey() const
 {
 	uint64_t finalKey = 0;
 	
-	for(uint8_t sq = 0; sq < TOTAL_SQUARES; ++sq) {
+	for(int sq = 0; sq < TOTAL_SQUARES; ++sq) {
 		Piece piece = m_board[sq];
 		if( piece!=EMPTY ) {
 			assert(piece>=wP && piece<=bK && "Invalid Piece");
@@ -514,7 +469,9 @@ bool Board::checkBoard() const
 	// check piece lists
 	for(int t_piece = wP; t_piece <= bK; ++t_piece) {
 		bitboard bbCopy = m_pList[t_piece];
-		for(int t_pce_num = 0; t_pce_num < m_pceNum[t_piece]; ++t_pce_num) {
+		int pieces = Bitboard::countBits(bbCopy);
+
+		for(int t_pce_num = 0; t_pce_num < pieces; ++t_pce_num) {
 			int sq120 = SQ120(Bitboard::popBit(&bbCopy));
 			assert(m_board[sq120]==t_piece);
 		}	
@@ -533,17 +490,10 @@ bool Board::checkBoard() const
 	}
 	
 	for(int t_piece = wP; t_piece <= bK; ++t_piece) {
-		assert(t_pceNum[t_piece]==m_pceNum[t_piece]);	
+		assert(t_pceNum[t_piece]==Bitboard::countBits(m_pList[t_piece]));	
 	}
 	
-	// check bitboards count
-	int pcount = Bitboard::countBits(t_pawns[WHITE]);
-	assert(pcount == m_pceNum[wP]);
-	pcount = Bitboard::countBits(t_pawns[BLACK]);
-	assert(pcount == m_pceNum[bP]);
-	pcount = Bitboard::countBits(t_pawns[BOTH]);
-	assert(pcount == (m_pceNum[bP] + m_pceNum[wP]));
-	
+
 	// check bitboards squares
 	while(t_pawns[WHITE]) {
 		int sq64 = Bitboard::popBit(&t_pawns[WHITE]);

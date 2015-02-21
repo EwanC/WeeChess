@@ -13,17 +13,19 @@ void runPerft(Board& b)
 {
    std::ifstream infile("../perftsuite.epd");
    std::string line;
+
+   int count = 0;
+   int depth = 1;
    while (std::getline(infile, line))
    {
+
        b.parseFen(line.c_str());
-       PerftTest(1,b);
+       std::cout << "\nTest "<<count++<<" to depth:"<<depth<<std::endl; 
+
+       PerftTest(depth,b);
    }
 
 }
-
-
-
-
 
 
 uint32_t Perft(const int depth, Board& b) {
@@ -40,7 +42,7 @@ uint32_t Perft(const int depth, Board& b) {
     std::vector<Move>::iterator itr;
 
     int nodesAccum = 0;
-	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.begin(); itr++) {	
+	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {	
        
         if (!MakeMove(b,itr->m_move))  {
             continue;
@@ -53,20 +55,21 @@ uint32_t Perft(const int depth, Board& b) {
 }
 
 
-void PerftTest(const int depth, Board& b) {
+void PerftTest(const int depth, Board& b,bool verbose) {
 
     assert(b.checkBoard());
 
-	b.printBoard();
-	std::cout << "\nStarting Test To Depth:"<<depth<<std::endl;	
-	uint32_t leafNodes = 0;
+    if(verbose)
+	    b.printBoard();
+	
+    uint32_t leafNodes = 0;
 	
     MoveList list;
     list.genAllMoves(b);	
     
     std::vector<Move>::iterator itr;
     int moveNum = 0;
-    for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.begin(); itr++) { 
+    for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) { 
         uint32_t move = itr->m_move;
         if ( !MakeMove(b,move))  {
             continue;
@@ -75,10 +78,11 @@ void PerftTest(const int depth, Board& b) {
         leafNodes += calcNodes;
         TakeMove(b);        
 
-        std::cout << "move "<< moveNum++ << " : "<<itr->moveString() << " : "<< calcNodes<< std::endl;
+        if(verbose)
+            std::cout << "move "<< moveNum++ << " : "<<itr->moveString() << " : "<< calcNodes<< std::endl;
     }
 	
-	std::cout<<"\nTest Complete : "<<leafNodes<<" leaf nodes visited\n";
+	std::cout<<"Test Complete : "<<leafNodes<<" leaf nodes visited\n";
 
     return;
 }

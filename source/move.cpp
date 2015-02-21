@@ -103,29 +103,32 @@ void MoveList::genAllMoves(const Board& b) {
 
 	if(b.m_side == WHITE) {
 		bitboard wpBitboard = b.m_pList[wP];
-		for(int pceNum = 0; pceNum < Bitboard::countBits(wpBitboard); ++pceNum) {
-			int sq = Bitboard::popBit(&wpBitboard);
-			assert(!SQOFFBOARD(sq));
-			
-			if(b.m_board[sq + 10] == EMPTY) {
-				addPawnMove<WHITE>(b, sq, sq+10);
-				if(Board::RanksBrd[sq] == RANK_2 && b.m_board[sq + 20] == EMPTY) {
-					addQuietMove(b, MOVE(sq,(sq+20),EMPTY,EMPTY,MFLAGPS));
+		int pawns = Bitboard::countBits(wpBitboard);
+		for(int pceNum = 0; pceNum < pawns; ++pceNum) {
+			int sq64 = (Bitboard::popBit(&wpBitboard));
+            int sq120 = SQ120(sq64);
+
+			assert(!SQOFFBOARD(sq120));
+
+			if(b.m_board[sq120 + 10] == EMPTY) {
+				addPawnMove<WHITE>(b, sq120, sq120+10);
+				if(Board::RanksBrd[sq120] == RANK_2 && b.m_board[sq120 + 20] == EMPTY) {
+					addQuietMove(b, MOVE(sq120,(sq120+20),EMPTY,EMPTY,MFLAGPS));
 				}
 			} 
 			
-			if(!SQOFFBOARD(sq + 9) && Board::PieceCol[b.m_board[sq + 9]] == BLACK) {
-				addPawnCapMove<WHITE>(b, sq, sq+9, b.m_board[sq + 9]);
+			if(!SQOFFBOARD(sq120 + 9) && Board::PieceCol[b.m_board[sq120 + 9]] == BLACK) {
+				addPawnCapMove<WHITE>(b, sq120, sq120+9, b.m_board[sq120 + 9]);
 			}  
-			if(!SQOFFBOARD(sq + 11) && Board::PieceCol[b.m_board[sq + 11]] == BLACK) {
-				addPawnCapMove<WHITE>(b, sq, sq+11, b.m_board[sq + 11]);
+			if(!SQOFFBOARD(sq120 + 11) && Board::PieceCol[b.m_board[sq120 + 11]] == BLACK) {
+				addPawnCapMove<WHITE>(b, sq120, sq120+11, b.m_board[sq120 + 11]);
 			} 
 			
-			if(sq + 9 == b.m_enPas) {
-				addCaptureMove(b, MOVE(sq,sq + 9,EMPTY,EMPTY,MFLAGEP));
+			if(b.m_enPas != NO_SQ && sq120 + 9 == b.m_enPas) {
+				addEnPassantMove(b, MOVE(sq120,sq120 + 9,EMPTY,EMPTY,MFLAGEP));
 			} 
-			if(sq + 11 == b.m_enPas) {
-				addCaptureMove(b, MOVE(sq,sq + 11,EMPTY,EMPTY,MFLAGEP));
+			if(b.m_enPas != NO_SQ && sq120 + 11 == b.m_enPas) {
+				addEnPassantMove(b, MOVE(sq120,sq120 + 11,EMPTY,EMPTY,MFLAGEP));
 			}
 		}
 		
@@ -149,30 +152,32 @@ void MoveList::genAllMoves(const Board& b) {
 	} else {
 		
 		bitboard bpBitboard = b.m_pList[bP];
-		for(int pceNum = 0; pceNum < Bitboard::countBits(bpBitboard); ++pceNum) {
-			int sq = Bitboard::popBit(&bpBitboard);
-			assert(!SQOFFBOARD(sq));
+		int pawns = Bitboard::countBits(bpBitboard);
+
+		for(int pceNum = 0; pceNum < pawns; ++pceNum) {
+			int sq120 = SQ120(Bitboard::popBit(&bpBitboard));
+			assert(!SQOFFBOARD(sq120));
 			
-			if(b.m_board[sq - 10] == EMPTY) {
-				addPawnMove<BLACK>(b, sq, sq-10);
-				if(Board::RanksBrd[sq] == RANK_7 && b.m_board[sq - 20] == EMPTY) {
-					addQuietMove(b, MOVE(sq,(sq-20),EMPTY,EMPTY,MFLAGPS));
+			if(b.m_board[sq120 - 10] == EMPTY) {
+				addPawnMove<BLACK>(b, sq120, sq120-10);
+				if(Board::RanksBrd[sq120] == RANK_7 && b.m_board[sq120 - 20] == EMPTY) {
+					addQuietMove(b, MOVE(sq120,(sq120-20),EMPTY,EMPTY,MFLAGPS));
 				}
 			} 
 			
-			if(!SQOFFBOARD(sq - 9) && Board::PieceCol[b.m_board[sq - 9]] == WHITE) {
-				addPawnCapMove<BLACK>(b, sq, sq-9, b.m_board[sq - 9]);
+			if(!SQOFFBOARD(sq120 - 9) && Board::PieceCol[b.m_board[sq120 - 9]] == WHITE) {
+				addPawnCapMove<BLACK>(b, sq120, sq120-9, b.m_board[sq120 - 9]);
 			} 
 			
-			if(!SQOFFBOARD(sq - 11) && Board::PieceCol[b.m_board[sq - 11]] == WHITE) {
-				addPawnCapMove<BLACK>(b, sq, sq-11, b.m_board[sq - 11]);
+			if(!SQOFFBOARD(sq120 - 11) && Board::PieceCol[b.m_board[sq120 - 11]] == WHITE) {
+				addPawnCapMove<BLACK>(b, sq120, sq120-11, b.m_board[sq120 - 11]);
 			} 
 			
-			if(sq - 9 == b.m_enPas) {
-				addCaptureMove(b, MOVE(sq,sq - 9,EMPTY,EMPTY,MFLAGEP));
+			if(b.m_enPas != NO_SQ && sq120 - 9 == b.m_enPas) {
+				addEnPassantMove(b, MOVE(sq120,sq120 - 9,EMPTY,EMPTY,MFLAGEP));
 			} 
-			if(sq - 11 == b.m_enPas) {
-				addCaptureMove(b, MOVE(sq,sq - 11,EMPTY,EMPTY,MFLAGEP));
+			if(b.m_enPas != NO_SQ && sq120 - 11 == b.m_enPas) {
+				addEnPassantMove(b, MOVE(sq120,sq120 - 11,EMPTY,EMPTY,MFLAGEP));
 			}
 		}
 
@@ -201,23 +206,25 @@ void MoveList::genAllMoves(const Board& b) {
  	for(Piece pce : SlidePce[b.m_side]) {
 		assert(pce >= wP && pce <= bK);		
 		bitboard bb = b.m_pList[static_cast<int>(pce)];
-		for(int pceNum = 0; pceNum < b.m_pceNum[pce]; ++pceNum) {
-			int sq = Bitboard::popBit(&bb);
-			assert(!SQOFFBOARD(sq));
+		int pieces = Bitboard::countBits(bb);
+
+		for(int pceNum = 0; pceNum < pieces; ++pceNum) {
+			int sq120 = SQ120(Bitboard::popBit(&bb));
+			assert(!SQOFFBOARD(sq120));
 			
 			for(int index = 0; index < NumDir[pce]; ++index) {
 				int dir = PceDir[pce][index];
-				int t_sq = sq + dir;
+				int t_sq = sq120 + dir;
 				
 				while(!SQOFFBOARD(t_sq)) {				
 					// BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
 					if(b.m_board[t_sq] != EMPTY) {
 						if( Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
-							addCaptureMove(b, MOVE(sq, t_sq, b.m_board[t_sq], EMPTY, 0));
+							addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
 						}
 						break;
 					}	
-					addQuietMove(b, MOVE(sq, t_sq, EMPTY, EMPTY, 0));
+					addQuietMove(b, MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
 					t_sq += dir;
 				}
 			}
@@ -228,14 +235,15 @@ void MoveList::genAllMoves(const Board& b) {
  	for(Piece pce : NonSlidePce[b.m_side]) {
 		assert(pce >= wP && pce <= bK);		
 	    bitboard bb = b.m_pList[static_cast<int>(pce)];
-		
-		for(int pceNum = 0; pceNum < b.m_pceNum[pce]; ++pceNum) {
-			int sq = Bitboard::popBit(&bb);
-			assert(!SQOFFBOARD(sq));
+		int pieces = Bitboard::countBits(bb);
+
+		for(int pceNum = 0; pceNum < pieces; ++pceNum) {
+			int sq120 = SQ120(Bitboard::popBit(&bb));
+			assert(!SQOFFBOARD(sq120));
 			
 			for(int index = 0; index < NumDir[pce]; ++index) {
 				int dir = PceDir[pce][index];
-				int t_sq = sq + dir;
+				int t_sq = sq120 + dir;
 				
 				if(SQOFFBOARD(t_sq)) {				    
 					continue;
@@ -244,11 +252,11 @@ void MoveList::genAllMoves(const Board& b) {
 				// BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
 				if(b.m_board[t_sq] != EMPTY) {
 					if( Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
-						addCaptureMove(b, MOVE(sq, t_sq, b.m_board[t_sq], EMPTY, 0));
+						addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
 					}
 					continue;
 				}	
-				addQuietMove(b, MOVE(sq, t_sq, EMPTY, EMPTY, 0));
+				addQuietMove(b, MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
 			}
 		}
 	}
@@ -303,6 +311,18 @@ void MoveList::addPawnCapMove( const Board& b, const int from, const int to, con
 	
 }
 
+void MoveList::addEnPassantMove( const Board& b, uint32_t move ) {
+
+	assert(!SQOFFBOARD(FROMSQ(move)));
+	assert(!SQOFFBOARD(TOSQ(move)));
+	
+	Move m;
+	m.m_move = move;
+	m.m_score = 105;
+	m_move_vec.push_back(m);
+
+}
+
 void MoveList::addQuietMove(const Board& b, uint32_t move) {
 	Move m;
 	m.m_move = move;
@@ -352,7 +372,6 @@ void ClearPiece(const int sq, Board& b) {
 	
 	b.m_board[sq] = EMPTY;
     b.m_material[colour] -= Board::PieceVal[pce];
-	b.m_pceNum[pce]--;		
 
 	if(pce != wP && pce != bP) {
 		if(Board::PieceMaj[pce]) {

@@ -59,6 +59,7 @@ class MoveList {
     void addQuietMove(const Board& b, uint32_t move);
     void addCaptureMove(const Board& b, uint32_t move);
     void addEnPassMove(const Board& b, uint32_t move);
+    void addEnPassantMove( const Board& b, uint32_t move );
 
     void printList() const;
 
