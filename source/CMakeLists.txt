@@ -7,4 +7,5 @@ add_executable(${EXE_NAME}
                main.cpp
                board.cpp
                move.cpp
+               perft.cpp
 )

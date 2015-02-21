@@ -2,6 +2,7 @@
 #define BOARD_H
 
 #include <stdint.h> //Standard Integer Types
+#include <string>
 #include "types.hpp"
 
 /*
@@ -56,6 +57,15 @@ uint8_t countBits(bitboard b);   // Counts the number of bits which are set in t
 void printBitboard(bitboard bb); // Prints bitboard to stdout
 
 } // namespace
+
+
+struct Undo{
+  int move;
+  uchar castlingPerm;
+  Square enPas;
+  uint32_t fiftyMove;
+  uint64_t posHash;
+};
 
 class Board {
 private:
@@ -118,7 +128,7 @@ void printBoard() const;
 uint64_t genHashKey() const; 
 
 // Sets up board based on FEN string
-bool parseFen(char *fen);
+bool parseFen(std::string fen);
 
 // Returns true if given square is attacked by colour paramter
 bool sqAttacked(const uint8_t sq, Colour size);
@@ -139,8 +149,8 @@ uchar m_castling;              // Potential castling moves, defined using flags
 Square m_kingSq[2];            // White and Black king squares
 uint32_t m_fiftyMove;          // Fifty moves without capture or promotion draw counter
 
-uint32_t m_ply;                // number of half moves
-uint32_t m_hisply; 
+uint32_t m_ply;                // number of half moves  in current search
+uint32_t m_hisply;             // number of half moves in entire games
 
 uint64_t m_posHash;            // Zorbist has of the position
 
@@ -160,6 +170,8 @@ bitboard m_pList[13];          // Bitboards for each piece type
 uint64_t pieceKeys[13][TOTAL_SQUARES];
 uint64_t sideKey;
 uint64_t castleKeys[16];
+
+Undo m_history[MAX_GAME_MOVES];
 
 }; //Board
 

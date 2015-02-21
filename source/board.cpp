@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <string>
 
 // Generate random unsigned 64 bit int
 #define RAND_64 ((uint64_t)rand() | \
@@ -157,9 +158,10 @@ void Board::updateListsMaterial()
 }
 
 // Sets up board based on FEN string
-bool Board::parseFen(char *fen) 
+bool Board::parseFen(std::string fen_str) 
 {
-	
+
+	char* fen = &fen_str[0u];
 	assert(fen!=NULL && "FEN is null");
 	
 	int rank = RANK_8;

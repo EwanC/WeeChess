@@ -410,3 +410,189 @@ void MovePiece(const int from, const int to, Board& b) {
 	SETBIT(b.m_pList[pce],SQ64(to));
 
 }
+
+bool MakeMove(Board& b, int move) {
+
+	assert(b.checkBoard());
+	
+	int from = FROMSQ(move);
+    int to = TOSQ(move);
+    Colour side = b.m_side;
+	
+	assert(!SQOFFBOARD(from));
+	assert(!SQOFFBOARD(to));
+    assert(side==WHITE || side == BLACK);
+    assert(b.m_board[from] >= wP && b.m_board[from] <= bK);
+	
+
+	b.m_history[b.m_hisply].posHash = b.m_posHash;
+	
+	if(move & MFLAGEP) {
+        if(side == WHITE) {
+            ClearPiece(to-10,b);
+        } else {
+            ClearPiece(to+10,b);
+        }
+    } else if (move & MFLAGCA) {
+        switch(to) {
+            case C1:
+                MovePiece(A1, D1, b);
+			break;
+            case C8:
+                MovePiece(A8, D8, b);
+			break;
+            case G1:
+                MovePiece(H1, F1, b);
+			break;
+            case G8:
+                MovePiece(H8, F8, b);
+			break;
+            default: assert(false && "Make move failed"); break;
+        }
+    }	
+	
+	if(b.m_enPas != NO_SQ)
+	{
+		HASH_EP;
+	}
+
+    HASH_CA;
+	
+	b.m_history[b.m_hisply].move = move;
+    b.m_history[b.m_hisply].fiftyMove = b.m_fiftyMove;
+    b.m_history[b.m_hisply].enPas = b.m_enPas;
+    b.m_history[b.m_hisply].castlingPerm = b.m_castling;
+
+    b.m_castling &= CastlePerm[from];
+    b.m_castling &= CastlePerm[to];
+    b.m_enPas = NO_SQ;
+
+	HASH_CA;
+	
+	int captured = CAPTURED(move);
+    b.m_fiftyMove++;
+	
+	if(captured != EMPTY) {
+        assert(captured >= wP && captured <= bK);
+        ClearPiece(to, b);
+        b.m_fiftyMove = 0;
+    }
+	
+	b.m_hisply++;
+	b.m_ply++;
+	
+	if(b.m_board[from] == wP || b.m_board[from] == bP) {
+        b.m_fiftyMove = 0;
+        if(move & MFLAGPS) {
+            if(side==WHITE) {
+                b.m_enPas=static_cast<Square>(from+10);
+                assert(Board::RanksBrd[b.m_enPas]==RANK_3);
+            } else {
+                b.m_enPas=static_cast<Square>(from-10);
+                assert(Board::RanksBrd[b.m_enPas]==RANK_6);
+            }
+            HASH_EP;
+        }
+    }
+	
+	MovePiece(from, to, b);
+	
+	Piece prPce = static_cast<Piece>(PROMOTED(move));
+    if(prPce != EMPTY)   {
+        assert(prPce != bP && b.m_board[from] > wP && b.m_board[from] <= bK);
+        ClearPiece(to, b);
+        AddPiece(to, b, prPce);
+    }
+	
+	if(Board::PieceKing[b.m_board[to]]) {
+        b.m_kingSq[b.m_side] = static_cast<Square>(to);
+    }
+	
+	b.m_side = static_cast<Colour>(b.m_side ^ 1);
+    HASH_SIDE;
+
+    assert(b.checkBoard());
+	
+		
+	if(b.isSquareAttacked(b.m_kingSq[side],b.m_side))  {
+        TakeMove(b);
+        return false;
+    }
+	
+	return true;
+	
+}
+
+void TakeMove(Board& b) {
+	
+	assert(b.checkBoard());
+	
+	b.m_hisply--;
+    b.m_ply--;
+	
+    int move = b.m_history[b.m_hisply].move;
+    int from = FROMSQ(move);
+    int to = TOSQ(move);	
+	
+	assert(!SQOFFBOARD(from));
+	assert(!SQOFFBOARD(to));
+	
+	if(b.m_enPas != NO_SQ) 
+	{
+		HASH_EP;
+	}
+    HASH_CA;
+
+    b.m_castling = b.m_history[b.m_hisply].castlingPerm;
+    b.m_fiftyMove = b.m_history[b.m_hisply].fiftyMove;
+    b.m_enPas = b.m_history[b.m_hisply].enPas;
+
+    if(b.m_enPas != NO_SQ) 
+    {
+    	HASH_EP;
+    }
+
+    HASH_CA;
+
+    b.m_side = static_cast<Colour>(b.m_side ^ 1);
+    HASH_SIDE;
+	
+	if(MFLAGEP & move) {
+        if(b.m_side == WHITE) {
+            AddPiece(to-10, b, bP);
+        } else {
+            AddPiece(to+10, b, wP);
+        }
+    } else if(MFLAGCA & move) {
+        switch(to) {
+            case C1: MovePiece(D1, A1, b); break;
+            case C8: MovePiece(D8, A8, b); break;
+            case G1: MovePiece(F1, H1, b); break;
+            case G8: MovePiece(F8, H8, b); break;
+            default: assert(false && "Take move failed"); break;
+        }
+    }
+	
+	MovePiece(to, from, b);
+	
+	if(Board::PieceKing[b.m_board[from]]) {
+        b.m_kingSq[b.m_side] = static_cast<Square>(from);
+    }
+	
+	Piece captured = static_cast<Piece>(CAPTURED(move));
+    if(captured != EMPTY) {
+        assert(captured >= wP && captured <= bK);
+        AddPiece(to, b, captured);
+    }
+	
+	if(PROMOTED(move) != EMPTY)   {
+		Piece prPce = static_cast<Piece>(PROMOTED(move));
+        assert(prPce != bP && b.m_board[from] > wP && b.m_board[from] <= bK);
+
+        ClearPiece(from, b);
+        AddPiece(from, b, (Board::PieceCol[PROMOTED(move)] == WHITE ? wP : bP));
+    }
+	
+    assert(b.checkBoard());
+
+}
