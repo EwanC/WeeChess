@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
   Board b;
   Board::initStaticMembers();
  
-  runPerft(b);
+  runPerft(b,1);
 
 
   return 0;

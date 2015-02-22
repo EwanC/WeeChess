@@ -9,22 +9,48 @@
 #include "perft.hpp"
 #include "board.hpp"
 
-void runPerft(Board& b)
+bool runPerft(Board& b, const int depth)
 {
    std::ifstream infile("../perftsuite.epd");
    std::string line;
 
    int count = 0;
-   int depth = 1;
+   bool pass = true;
+
+   assert(depth > 0 && depth < 7);
    while (std::getline(infile, line))
    {
 
        b.parseFen(line.c_str());
-       std::cout << "\nTest "<<count++<<" to depth:"<<depth<<std::endl; 
 
-       PerftTest(depth,b);
+       std::size_t pos =0;      // expected leaf nodes
+       
+       for(int i = 0; i<depth;++i){
+          pos = line.find(";",pos);      // expected leaf nodes
+       }
+
+      int expected = atoi((line.substr(pos+3)).c_str());
+
+      uint32_t result = PerftTest(depth,b);
+      std::cout << "\nTest "<<count++<<" to depth "<<depth;
+      std::cout << " ===> expected: "<<expected<< ", calculated "<<result; 
+
+      if(expected == result){
+        std::cout << " PASS\n";
+      }
+      else{
+        std::cout << " FAIL\n";
+        pass = false;
+      }
+
    }
 
+   if(pass)
+    std::cout << "\nPerft Success\n";
+   else
+    std::cout << "\nPerft Failure\n";
+
+   return pass;
 }
 
 
@@ -55,7 +81,7 @@ uint32_t Perft(const int depth, Board& b) {
 }
 
 
-void PerftTest(const int depth, Board& b,bool verbose) {
+uint32_t PerftTest(const int depth, Board& b,bool verbose) {
 
     assert(b.checkBoard());
 
@@ -82,9 +108,7 @@ void PerftTest(const int depth, Board& b,bool verbose) {
             std::cout << "move "<< moveNum++ << " : "<<itr->moveString() << " : "<< calcNodes<< std::endl;
     }
 	
-	std::cout<<"Test Complete : "<<leafNodes<<" leaf nodes visited\n";
-
-    return;
+    return leafNodes;
 }
 
 
