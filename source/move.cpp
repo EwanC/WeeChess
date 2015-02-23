@@ -518,7 +518,7 @@ bool MakeMove(Board& b, int move) {
 	
 	Piece prPce = static_cast<Piece>(PROMOTED(move));
     if(prPce != EMPTY)   {
-        assert(prPce != bP && b.m_board[from] > wP && b.m_board[from] <= bK);
+        assert(prPce != bP && prPce  > wP && prPce < bK);
         ClearPiece(to, b);
         AddPiece(to, b, prPce);
     }

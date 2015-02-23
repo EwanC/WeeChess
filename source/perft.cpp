@@ -26,13 +26,13 @@ bool runPerft(Board& b, const int depth)
        std::size_t pos =0;      // expected leaf nodes
        
        for(int i = 0; i<depth;++i){
-          pos = line.find(";",pos);      // expected leaf nodes
+          pos = line.find(";",pos+1);      // expected leaf nodes
        }
 
       int expected = atoi((line.substr(pos+3)).c_str());
 
       uint32_t result = PerftTest(depth,b);
-      std::cout << "\nTest "<<count++<<" to depth "<<depth;
+      std::cout << "\nTest "<<std::dec<<count++<<" to depth "<<depth;
       std::cout << " ===> expected: "<<expected<< ", calculated "<<result; 
 
       if(expected == result){
