@@ -11,10 +11,12 @@ Board Representation + <br>
 Parse FEN            +<br>
 Setup a Position     +<br>
 
-Move Generator <br>
-Perft Test<br>
+Move Generator + <br>
+Perft Test + <br>
 
 Evalutation<br>
 Search<br>
 
 Connect GUI<br>
+
+Convert to OpenCL<br>
