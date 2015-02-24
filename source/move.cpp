@@ -358,6 +358,48 @@ void MoveList::printList() const
 
 }
 
+uint32_t parseMove( char *ptrChar, Board& b)
+{
+
+	if(ptrChar[1] > '8' || ptrChar[1] < '1') return 0;
+    if(ptrChar[3] > '8' || ptrChar[3] < '1') return 0;
+    if(ptrChar[0] > 'h' || ptrChar[0] < 'a') return 0;
+    if(ptrChar[2] > 'h' || ptrChar[2] < 'a') return 0;
+
+    int from = FR2SQ(ptrChar[0] - 'a', ptrChar[1] - '1');
+    int to = FR2SQ(ptrChar[2] - 'a', ptrChar[3] - '1');	
+	
+	assert(!SQOFFBOARD(from) && !SQOFFBOARD(to));
+	
+	MoveList list;
+	list.genAllMoves(b);
+	
+	std::vector<Move>::iterator itr;
+	for(itr =list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {	
+		uint32_t move = itr->m_move;
+		if(FROMSQ(move)==from && TOSQ(move)==to) {
+			Piece promPce = static_cast<Piece>(PROMOTED(move));
+			if(promPce!=EMPTY) {
+				if((promPce == wR || promPce == bR) && ptrChar[4]=='r') {
+					return move;
+				} else if((promPce == wB || promPce == bP) && ptrChar[4]=='b') {
+					return move;
+				} else if((promPce == wQ || promPce == bQ) && ptrChar[4]=='q') {
+					return move;
+				} else if((promPce == wN || promPce == bN) && ptrChar[4]=='n') {
+					return move;
+				}
+				continue;
+			}
+			return move;
+		}
+    }
+	
+    return 0;	
+
+
+}
+
 void ClearPiece(const int sq, Board& b) {
 
 	assert(!SQOFFBOARD(sq));

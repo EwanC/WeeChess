@@ -68,6 +68,7 @@ class MoveList {
 
     template<Colour colour>
     void addPawnCapMove( const Board& b, const int from, const int to, const Piece cap );
+ 
 
     std::vector<Move> m_move_vec;
 };
@@ -78,5 +79,8 @@ bool MakeMove(Board& b, int move);
 void MovePiece(const int from, const int to, Board& b);
 void AddPiece(const int sq, Board& b, const Piece pce);
 void ClearPiece(const int sq, Board& b);
+
+uint32_t parseMove(char *ptrChar, Board& b);
+
 
 #endif //MOVE_H
