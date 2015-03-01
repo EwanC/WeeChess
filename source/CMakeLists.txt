@@ -8,5 +8,6 @@ add_executable(${EXE_NAME}
                board.cpp
                move.cpp
                perft.cpp
+               pvtable.cpp
                search.cpp
 )

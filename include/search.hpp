@@ -6,6 +6,4 @@
 bool isRepetition(const Board& b);
 
 
-
-
 #endif //SEARCH_H

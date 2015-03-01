@@ -657,3 +657,21 @@ void TakeMove(Board& b) {
     assert(b.checkBoard());
 
 }
+
+bool MoveExists(Board& b, const int move) {
+	
+	MoveList list;
+    list.genAllMoves(b);
+    std::vector<Move>::iterator itr;
+	for(itr =list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
+    
+        if (!MakeMove(b,itr->m_move))  {
+            continue;
+        }        
+        TakeMove(b);
+		if(itr->m_move == move) {
+			return true;
+		}
+    }
+	return false;
+}
