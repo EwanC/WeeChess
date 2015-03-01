@@ -487,6 +487,11 @@ uint64_t castleKeys[16];
 
 Undo m_history[MAX_GAME_MOVES];
 
+PVTable m_pvTable;
+
+int m_searchHistory[13][TOTAL_SQUARES];
+int m_searchKillers[2][MAXDEPTH];
+
 }; //Board
 
 #endif // BOARD_H
