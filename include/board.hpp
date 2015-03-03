@@ -4,6 +4,7 @@
 #include <stdint.h> //Standard Integer Types
 #include <string>
 #include "types.hpp"
+#include "pvtable.hpp"
 
 /*
    MACROS

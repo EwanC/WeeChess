@@ -3,10 +3,9 @@
 
 #include <stdint.h> //Standard Integer Types
 #include <vector>
+#include "types.hpp"
 
-#include "board.hpp"
-
-#define MAXDEPTH 64
+class Board;
 
 struct PVEntry{
 	uint64_t m_posKey;
@@ -16,10 +15,11 @@ struct PVEntry{
 
 class PVTable{ 
 
+   public:
+
    std::vector<PVEntry> m_pTable;
    int m_pvArray[MAXDEPTH];
 
-   public:
    void ClearPvTable();
    void StorePvMove(const Board& b, const int move);
    int ProbePvTable(const Board& b);

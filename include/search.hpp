@@ -2,22 +2,7 @@
 #define SEARCH_H
 
 #include "board.hpp"
-
-namespace Search{
-
-bool isRepetition(const Board& b);
-void CheckUp();
-int Quiescence(int alpha, int beta, Board& b, SearchInfo info);
-int AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull);
-void ClearForSearch(Board& b, SearchInfo& info);
-void SearchPosition(Board& b, SearchInfo& info);
-void PickNextMove(std::vector<Move>::iterator move, MoveList& list);
-
-int EvalPosition(const Board& b);
-
-} //end namespace
-
-
+#include "move.hpp"
 
 struct SearchInfo{
 
@@ -38,6 +23,23 @@ struct SearchInfo{
 	float fhf;
 
 };
+
+namespace Search{
+
+bool isRepetition(const Board& b);
+void CheckUp();
+int Quiescence(int alpha, int beta, Board& b, SearchInfo info);
+int AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull);
+void ClearForSearch(Board& b, SearchInfo& info);
+void SearchPosition(Board& b, SearchInfo& info);
+void PickNextMove(std::vector<Move>::iterator move, MoveList& list);
+
+int EvalPosition(const Board& b);
+
+} //end namespace
+
+
+
 
 const int PawnTable[64] = {
 0	,	0	,	0	,	0	,	0	,	0	,	0	,	0	,
@@ -92,7 +94,7 @@ const int Mirror64[64] = {
 16	,	17	,	18	,	19	,	20	,	21	,	22	,	23	,
 8	,	9	,	10	,	11	,	12	,	13	,	14	,	15	,
 0	,	1	,	2	,	3	,	4	,	5	,	6	,	7
-}
+};
 
 
 #endif //SEARCH_H

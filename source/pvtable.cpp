@@ -1,5 +1,6 @@
 #include "pvtable.hpp"
 #include "move.hpp"
+#include "board.hpp"
 
 #include <algorithm>
 #include <cassert>
