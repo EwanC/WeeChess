@@ -6,12 +6,14 @@
 #include <cassert>
 
 
+// Clears pvtable vector
 void PVTable::ClearPvTable() {
 
   m_pTable.clear();
 
 }
 
+// adds move to pv table vector
 void PVTable::StorePvMove(const Board& b, const int move) {
 
 	PVEntry entry;
@@ -21,6 +23,7 @@ void PVTable::StorePvMove(const Board& b, const int move) {
 	m_pTable.push_back(entry);
 }
 
+// Retrieves PV move from table is PV entry is found with same position hash
 int PVTable::ProbePvTable(const Board& b) {
 
     std::vector<PVEntry>::iterator itr;
@@ -36,6 +39,9 @@ int PVTable::ProbePvTable(const Board& b) {
     	return itr->m_move;
 	
 }
+
+// For a given depth, returns the count of number of moves we've inserted 
+// into pv_array. i.e populates PV array
 
 int PVTable::GetPvLine(const int depth, Board& b) {
 
@@ -57,11 +63,11 @@ int PVTable::GetPvLine(const int depth, Board& b) {
 		move = ProbePvTable(b);	
 	}
 	
+	// Takes back all moves made to find PV array
 	while(b.m_ply > 0) {
 		TakeMove(b);
 	}
 	
-	return count;
-	
+	return count;	
 }
 

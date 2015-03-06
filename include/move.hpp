@@ -58,7 +58,6 @@ class MoveList {
  	void genAllMoves(const Board& b);
     void addQuietMove(const Board& b, uint32_t move);
     void addCaptureMove(const Board& b, uint32_t move);
-    void addEnPassMove(const Board& b, uint32_t move);
     void addEnPassantMove( const Board& b, uint32_t move );
 
     void printList() const;
@@ -80,7 +79,6 @@ void MovePiece(const int from, const int to, Board& b);
 void AddPiece(const int sq, Board& b, const Piece pce);
 void ClearPiece(const int sq, Board& b);
 bool MoveExists(Board& b, const int move);
-
 uint32_t parseMove(char *ptrChar, Board& b);
 
 

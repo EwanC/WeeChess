@@ -4,7 +4,7 @@
 #define MAX_GAME_MOVES 256
 #define MAX_GAME_PLY 128
 #define TOTAL_SQUARES 120
-#define MAXDEPTH 64
+#define MAXDEPTH 64 // Mac depth program will try to search to 
 
 typedef unsigned char uchar;
 

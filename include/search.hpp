@@ -4,23 +4,26 @@
 #include "board.hpp"
 #include "move.hpp"
 
+
+
+// Information about the current search
 struct SearchInfo{
 
-	int starttime;
-	int stoptime;
-	int depth;
+	int starttime;   // Time search started
+	int stoptime;    // Time search stopped
+	int depth;       // depth to search to
 	int depthset;
-	int timeset;
+	int timeset;     // time search limit
 	int movestogo;
-	int infinite;
+	int infinite;   // set to true then, continue until gui sends stopped
 	
-	uint64_t nodes;
+	uint64_t nodes; // count of all nodes visited
 	
-	int quit;
-	int stopped;
+	int quit;        // set to true to back out and delete state
+	int stopped;     // set to true to back out keeping state
 	
-	float fh;
-	float fhf;
+	float fh;       // fail high
+	float fhf;      // fail high first
 
 };
 
@@ -39,7 +42,9 @@ int EvalPosition(const Board& b);
 } //end namespace
 
 
-
+/*
+    Piece tables used for basic evaluation of board positions
+*/
 
 const int PawnTable[64] = {
 0	,	0	,	0	,	0	,	0	,	0	,	0	,	0	,
@@ -85,6 +90,8 @@ const int RookTable[64] = {
 0	,	0	,	5	,	10	,	10	,	5	,	0	,	0		
 };
 
+// Mirror table for conveting black piece locations into white, so
+// black cacn used the same evaluation piece tables
 const int Mirror64[64] = {
 56	,	57	,	58	,	59	,	60	,	61	,	62	,	63	,
 48	,	49	,	50	,	51	,	52	,	53	,	54	,	55	,

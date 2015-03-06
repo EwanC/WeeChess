@@ -381,6 +381,7 @@ void printBitboard(bitboard bb); // Prints bitboard to stdout
 } // namespace
 
 
+// Inividual records in move history
 struct Undo{
   int move;
   uchar castlingPerm;
@@ -469,10 +470,10 @@ uchar m_castling;              // Potential castling moves, defined using flags
 Square m_kingSq[2];            // White and Black king squares
 uint32_t m_fiftyMove;          // Fifty moves without capture or promotion draw counter
 
-uint32_t m_ply;                // number of half moves  in current search
+uint32_t m_ply;                // number of half moves in CURRENT SEARCH
 uint32_t m_hisply;             // number of half moves in entire games
 
-uint64_t m_posHash;            // Zorbist has of the position
+uint64_t m_posHash;            // Zorbist hash of the position
 
 uint32_t m_majPce[2];          // Number of major pieces
 uint32_t m_minPce[2];          // Number of minor pieces
@@ -486,12 +487,16 @@ uint64_t pieceKeys[13][TOTAL_SQUARES];
 uint64_t sideKey;
 uint64_t castleKeys[16];
 
-Undo m_history[MAX_GAME_MOVES];
+Undo m_history[MAX_GAME_MOVES]; //History of moves made
 
-PVTable m_pvTable;
+PVTable m_pvTable;  // Principle variation table of best moves found.
 
-int m_searchHistory[13][TOTAL_SQUARES];
-int m_searchKillers[2][MAXDEPTH];
+// AlphaBeta heuristics used for move order
+int m_searchHistory[13][TOTAL_SQUARES]; // Indexed by piece type and square 
+                                        // everytime a move improves on alpha in current search
+                                        // incremented by one
+
+int m_searchKillers[2][MAXDEPTH];       // Stores to move that most recently caused beta cutoff, but aren't captures
 
 }; //Board
 

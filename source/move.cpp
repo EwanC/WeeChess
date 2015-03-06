@@ -311,6 +311,7 @@ void MoveList::addPawnCapMove( const Board& b, const int from, const int to, con
 	
 }
 
+// Adds en passant move to move list
 void MoveList::addEnPassantMove( const Board& b, uint32_t move ) {
 
 	assert(!SQOFFBOARD(FROMSQ(move)));
@@ -323,6 +324,7 @@ void MoveList::addEnPassantMove( const Board& b, uint32_t move ) {
 
 }
 
+// add quiet move to move list
 void MoveList::addQuietMove(const Board& b, uint32_t move) {
 	Move m;
 	m.m_move = move;
@@ -331,6 +333,7 @@ void MoveList::addQuietMove(const Board& b, uint32_t move) {
 	m_move_vec.push_back(m);
 }
 
+// adds capture move to move list
 void MoveList::addCaptureMove(const Board& b, uint32_t move) {
 	Move m;
 	m.m_move = move;
@@ -339,14 +342,8 @@ void MoveList::addCaptureMove(const Board& b, uint32_t move) {
 	m_move_vec.push_back(m);
 }
 
-void MoveList::addEnPassMove(const Board& b, uint32_t move) {
-	Move m;
-	m.m_move = move;
-	m.m_score = 0;
 
-	m_move_vec.push_back(m);
-}
-
+// prints invidual moves in move list
 void MoveList::printList() const
 {
    std::vector<Move>::const_iterator itr;
@@ -358,6 +355,7 @@ void MoveList::printList() const
 
 }
 
+// pases move string
 uint32_t parseMove( char *ptrChar, Board& b)
 {
 
@@ -400,6 +398,7 @@ uint32_t parseMove( char *ptrChar, Board& b)
 
 }
 
+// clears piece from board at 120 sq
 void ClearPiece(const int sq, Board& b) {
 
 	assert(!SQOFFBOARD(sq));
@@ -427,6 +426,7 @@ void ClearPiece(const int sq, Board& b) {
 	
 }
 
+// adds piece to the board at 120sq
 void AddPiece(const int sq, Board& b, const Piece pce) {
 
     assert(pce >= wP && pce <= bK);
@@ -452,6 +452,7 @@ void AddPiece(const int sq, Board& b, const Piece pce) {
 	
 }
 
+// Moves piece from a 120sq to another 120sq
 void MovePiece(const int from, const int to, Board& b) {
 
 	assert(!SQOFFBOARD(from));
@@ -472,6 +473,7 @@ void MovePiece(const int from, const int to, Board& b) {
 
 }
 
+// Modifies board according to move
 bool MakeMove(Board& b, int move) {
 
 	assert(b.checkBoard());
@@ -584,6 +586,7 @@ bool MakeMove(Board& b, int move) {
 	
 }
 
+// Takes back last move
 void TakeMove(Board& b) {
 	
 	assert(b.checkBoard());
@@ -658,6 +661,8 @@ void TakeMove(Board& b) {
 
 }
 
+// Checks if move is valid
+// Used for GetPVLine to check move at a given depth
 bool MoveExists(Board& b, const int move) {
 	
 	MoveList list;
