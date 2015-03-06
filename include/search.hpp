@@ -39,6 +39,11 @@ void PickNextMove(std::vector<Move>::iterator move, MoveList& list);
 
 int EvalPosition(const Board& b);
 
+// How to prioritize captures - MvvLva
+// Most Valuable Victim, Least Valuavle attacker 
+const int VictimScore[13] = { 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600 };
+static int MvvLvaScores[13][13]; // SHOULD THIS BE STATIC????????
+
 } //end namespace
 
 

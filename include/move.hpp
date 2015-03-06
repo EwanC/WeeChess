@@ -55,6 +55,8 @@ public:
 
 class MoveList {
  public:
+
+ 	MoveList();
  	void genAllMoves(const Board& b);
     void addQuietMove(const Board& b, uint32_t move);
     void addCaptureMove(const Board& b, uint32_t move);

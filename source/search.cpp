@@ -67,7 +67,12 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo info) {
 	return 0;
 }
 
-// Alpa beta search, returns board score
+/* Alpa beta search, returns board score
+   Alpha - best possible evaluation for maximizer
+   Beta - best possile evluation for minimizer
+   Beta cutoff - maximizer won't choose option since minimizer has
+                 option to reduce score below alpha
+*/
 int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull) {
 
 	assert(b.checkBoard()); 
@@ -102,6 +107,10 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	std::vector<Move>::iterator itr;
 	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); ++itr) {	
 			
+		/*
+		   Pick move according to capture score,
+		   improved move ordering makes search more efficient.
+	   	*/
 		PickNextMove(itr, list);	
 		
 		// Not legal move
@@ -170,7 +179,6 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 
 		pvMoves = b.m_pvTable.GetPvLine(currentDepth, b); // populate pv array
 		int bestMove = b.m_pvTable.m_pvArray[0];          // find best move in current position, at depth 0
-		
 		
 	}
 	

@@ -1,5 +1,6 @@
 #include "move.hpp"
 #include "board.hpp"
+#include "search.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -46,6 +47,17 @@ static const int NumDir[13] = {
 };
 
 
+MoveList::MoveList()
+{
+    // init search MvvLva 
+    // TODO find move effiecent way of initalizing this
+	for(int Attacker = wP; Attacker <= bK; ++Attacker) {
+		for(int Victim = wP; Victim <= bK; ++Victim) {
+			Search::MvvLvaScores[Victim][Attacker] = Search::VictimScore[Victim] + 6 - ( Search::VictimScore[Attacker] / 100);
+		}
+	}	
+
+}
 
  Move::Move():m_move(0),m_score(0)
  {
@@ -337,7 +349,7 @@ void MoveList::addQuietMove(const Board& b, uint32_t move) {
 void MoveList::addCaptureMove(const Board& b, uint32_t move) {
 	Move m;
 	m.m_move = move;
-	m.m_score = 0;
+	m.m_score = Search::MvvLvaScores[CAPTURED(move)][b.m_board[FROMSQ(move)]];
 
 	m_move_vec.push_back(m);
 }
