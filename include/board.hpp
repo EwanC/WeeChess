@@ -471,7 +471,7 @@ Square m_kingSq[2];            // White and Black king squares
 uint32_t m_fiftyMove;          // Fifty moves without capture or promotion draw counter
 
 uint32_t m_ply;                // number of half moves in CURRENT SEARCH
-uint32_t m_hisply;             // number of half moves in entire games
+int m_hisply;             // number of half moves in entire games
 
 uint64_t m_posHash;            // Zorbist hash of the position
 

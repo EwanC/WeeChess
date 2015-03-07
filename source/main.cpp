@@ -2,6 +2,7 @@
 #include "board.hpp"
 #include "perft.hpp"
 #include "move.hpp"
+#include "search.hpp"
 
 #define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
@@ -18,6 +19,8 @@ int main(int argc, char* argv[])
   b.parseFen(START_FEN);
 
   char input[6];
+
+  SearchInfo info;
   while(true)
   {
      b.printBoard();
@@ -28,7 +31,11 @@ int main(int argc, char* argv[])
      	break;
      } else if(input[0] == 't'){
      	TakeMove(b);
-     	continue;
+     }
+     else if(input[0]=='s') {
+      info.depth = 5;
+
+      Search::SearchPosition(b, info);
      } else{
         uint32_t move  = parseMove(input, b);
         if(move == 0){

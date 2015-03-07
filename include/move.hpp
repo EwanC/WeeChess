@@ -54,6 +54,10 @@ public:
 };
 
 class MoveList {
+
+ int MvvLvaScores[13][13]; 
+
+
  public:
 
  	MoveList();

@@ -4,11 +4,11 @@
 #include <cassert>
 #include <algorithm>
 #include <vector>
-#include <limits>       // std::numeric_limits
 #include <sys/time.h>
 
 
-#define MATE (std::numeric_limits<int>::max() - 1) // Board evaluation score for mate
+#define MATE (29000) // Board evaluation score for mate
+#define INF  (30000)
 
 // Returns current time.
 static int GetTimeMs() { 
@@ -165,7 +165,6 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 	
 	int currentDepth = 0;
 	int pvMoves = 0;
-	int pvNum = 0;
 	
 	// Reset for current search
 	ClearForSearch(b,info);
@@ -173,13 +172,31 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 	// iterative deepening for each depth
 	for(int currentDepth = 1; currentDepth <= info.depth; ++currentDepth ) {
 
-		int bestScore = AlphaBeta(std::numeric_limits<int>::min(), std::numeric_limits<int>::max(), currentDepth, b, info, true);
+		int bestScore = AlphaBeta(-INF, INF, currentDepth, b, info, true);
 		
 		// out of time?
 
 		pvMoves = b.m_pvTable.GetPvLine(currentDepth, b); // populate pv array
 		int bestMove = b.m_pvTable.m_pvArray[0];          // find best move in current position, at depth 0
 		
+		////////////////////////////////////////////
+        // PRINT DATA TO DEL
+        ////////////////////////////////////////////
+        Move m;
+        m.m_move = bestMove;
+		printf("Depth:%d score:%d move:%s nodes:%ld ",
+			currentDepth,bestScore,m.moveString().c_str(),info.nodes);
+			
+		printf("pv");		
+		for(int pvNum = 0; pvNum < pvMoves; ++pvNum) {
+			Move m;
+            m.m_move = b.m_pvTable.m_pvArray[pvNum];
+			printf(" %s",m.moveString().c_str());
+		}
+		printf("\n");
+		printf("Ordering:%.2f\n",(info.fhf/info.fh));
+		
+		//////////////////////////////////////////////	
 	}
 	
 	
@@ -230,7 +247,7 @@ int Search::EvalPosition(const Board& b) {
 	numPce = Bitboard::countBits(wbBitboard);
 	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
 		int sq64 = Bitboard::popBit(&wbBitboard); 
-		score += BishopTable[Mirror64[sq64]];
+		score += BishopTable[sq64];
 	}	
 
     // Black Bishop
