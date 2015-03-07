@@ -1,6 +1,7 @@
 #include "search.hpp"
 #include "move.hpp"
 #include "pvtable.hpp"
+#include "log.hpp"
 #include <cassert>
 #include <algorithm>
 #include <vector>
@@ -74,6 +75,8 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo info) {
                  option to reduce score below alpha
 */
 int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull) {
+ 
+    Log* log = Log::getInstance();
 
 	assert(b.checkBoard()); 
 	
@@ -103,6 +106,11 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	int OldAlpha = alpha; // Record what alpha is before loop
 	int BestMove = 0;     // Best move found
 
+    char str[50];
+
+    sprintf(str,"Starting alphabeta with depth %d, alpha %d, beta %d\n",depth,alpha,beta);
+    log->writeLine(str);
+
     // Loop over all moves in move list	
 	std::vector<Move>::iterator itr;
 	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); ++itr) {	
@@ -111,7 +119,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		   Pick move according to capture score,
 		   improved move ordering makes search more efficient.
 	   	*/
-		PickNextMove(itr, list);	
+		//PickNextMove(itr, list);	
 		
 		// Not legal move
         if ( !MakeMove(b,itr->m_move))  {
@@ -122,7 +130,11 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 
 		// Nega Max, flip bounds for opposition colours
 		int Score = -AlphaBeta( -beta, -alpha, depth-1, b, info, true);	
-
+        char str[50];
+        sprintf(str,"node %ld, Score %d, alpha %d, beta %d\n",info.nodes,Score,alpha,beta);
+        log->writeLine(str);
+ 
+       
 		// Take back move	
         TakeMove(b);
 		

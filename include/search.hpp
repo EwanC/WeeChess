@@ -45,7 +45,6 @@ const int VictimScore[13] = { 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 40
 
 } //end namespace
 
-
 /*
     Piece tables used for basic evaluation of board positions
 */

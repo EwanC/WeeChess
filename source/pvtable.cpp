@@ -1,6 +1,7 @@
 #include "pvtable.hpp"
 #include "move.hpp"
 #include "board.hpp"
+#include "log.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -19,6 +20,12 @@ void PVTable::StorePvMove(const Board& b, const int move) {
 	PVEntry entry;
 	entry.m_move = move;
 	entry.m_posKey = b.m_posHash;
+
+    Log* log = Log::getInstance();
+    char str[50];
+
+    sprintf(str,"Store pv move %x at %d\n",move,m_pTable.size());
+    log->writeLine(str);
 
 	m_pTable.push_back(entry);
 }

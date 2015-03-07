@@ -10,4 +10,5 @@ add_executable(${EXE_NAME}
                perft.cpp
                pvtable.cpp
                search.cpp
+               log.cpp
 )
