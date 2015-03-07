@@ -21,11 +21,14 @@ void PVTable::StorePvMove(const Board& b, const int move) {
 	entry.m_move = move;
 	entry.m_posKey = b.m_posHash;
 
+    #ifndef NDEBUG
+
     Log* log = Log::getInstance();
     char str[50];
 
     sprintf(str,"Store pv move %x at %d\n",move,m_pTable.size());
     log->writeLine(str);
+    #endif
 
 	m_pTable.push_back(entry);
 }

@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
   Board::initStaticMembers();
 
   // runPerft(b,4);
-  b.parseFen(START_FEN);
+  b.parseFen(WAC1);
 
   char input[6];
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
      	TakeMove(b);
      }
      else if(input[0]=='s') {
-      info.depth = 3;
+      info.depth = 4;
 
       Search::SearchPosition(b, info);
      } else{

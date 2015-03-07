@@ -76,8 +76,10 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo info) {
 */
 int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull) {
  
+    #ifndef NDEBUG
     Log* log = Log::getInstance();
-
+    #endif
+	
 	assert(b.checkBoard()); 
 	
 	if(depth == 0) {
@@ -106,10 +108,11 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	int OldAlpha = alpha; // Record what alpha is before loop
 	int BestMove = 0;     // Best move found
 
+    #ifndef NDEBUG
     char str[50];
-
     sprintf(str,"Starting alphabeta with depth %d, alpha %d, beta %d\n",depth,alpha,beta);
     log->writeLine(str);
+    #endif
 
     // Loop over all moves in move list	
 	std::vector<Move>::iterator itr;
@@ -119,7 +122,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		   Pick move according to capture score,
 		   improved move ordering makes search more efficient.
 	   	*/
-		//PickNextMove(itr, list);	
+		PickNextMove(itr, list);	
 		
 		// Not legal move
         if ( !MakeMove(b,itr->m_move))  {
@@ -130,10 +133,12 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 
 		// Nega Max, flip bounds for opposition colours
 		int Score = -AlphaBeta( -beta, -alpha, depth-1, b, info, true);	
+      
+        #ifndef NDEBUG
         char str[50];
         sprintf(str,"node %ld, Score %d, alpha %d, beta %d\n",info.nodes,Score,alpha,beta);
         log->writeLine(str);
- 
+        #endif
        
 		// Take back move	
         TakeMove(b);
@@ -191,6 +196,7 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 		pvMoves = b.m_pvTable.GetPvLine(currentDepth, b); // populate pv array
 		int bestMove = b.m_pvTable.m_pvArray[0];          // find best move in current position, at depth 0
 		
+		#ifndef NDEBUG
 		////////////////////////////////////////////
         // PRINT DATA TO DEL
         ////////////////////////////////////////////
@@ -209,6 +215,7 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 		printf("Ordering:%.2f\n",(info.fhf/info.fh));
 		
 		//////////////////////////////////////////////	
+		#endif
 	}
 	
 	
