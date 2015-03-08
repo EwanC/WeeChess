@@ -2,7 +2,6 @@
 #define PVTABLE_H
 
 #include <stdint.h> //Standard Integer Types
-#include <vector>
 #include "types.hpp"
 
 class Board;
@@ -18,10 +17,15 @@ struct PVEntry{
 
 class PVTable{ 
 
+   static const int PvSize;
+
    public:
 
-   std::vector<PVEntry> m_pTable;   // vector of PV entries representing pvtable
-                                    // TODO make more effiecent. hash table?
+   PVTable();
+   ~PVTable();
+
+   PVEntry* m_pTable;   // vector of PV entries representing pvtable
+   int m_numEntries;
 
    int m_pvArray[MAXDEPTH];         // PV move at each level of the tree 
 

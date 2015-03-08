@@ -107,12 +107,8 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 
 	int OldAlpha = alpha; // Record what alpha is before loop
 	int BestMove = 0;     // Best move found
+    int Score = 0;
 
-    #ifndef NDEBUG
-    char str[50];
-    sprintf(str,"Starting alphabeta with depth %d, alpha %d, beta %d\n",depth,alpha,beta);
-    log->writeLine(str);
-    #endif
 
     // Loop over all moves in move list	
 	std::vector<Move>::iterator itr;
@@ -132,11 +128,20 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		Legal++;
 
 		// Nega Max, flip bounds for opposition colours
-		int Score = -AlphaBeta( -beta, -alpha, depth-1, b, info, true);	
+		Score = -AlphaBeta( -beta, -alpha, depth-1, b, info, true);	
       
         #ifndef NDEBUG
         char str[50];
-        sprintf(str,"node %ld, Score %d, alpha %d, beta %d\n",info.nodes,Score,alpha,beta);
+        if(depth == 1)
+            sprintf(str,"%s node %ld, Score %d, alpha %d, beta %d\n",itr->moveString().c_str(),info.nodes,Score,alpha,beta);
+        else if(depth == 2)
+        	sprintf(str,"	%s node %ld, Score %d, alpha %d, beta %d\n",itr->moveString().c_str(),info.nodes,Score,alpha,beta);
+        else if (depth == 3)
+        	sprintf(str,"		%s node %ld, Score %d, alpha %d, beta %d\n",itr->moveString().c_str(),info.nodes,Score,alpha,beta);
+        else
+             sprintf(str,"			%s node %ld, Score %d, alpha %d, beta %d\n",itr->moveString().c_str(),info.nodes,Score,alpha,beta);
+
+
         log->writeLine(str);
         #endif
        
@@ -159,7 +164,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		}		
     }
 	
-	// No legal moves found, checkmate of draw
+	// No legal moves found, checkmate of drawv	
 	if(Legal == 0) {
 		Colour changeSide = static_cast<Colour>(b.m_side^1);
 		if(b.isSquareAttacked(b.m_kingSq[b.m_side],changeSide)) { 
@@ -186,6 +191,10 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 	// Reset for current search
 	ClearForSearch(b,info);
 	
+		#ifndef NDEBUG
+         Log* log = Log::getInstance();
+#endif
+
 	// iterative deepening for each depth
 	for(int currentDepth = 1; currentDepth <= info.depth; ++currentDepth ) {
 
@@ -197,11 +206,29 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 		int bestMove = b.m_pvTable.m_pvArray[0];          // find best move in current position, at depth 0
 		
 		#ifndef NDEBUG
+         Move m;
+        m.m_move = bestMove;
+         
+         char str[200];
+
+         sprintf(str,"\nDepth:%d score:%d move:%s nodes:%ld ",
+			currentDepth,bestScore,m.moveString().c_str(),info.nodes);
+			
+		sprintf(str,"%spv",str);		
+		for(int pvNum = 0; pvNum < pvMoves; ++pvNum) {
+			Move m;
+            m.m_move = b.m_pvTable.m_pvArray[pvNum];
+			sprintf(str,"%s %s",str,m.moveString().c_str());
+		}
+		sprintf(str,"%s\n",str);   
+
+        log->writeLine(str);
+ 
+
 		////////////////////////////////////////////
         // PRINT DATA TO DEL
         ////////////////////////////////////////////
-        Move m;
-        m.m_move = bestMove;
+      
 		printf("Depth:%d score:%d move:%s nodes:%ld ",
 			currentDepth,bestScore,m.moveString().c_str(),info.nodes);
 			
@@ -306,7 +333,7 @@ void Search::PickNextMove(std::vector<Move>::iterator move, MoveList& list) {
 
     std::vector<Move>::iterator result = std::max_element(move, list.m_move_vec.end(), 
     	                                 [](Move a, Move b){
-                                             return a.m_score > b.m_score;
+                                             return a.m_score < b.m_score;
     	                                  });
 
 	std::iter_swap(result, move);

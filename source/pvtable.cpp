@@ -3,15 +3,37 @@
 #include "board.hpp"
 #include "log.hpp"
 
-#include <algorithm>
 #include <cassert>
 
+const int PVTable::PvSize = 0x100000 * 2;
+
+
+PVTable::PVTable()
+{
+    m_numEntries = PvSize / sizeof(PVEntry);
+    m_numEntries -= 2;
+    if(m_pTable != NULL) 
+    	delete[] m_pTable;
+
+
+    m_pTable = new PVEntry[m_numEntries];
+
+    ClearPvTable();
+}
+
+PVTable::~PVTable()
+{
+	delete[] m_pTable;
+}
 
 // Clears pvtable vector
 void PVTable::ClearPvTable() {
 
-  m_pTable.clear();
 
+  for (PVEntry* pvEntry = m_pTable; pvEntry < m_pTable + m_numEntries; pvEntry++) {
+    pvEntry->m_posKey = 0;
+    pvEntry->m_move = 0;
+  }
 }
 
 // adds move to pv table vector
@@ -21,32 +43,35 @@ void PVTable::StorePvMove(const Board& b, const int move) {
 	entry.m_move = move;
 	entry.m_posKey = b.m_posHash;
 
+    int index = b.m_posHash % m_numEntries;
+	assert(index >= 0 && index <= m_numEntries - 1);
+	
+
+	m_pTable[index] = entry;
+
     #ifndef NDEBUG
 
     Log* log = Log::getInstance();
     char str[50];
-
-    sprintf(str,"Store pv move %x at %d\n",move,m_pTable.size());
+       Move m;
+        m.m_move = move;
+    sprintf(str,"Store pv move %s at %d\n",m.moveString().c_str(),m_numEntries);
     log->writeLine(str);
     #endif
 
-	m_pTable.push_back(entry);
 }
 
 // Retrieves PV move from table is PV entry is found with same position hash
 int PVTable::ProbePvTable(const Board& b) {
 
-    std::vector<PVEntry>::iterator itr;
-
-    itr = std::find_if (m_pTable.begin(), m_pTable.end(),
-                        [&b](PVEntry& e){
-                            return b.m_posHash == e.m_posKey;
-    	                });
-
-    if(itr == m_pTable.end())  
-        return 0;
-    else
-    	return itr->m_move;
+    int index = b.m_posHash % m_numEntries;
+	assert(index >= 0 && index <= m_numEntries - 1);
+	
+	if( m_pTable[index].m_posKey == b.m_posHash ) {
+		return m_pTable[index].m_move;
+	}
+	
+	return 0;
 	
 }
 
