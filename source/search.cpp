@@ -109,9 +109,16 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	int BestMove = 0;     // Best move found
     int Score = 0;
 
+    int PvMove = b.m_pvTable.ProbePvTable(b);
+    std::vector<Move>::iterator itr;
+	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); ++itr) {	
+       if(itr->m_move == PvMove){
+       	  itr->m_score = 2000000;
+       	  break;
+       }
+    }
 
     // Loop over all moves in move list	
-	std::vector<Move>::iterator itr;
 	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); ++itr) {	
 			
 		/*
@@ -156,15 +163,29 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 					info.fhf++;
 				}
 				info.fh++;	
+
+                if(!(itr->m_move & MFLAGCAP)) // Not a capture move
+                {
+                   b.m_searchKillers[1][b.m_ply] = b.m_searchKillers[0][b.m_ply];
+                   b.m_searchKillers[0][b.m_ply] = itr->m_move;
+
+                }
+
+
 				return beta;  // return beta
 			}
 			// New best move
 			alpha = Score;
-			BestMove = itr->m_move; 
+			BestMove = itr->m_move;
+
+            if(!(itr->m_move & MFLAGCAP)){
+            	b.m_searchHistory[b.m_board[FROMSQ(BestMove)]][TOSQ(BestMove)] += depth;
+            }
+
 		}		
     }
 	
-	// No legal moves found, checkmate of drawv	
+	// No legal moves found, checkmate or draw	
 	if(Legal == 0) {
 		Colour changeSide = static_cast<Colour>(b.m_side^1);
 		if(b.isSquareAttacked(b.m_kingSq[b.m_side],changeSide)) { 

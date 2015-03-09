@@ -331,7 +331,7 @@ void MoveList::addEnPassantMove( const Board& b, uint32_t move ) {
 	
 	Move m;
 	m.m_move = move;
-	m.m_score = 105;
+	m.m_score = 105 + 1000000;
 	m_move_vec.push_back(m);
 
 }
@@ -340,7 +340,13 @@ void MoveList::addEnPassantMove( const Board& b, uint32_t move ) {
 void MoveList::addQuietMove(const Board& b, uint32_t move) {
 	Move m;
 	m.m_move = move;
-	m.m_score = 0;
+
+    if(b.m_searchKillers[0][b.m_ply] == move)
+        m.m_score = 900000;
+    else if(b.m_searchKillers[1][b.m_ply] == move)
+        m.m_score = 800000;
+    else
+	    m.m_score = b.m_searchHistory[b.m_board[FROMSQ(move)]][TOSQ(move)];
 
 	m_move_vec.push_back(m);
 }
@@ -349,7 +355,7 @@ void MoveList::addQuietMove(const Board& b, uint32_t move) {
 void MoveList::addCaptureMove(const Board& b, uint32_t move) {
 	Move m;
 	m.m_move = move;
-	m.m_score = MvvLvaScores[CAPTURED(move)][b.m_board[FROMSQ(move)]];
+	m.m_score = MvvLvaScores[CAPTURED(move)][b.m_board[FROMSQ(move)]] + 1000000;
 
 	m_move_vec.push_back(m);
 }
