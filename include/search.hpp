@@ -31,7 +31,7 @@ namespace Search{
 
 bool isRepetition(const Board& b);
 void CheckUp();
-int Quiescence(int alpha, int beta, Board& b, SearchInfo info);
+int Quiescence(int alpha, int beta, Board& b, SearchInfo& info);
 int AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull);
 void ClearForSearch(Board& b, SearchInfo& info);
 void SearchPosition(Board& b, SearchInfo& info);

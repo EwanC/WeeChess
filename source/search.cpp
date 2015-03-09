@@ -64,8 +64,84 @@ void Search::ClearForSearch(Board& b, SearchInfo& info) {
 }
 
 // Reduces horizon effect
-int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo info) {
-	return 0;
+int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo& info) {
+    
+    assert(b.checkBoard());
+    info.nodes++;
+
+    // position is draw.
+	if(isRepetition(b) || b.m_fiftyMove >= 100) {
+		return 0;
+	}
+
+    // If we've searched to deep
+	if(b.m_ply > MAXDEPTH - 1) {
+		return EvalPosition(b);
+	}
+
+    int Score = EvalPosition(b);
+
+    if(Score >= beta)
+    	return beta;
+
+    if(Score > alpha)
+       alpha = Score;
+
+    // Generate all captures for board
+	MoveList list;
+	list.genAllCaps(b);
+
+    int Legal = 0;   // Incremented on legal moves
+	int OldAlpha = alpha; // Record what alpha is before loop
+	int BestMove = 0;     // Best move found
+    Score = 0;
+    int PvMove = b.m_pvTable.ProbePvTable(b);
+
+    // Loop over all moves in move list	
+    std::vector<Move>::iterator itr;
+	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); ++itr) {	
+			
+		/*
+		   Pick move according to capture score,
+		   improved move ordering makes search more efficient.
+	   	*/
+		PickNextMove(itr, list);	
+		
+		// Not legal move
+        if ( !MakeMove(b,itr->m_move))  {
+            continue;
+        }
+        
+		Legal++;
+
+		// Nega Max, flip bounds for opposition colours
+		Score = -Quiescence( -beta, -alpha, b, info);	
+      
+		// Take back move	
+        TakeMove(b);
+		
+		// Improved on alpha
+		if(Score > alpha) {
+			// Beta cutoff
+			if(Score >= beta) {
+				if(Legal==1) {
+					info.fhf++;
+				}
+				info.fh++;	
+				return beta;  // return beta
+			}
+			// New best move
+			alpha = Score;
+			BestMove = itr->m_move;
+		}		
+    }
+
+    // We improved alpha, store best move for position
+	if(alpha != OldAlpha) {
+		b.m_pvTable.StorePvMove(b, BestMove);
+	}
+
+	return alpha;
 }
 
 /* Alpa beta search, returns board score
@@ -83,8 +159,8 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	assert(b.checkBoard()); 
 	
 	if(depth == 0) {
-		info.nodes++;  
-		return EvalPosition(b);
+       return Quiescence(alpha, beta, b, info);
+	   //return EvalPosition(b);
 	}
 	
 	info.nodes++; // increment nodes visited

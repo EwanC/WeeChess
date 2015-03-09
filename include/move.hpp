@@ -62,6 +62,7 @@ class MoveList {
 
  	MoveList();
  	void genAllMoves(const Board& b);
+ 	void genAllCaps(const Board& b);
     void addQuietMove(const Board& b, uint32_t move);
     void addCaptureMove(const Board& b, uint32_t move);
     void addEnPassantMove( const Board& b, uint32_t move );
