@@ -11,4 +11,5 @@ add_executable(${EXE_NAME}
                pvtable.cpp
                search.cpp
                log.cpp
+               uci.cpp
 )

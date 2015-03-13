@@ -13,14 +13,14 @@ struct SearchInfo{
 	int stoptime;    // Time search stopped
 	int depth;       // depth to search to
 	int depthset;
-	int timeset;     // time search limit
+	bool timeset;     // time search limit
 	int movestogo;
 	int infinite;   // set to true then, continue until gui sends stopped
 	
 	uint64_t nodes; // count of all nodes visited
 	
-	int quit;        // set to true to back out and delete state
-	int stopped;     // set to true to back out keeping state
+	bool quit;         // set to true to back out and delete state
+	bool stopped;     // set to true to back out keeping state
 	
 	float fh;       // fail high
 	float fhf;      // fail high first
@@ -30,13 +30,13 @@ struct SearchInfo{
 namespace Search{
 
 bool isRepetition(const Board& b);
-void CheckUp();
+void CheckUp(SearchInfo& info);
 int Quiescence(int alpha, int beta, Board& b, SearchInfo& info);
 int AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info, bool DoNull);
 void ClearForSearch(Board& b, SearchInfo& info);
 void SearchPosition(Board& b, SearchInfo& info);
 void PickNextMove(std::vector<Move>::iterator move, MoveList& list);
-
+int GetTimeMs();
 int EvalPosition(const Board& b);
 
 // How to prioritize captures - MvvLva

@@ -2,6 +2,7 @@
 #include "move.hpp"
 #include "pvtable.hpp"
 #include "log.hpp"
+#include "uci.hpp"
 #include <cassert>
 #include <algorithm>
 #include <vector>
@@ -12,7 +13,7 @@
 #define INF  (30000)
 
 // Returns current time.
-static int GetTimeMs() { 
+int Search::GetTimeMs() { 
 
   struct timeval t;
   gettimeofday(&t, NULL);
@@ -34,8 +35,12 @@ bool Search::isRepetition(const Board& b)
 	return false;
 }
 
-void Search::CheckUp() {
+void Search::CheckUp(SearchInfo& info) {
 	// .. check if time up, or interrupt from GUI
+	if(info.timeset == true && GetTimeMs() > info.stoptime)
+		info.stopped = true;
+
+    UCI::ReadInput(info);
 }
 
 // Clears aphaBeta heuristics as well as seachinfo and PVTable
@@ -57,7 +62,7 @@ void Search::ClearForSearch(Board& b, SearchInfo& info) {
 	b.m_ply = 0;
 	
 	info.starttime = GetTimeMs();
-	info.stopped = 0;
+	info.stopped = false;
 	info.nodes = 0;
 	info.fh = 0;
 	info.fhf = 0;
@@ -67,6 +72,13 @@ void Search::ClearForSearch(Board& b, SearchInfo& info) {
 int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo& info) {
     
     assert(b.checkBoard());
+
+    if((info.nodes & 2047) == 0)
+    {
+    	CheckUp(info);
+    }
+
+
     info.nodes++;
 
     // position is draw.
@@ -120,6 +132,9 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo& info) {
 		// Take back move	
         TakeMove(b);
 		
+        if(info.stopped == true)
+        	return 0;
+
 		// Improved on alpha
 		if(Score > alpha) {
 			// Beta cutoff
@@ -158,11 +173,16 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	
 	assert(b.checkBoard()); 
 	
+
 	if(depth == 0) {
        return Quiescence(alpha, beta, b, info);
-	   //return EvalPosition(b);
 	}
 	
+	if((info.nodes & 2047) == 0)
+    {
+    	CheckUp(info);
+    }
+    
 	info.nodes++; // increment nodes visited
 	
 	// position is draw.
@@ -231,6 +251,9 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		// Take back move	
         TakeMove(b);
 		
+        if(info.stopped == true)
+        	return 0;
+
 		// Improved on alpha
 		if(Score > alpha) {
 			// Beta cutoff
@@ -288,16 +311,17 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 	// Reset for current search
 	ClearForSearch(b,info);
 	
-		#ifndef NDEBUG
-         Log* log = Log::getInstance();
-#endif
+	#ifndef NDEBUG
+    Log* log = Log::getInstance();
+    #endif
 
 	// iterative deepening for each depth
 	for(int currentDepth = 1; currentDepth <= info.depth; ++currentDepth ) {
 
 		int bestScore = AlphaBeta(-INF, INF, currentDepth, b, info, true);
 		
-		// out of time?
+        if(info.stopped == true)
+        	break;
 
 		pvMoves = b.m_pvTable.GetPvLine(currentDepth, b); // populate pv array
 		int bestMove = b.m_pvTable.m_pvArray[0];          // find best move in current position, at depth 0
@@ -306,9 +330,9 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
          Move m;
         m.m_move = bestMove;
          
-         char str[200];
+        char str[200];
 
-         sprintf(str,"\nDepth:%d score:%d move:%s nodes:%ld ",
+        sprintf(str,"\nDepth:%d score:%d move:%s nodes:%ld ",
 			currentDepth,bestScore,m.moveString().c_str(),info.nodes);
 			
 		sprintf(str,"%spv",str);		
@@ -320,14 +344,14 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 		sprintf(str,"%s\n",str);   
 
         log->writeLine(str);
- 
+         #endif
 
 		////////////////////////////////////////////
-        // PRINT DATA TO DEL
+        // 
         ////////////////////////////////////////////
       
-		printf("Depth:%d score:%d move:%s nodes:%ld ",
-			currentDepth,bestScore,m.moveString().c_str(),info.nodes);
+		printf("info score cp %d depth %d nodes %ld time %d ",
+			bestScore,currentDepth, info.nodes,GetTimeMs() - info.starttime);
 			
 		printf("pv");		
 		for(int pvNum = 0; pvNum < pvMoves; ++pvNum) {
@@ -336,12 +360,13 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 			printf(" %s",m.moveString().c_str());
 		}
 		printf("\n");
-		printf("Ordering:%.2f\n",(info.fhf/info.fh));
+		//printf("Ordering:%.2f\n",(info.fhf/info.fh));
 		
 		//////////////////////////////////////////////	
-		#endif
 	}
-	
+	Move m;
+	m.m_move = b.m_pvTable.m_pvArray[0];
+	printf("bestmove %s\n",m.moveString().c_str());
 	
 }
 
