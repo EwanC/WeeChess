@@ -2,7 +2,7 @@
 #include "move.hpp"
 #include "pvtable.hpp"
 #include "log.hpp"
-#include "uci.hpp"
+#include "protocols.hpp"
 #include <cassert>
 #include <algorithm>
 #include <vector>
@@ -82,7 +82,7 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo& info) {
     info.nodes++;
 
     // position is draw.
-	if(isRepetition(b) || b.m_fiftyMove >= 100) {
+	if((isRepetition(b) || b.m_fiftyMove >= 100) && b.m_ply != 0) {
 		return 0;
 	}
 
