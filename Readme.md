@@ -14,9 +14,11 @@ Setup a Position     +<br>
 Move Generator + <br>
 Perft Test + <br>
 
-Evalutation<br>
-Search<br>
+Evalutation + <br>
+Search + <br>
 
-Connect GUI<br>
+Connect GUI + <br>
+
+Test <br>
 
 Convert to OpenCL<br>
