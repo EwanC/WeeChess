@@ -7,9 +7,10 @@
 #include "sys/select.h"
 #include "unistd.h"
 
-#define INPUTBUFFER 400 * 6
-#define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define INPUTBUFFER 400 * 6 // Input buffer size
+#define START_FEN  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" // Initial pos FEN
 
+// Returns true if data waiting to be read from stdin
 int UCI::InputWaiting()
 {
   fd_set readfds;
@@ -23,6 +24,7 @@ int UCI::InputWaiting()
 
 }
 
+// Read data from stdin
 void UCI::ReadInput( SearchInfo& info) 
 {
     int bytes;
@@ -45,10 +47,11 @@ void UCI::ReadInput( SearchInfo& info)
     }
 }
 
-// go depth 6 wtime 180000 btime 100000 binc 1000 winc 1000 movetime 1000 movestogo 40
+// Search position
 void UCI::ParseGo(char* line, SearchInfo& info, Board& b) 
 {
     
+    // Setup search info
 	int depth = -1, movestogo = 30,movetime = -1;
 	int time = -1, inc = 0;
     char *ptr = NULL;
@@ -94,6 +97,7 @@ void UCI::ParseGo(char* line, SearchInfo& info, Board& b)
 	info.starttime = Search::GetTimeMs();
 	info.depth = depth;
 	
+	// set search time
 	if(time != -1) {
 		info.timeset = true;
 		time /= movestogo;
@@ -105,6 +109,7 @@ void UCI::ParseGo(char* line, SearchInfo& info, Board& b)
 		info.depth = MAXDEPTH;
 	}
 	
+	// Search position
 	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n",
 		time,info.starttime,info.stoptime,info.depth,info.timeset);
 
@@ -112,14 +117,13 @@ void UCI::ParseGo(char* line, SearchInfo& info, Board& b)
 
 }
 
-// position fen fenstr
-// position startpos
-// ... moves e2e4 e7e5 b7b8q
+// ParseFen string or move string
 void UCI::ParsePosition(char* lineIn, Board& b) {
 	
 	lineIn += 9;
     char *ptrChar = lineIn;
 	
+	// set board to fen
     if(strncmp(lineIn, "startpos", 8) == 0){
         b.parseFen(START_FEN);
     } else {
@@ -132,6 +136,7 @@ void UCI::ParsePosition(char* lineIn, Board& b) {
         }
     }
 	
+	// Make move
 	ptrChar = strstr(lineIn, "moves");
 	int move;
 	
@@ -149,12 +154,14 @@ void UCI::ParsePosition(char* lineIn, Board& b) {
 	b.printBoard();	
 }
 
+// Loop of UCI GUI protocol
 void UCI::UCILoop(Board& b, SearchInfo& info)
 {
 	// Buffer standard in and standard out
 	setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
+    // Chess engine id
    	char line[INPUTBUFFER];
     printf("id name WeeChess\n");
     printf("id author Ewan Crawford\n");
@@ -193,7 +200,7 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
 	
 }
 
-
+// Interact with WeeChess through the console
 void consoleLoop(Board& b, SearchInfo& info)
 {
 
@@ -206,17 +213,17 @@ void consoleLoop(Board& b, SearchInfo& info)
     setbuf(stdout, NULL);
 	
 	int depth = MAXDEPTH, movetime = 3000;            
-	int engineSide = BOTH;    
+	int engineSide = BLACK;    
 	int move = 0;		
 	char inBuf[80], command[80];	
 	
-	engineSide = BLACK; 
-	b.parseFen(START_FEN);	
+	b.parseFen(START_FEN);	// Setup initial board position
 	
 	while(true) { 
 
 		fflush(stdout);
 
+        // get Chess engine to search position and make move
 		if(b.m_side == engineSide && XBoard::checkResult(b) == false) {  
 			info.starttime = Search::GetTimeMs();
 			info.depth = depth;
@@ -229,6 +236,7 @@ void consoleLoop(Board& b, SearchInfo& info)
 			Search::SearchPosition(b, info);
 		}	
 		
+		// Get user input
 		printf("\nWeeChess > ");
 
 		fflush(stdout); 
@@ -240,6 +248,7 @@ void consoleLoop(Board& b, SearchInfo& info)
     
 		sscanf(inBuf, "%s", command);
 		
+		// Print help for used
 		if(!strcmp(command, "help")) { 
 			printf("Commands:\n");
 			printf("quit - quit game\n");
@@ -315,16 +324,18 @@ void consoleLoop(Board& b, SearchInfo& info)
 			continue; 
 		}	
 		
+		// Get Move from user
 		move = parseMove(inBuf, b);	
-		if(move == 0) {
+		if(move == 0) { // Invalud move
 			printf("Command unknown:%s\n",inBuf);
 			continue;
 		}
-		MakeMove(b, move);
+		MakeMove(b, move); // make user move
 		b.m_ply=0;
     }	
 }
 
+// Check for three fold repition
 int XBoard::ThreeFoldRep(const Board& b) {
 	int r = 0;
 	for (int i = 0; i < b.m_hisply; ++i)	{
@@ -335,6 +346,7 @@ int XBoard::ThreeFoldRep(const Board& b) {
 	return r;
 }
 
+// Returns true if both sides are drawn in material value
 bool XBoard::DrawMaterial(const Board& b) 
 {
     if (Bitboard::countBits(b.m_pList[wP]) || Bitboard::countBits(b.m_pList[bP])) return false;
@@ -348,6 +360,7 @@ bool XBoard::DrawMaterial(const Board& b)
     return true;
 }
 
+// Returns true of game is over, and prints reason
 bool XBoard::checkResult(Board& b) {
 
     if (b.m_fiftyMove > 100) {
@@ -395,11 +408,13 @@ bool XBoard::checkResult(Board& b) {
 	return false;	
 }
 
+// Print xboard settings
 void XBoard::PrintOptions() {
 	printf("feature ping=1 setboard=1 colors=0 usermove=1\n");      
 	printf("feature done=1\n");
 }
 
+// Xboard/Winboard GUI protocol loo[]
 void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 
 	info.gameMode = XBMODE;
@@ -410,7 +425,7 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 	
 	int depth = -1, movestogo[2] = {30,30 }, movetime = -1;
 	int time = -1, inc = 0;                             
-	int engineSide = BOTH;                    
+	int engineSide = BLACK;                    
 	int timeLeft;   
 	int sec;
 	int mps;
@@ -418,15 +433,12 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 	int i, score;
 	char inBuf[80], command[80];	
 	
-	engineSide = BLACK; 
-	b.parseFen(START_FEN);
-	depth = -1; 
-	time = -1;
+	b.parseFen(START_FEN); // Setup initial position
 	
 	while(true) { 
 
 		fflush(stdout);
-
+        // Endine searches position
 		if(b.m_side == engineSide && XBoard::checkResult(b) == false) {  
 			info.starttime = Search::GetTimeMs();
 			info.depth = depth;
@@ -457,6 +469,7 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 
 		fflush(stdout); 
 	
+	    // Get input from gui
 		memset(&inBuf[0], 0, sizeof(inBuf));
 		fflush(stdout);
 		if (!fgets(inBuf, 80, stdin))

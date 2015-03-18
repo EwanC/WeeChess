@@ -347,26 +347,43 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
          #endif
 
 		////////////////////////////////////////////
-        // 
+        // Output depends on protocol
         ////////////////////////////////////////////
-      
-		printf("info score cp %d depth %d nodes %ld time %d ",
-			bestScore,currentDepth, info.nodes,GetTimeMs() - info.starttime);
-			
-		printf("pv");		
-		for(int pvNum = 0; pvNum < pvMoves; ++pvNum) {
-			Move m;
-            m.m_move = b.m_pvTable.m_pvArray[pvNum];
-			printf(" %s",m.moveString().c_str());
+        if(info.gameMode == UCIMODE) {
+			printf("info score cp %d depth %d nodes %ld time %d ",
+				bestScore,currentDepth,info.nodes,GetTimeMs()- info.starttime);
+		} else if(info.gameMode == XBMODE && info.postThinking == true) {
+			printf("%d %d %d %ld ",
+				currentDepth,bestScore,(GetTimeMs()-info.starttime)/10,info.nodes);
+		} else if(info.postThinking == true) {
+			printf("score:%d depth:%d nodes:%ld time:%d(ms) ",
+				bestScore,currentDepth,info.nodes,GetTimeMs()-info.starttime);
 		}
-		printf("\n");
-		//printf("Ordering:%.2f\n",(info.fhf/info.fh));
+		if(info.gameMode == UCIMODE || info.postThinking == true) {
+			printf("pv");		
+			for(int pvNum = 0; pvNum < pvMoves; ++pvNum) {
+                Move m;
+                m.m_move = b.m_pvTable.m_pvArray[pvNum];
+			    printf(" %s",m.moveString().c_str());			
+			}
+			printf("\n");
+		}   
+   
 		
 		//////////////////////////////////////////////	
 	}
 	Move m;
 	m.m_move = b.m_pvTable.m_pvArray[0];
-	printf("bestmove %s\n",m.moveString().c_str());
+	if(info.gameMode == UCIMODE) {
+	    printf("bestmove %s\n",m.moveString().c_str());
+	} else if(info.gameMode == XBMODE) {		
+		printf("move %s\n",m.moveString().c_str());
+		MakeMove(b, m.m_move);
+	} else {	
+		printf("\n\n*** WeeChess makes move %s ***\n\n",m.moveString().c_str());
+		MakeMove(b, m.m_move);
+		b.printBoard();
+	}
 	
 }
 

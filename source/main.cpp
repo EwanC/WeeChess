@@ -12,7 +12,7 @@ void printWelcome()
     std::cout <<"\\  /\\  /  __/ | (_| (_) | | | | | |  __/ | || (_) | \\  /\\  /  __/  __/ \\__/\\ | | |  __/\\__ \\__ \\\n";
     std::cout <<" \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___|  \\__\\___/   \\/  \\/ \\___|\\___|\\____/_| |_|\\___||___/___/\n";
 
-    std::cout <<std::endl;
+    std::cout << "\nSelect protocol from 'uci','xboard', and 'cli': ";
 
 }
 
@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
   
   printWelcome();
 
-  
+
   char line[256];
   while (true) {
     memset(&line[0], 0, sizeof(line));
@@ -38,6 +38,8 @@ int main(int argc, char* argv[])
       continue;
     if (line[0] == '\n')
       continue;
+
+    // Pick protocl to interact with engine, TODO parse these from invoke args
     if (!strncmp(line, "uci",3)) {      
       UCI::UCILoop(b, info);
       if(info.quit == true) break;
@@ -46,7 +48,7 @@ int main(int argc, char* argv[])
       XBoard::XBoardLoop(b, info);
       if(info.quit == true) break;
       continue;
-    } else if (!strncmp(line, "vice",4))  {
+    } else if (!strncmp(line, "cli",3))  {
       consoleLoop(b, info);
       if(info.quit == true) break;
       continue;

@@ -4,6 +4,7 @@
 #include "board.hpp"
 #include "search.hpp"
 
+// UCI GUI protocol
 namespace UCI {
 
 void UCILoop(Board& b, SearchInfo& info);
@@ -14,8 +15,10 @@ int InputWaiting();
 
 }
 
+// interact with engine thorugh command line
 void consoleLoop(Board& b, SearchInfo& info);
 
+// XBOARD/WINBoard GUI protocl
 namespace XBoard{
     void XBoardLoop(Board& b, SearchInfo& info);
     void PrintOptions();

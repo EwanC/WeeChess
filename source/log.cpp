@@ -15,6 +15,7 @@ Log::~Log(){
 	  
 }
 
+// Singleton class
 Log* Log::getInstance()
 {
     if (!m_instance)
