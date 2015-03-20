@@ -29,6 +29,8 @@ struct SearchInfo{
 
 namespace Search{
 
+void InitEvalMasks(); // Init evaluation masks
+
 bool isRepetition(const Board& b);
 void CheckUp(SearchInfo& info);
 int Quiescence(int alpha, int beta, Board& b, SearchInfo& info);

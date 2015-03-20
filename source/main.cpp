@@ -21,7 +21,8 @@ int main(int argc, char* argv[])
 
   Board b;
   Board::initStaticMembers();
-    
+  Search::InitEvalMasks();
+
   SearchInfo info;
   setbuf(stdin, NULL);
   setbuf(stdout, NULL);

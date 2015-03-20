@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include "search.hpp"
 #include <cassert>
 #include <ctime>
 #include <cstdlib>
@@ -112,7 +113,6 @@ Board::Board()
 // Initalizes static members
 void Board::initStaticMembers()
 {
-	
 	for(int index = 0; index < TOTAL_SQUARES; ++index) {
 		Board::FilesBrd[index] = OFFBOARD;
 		Board::RanksBrd[index] = OFFBOARD;
@@ -125,6 +125,79 @@ void Board::initStaticMembers()
 			Board::RanksBrd[sq] = rank;
 		}
 	}
+}
+
+void Board::resetBoard() 
+{
+
+	for(int index = 0; index < 64; ++index) {
+		m_board[SQ120(index)] = EMPTY;
+	}
+
+	for(int index = 0; index < 2; ++index) {
+		m_majPce[index] = 0;
+		m_minPce[index] = 0;
+		m_material[index] = 0;
+	}
+
+	m_kingSq[WHITE] = m_kingSq[BLACK] = NO_SQ;
+
+	m_side = BOTH;
+	m_enPas = NO_SQ;
+	m_fiftyMove = 0;
+
+	m_ply = 0;
+	m_hisply = 0;
+
+	m_castling = 0;
+
+	m_posHash = 0;
+
+}
+
+void Board::MirrorBoard()
+{
+ 
+    Piece tempPiecesArray[64];
+    Colour tempSide = static_cast<Colour>(m_side^1);
+
+	Piece SwapPiece[13] = { EMPTY, bP, bN, bB, bR, bQ, bK, wP, wN, wB, wR, wQ, wK };
+    int tempCastlePerm = 0;
+    int tempEnPas = NO_SQ;
+
+
+    if (m_castling & WKCA) tempCastlePerm |= BKCA;
+    if (m_castling & WQCA) tempCastlePerm |= BQCA;
+
+    if (m_castling & BKCA) tempCastlePerm |= WKCA;
+    if (m_castling & BQCA) tempCastlePerm |= WQCA;
+
+	if (m_enPas != NO_SQ)  {
+        tempEnPas = SQ120(Mirror64[SQ64(m_enPas)]);
+    }
+
+    for (int sq = 0; sq < 64; sq++) {
+        tempPiecesArray[sq] = m_board[SQ120(Mirror64[sq])];
+    }
+
+    resetBoard();
+
+	for (int sq = 0; sq < 64; sq++) {
+        Piece tp = SwapPiece[tempPiecesArray[sq]];
+        m_board[SQ120(sq)] = tp;
+    }
+
+	m_side = tempSide;
+    m_castling = tempCastlePerm;
+    m_enPas = static_cast<Square>(tempEnPas);
+
+    m_posHash = genHashKey();
+
+	updateListsMaterial();
+
+    assert(checkBoard()); 
+
+
 }
 
 // update material member data

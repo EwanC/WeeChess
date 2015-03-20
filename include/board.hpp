@@ -463,6 +463,9 @@ void updateListsMaterial();
 // Returns true if Square 'sq' is attacked by a piece of Colour side
 bool isSquareAttacked(const Square& sq, const Colour& side) const;
 
+void MirrorBoard();
+void resetBoard();
+
 Colour m_side;                 // Side to play colour
 Square m_enPas;                // Square available for en Passent
 Piece m_board[TOTAL_SQUARES];  // Piece on each square(120 squares)

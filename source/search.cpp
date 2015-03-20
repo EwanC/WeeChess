@@ -12,6 +12,87 @@
 #define MATE (29000) // Board evaluation score for mate
 #define INF  (30000)
 
+namespace Search
+{
+	
+uint64_t FileBBMask[8];
+uint64_t RankBBMask[8];
+
+uint64_t BlackPassedMask[64];
+uint64_t WhitePassedMask[64];
+uint64_t IsolatedMask[64];
+}
+
+void Search::InitEvalMasks()
+{
+
+	for(int sq = 0; sq < 8; ++sq) {
+        Search::FileBBMask[sq] = 0;
+		Search::RankBBMask[sq] = 0;
+	}
+
+	for(int r = RANK_8; r >= RANK_1; r--) {
+        for (int f = FILE_A; f <= FILE_H; f++) {
+            int sq = r * 8 + f;
+            Search::FileBBMask[f] |= (1 << sq);
+            Search::RankBBMask[r] |= (1 << sq);
+        }
+	}
+
+	for(int sq = 0; sq < 64; ++sq) {
+		Search::IsolatedMask[sq] = 0;
+		Search::WhitePassedMask[sq] = 0;
+		Search::BlackPassedMask[sq] = 0;
+    }
+
+	for(int sq = 0; sq < 64; ++sq) {
+		int tsq = sq + 8;
+
+        while(tsq < 64) {
+            Search::WhitePassedMask[sq] |= (1 << tsq);
+            tsq += 8;
+        }
+
+        tsq = sq - 8;
+        while(tsq >= 0) {
+            Search::BlackPassedMask[sq] |= (1 << tsq);
+            tsq -= 8;
+        }
+
+        if(Board::FilesBrd[SQ120(sq)] > FILE_A) {
+            Search::IsolatedMask[sq] |= Search::FileBBMask[Board::FilesBrd[SQ120(sq)] - 1];
+
+            tsq = sq + 7;
+            while(tsq < 64) {
+                Search::WhitePassedMask[sq] |= (1 << tsq);
+                tsq += 8;
+            }
+
+            tsq = sq - 9;
+            while(tsq >= 0) {
+                Search::BlackPassedMask[sq] |= (1 << tsq);
+                tsq -= 8;
+            }        }
+
+        if(Board::FilesBrd[SQ120(sq)] < FILE_H) {
+            Search::IsolatedMask[sq] |= Search::FileBBMask[Board::FilesBrd[SQ120(sq)] + 1];
+
+            tsq = sq + 9;
+            while(tsq < 64) {
+                Search::WhitePassedMask[sq] |= (1 << tsq);
+                tsq += 8;
+            }
+
+            tsq = sq - 7;
+            while(tsq >= 0) {
+                Search::BlackPassedMask[sq] |= (1 << tsq);
+                tsq -= 8;
+            }
+        }
+	}
+}
+
+
 // Returns current time.
 int Search::GetTimeMs() { 
 
@@ -195,6 +276,12 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		return EvalPosition(b);
 	}
 	
+	// Increase search depth if in check
+	Colour changeSide = static_cast<Colour>(b.m_side^1);
+    bool inCheck = b.isSquareAttacked(b.m_kingSq[b.m_side],changeSide);
+    if(inCheck)
+    	depth++;
+
 	// Generate all moves for board
 	MoveList list;
 	list.genAllMoves(b);
@@ -286,8 +373,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 	
 	// No legal moves found, checkmate or draw	
 	if(Legal == 0) {
-		Colour changeSide = static_cast<Colour>(b.m_side^1);
-		if(b.isSquareAttacked(b.m_kingSq[b.m_side],changeSide)) { 
+		if(inCheck) { 
 			return -MATE + b.m_ply;
 		} else {
 			return 0;
