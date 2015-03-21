@@ -25,6 +25,8 @@ struct SearchInfo{
 	float fh;       // fail high
 	float fhf;      // fail high first
 
+	int nullCut;    // Number of null moves pruned
+
 };
 
 namespace Search{

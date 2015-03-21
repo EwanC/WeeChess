@@ -291,6 +291,23 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
     if(inCheck)
     	depth++;
 
+    // Null move pruning
+    int Score = 0;
+
+	if( DoNull && !inCheck && b.m_ply && (b.m_majPce[b.m_side] > 0) && depth >= 4) {
+		MakeNullMove(b);
+		Score = -AlphaBeta( -beta, -beta + 1, depth-4, b, info, false);
+		TakeNullMove(b);
+		if(info.stopped == true) {
+			return 0;
+		}
+
+		if (Score >= beta) {
+		
+			return beta;
+		}
+	}
+
 	// Generate all moves for board
 	MoveList list;
 	list.genAllMoves(b);
@@ -299,7 +316,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 
 	int OldAlpha = alpha; // Record what alpha is before loop
 	int BestMove = 0;     // Best move found
-    int Score = 0;
+    Score = 0;
 
     int PvMove = b.m_pvTable.ProbePvTable(b);
     std::vector<Move>::iterator itr;

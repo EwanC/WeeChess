@@ -823,3 +823,54 @@ bool MoveExists(Board& b, const int move) {
     }
 	return false;
 }
+
+void MakeNullMove(Board& b) 
+{
+
+    assert(b.checkBoard());
+    Colour opposition = static_cast<Colour>(b.m_side^1);
+    assert(!b.isSquareAttacked(b.m_kingSq[b.m_side],opposition));
+
+    b.m_ply++;
+    b.m_history[b.m_hisply].posHash = b.m_posHash;
+
+    if(b.m_enPas != NO_SQ) HASH_EP;
+
+    b.m_history[b.m_hisply].move = 0;
+    b.m_history[b.m_hisply].fiftyMove = b.m_fiftyMove;
+    b.m_history[b.m_hisply].enPas = b.m_enPas;
+    b.m_history[b.m_hisply].castlingPerm = b.m_castling;
+    b.m_enPas = NO_SQ;
+
+    b.m_side = opposition;
+    b.m_hisply++;
+    HASH_SIDE;
+   
+    assert(b.checkBoard());
+	assert(b.m_hisply >= 0 && b.m_hisply < MAX_GAME_MOVES);
+	assert(b.m_ply >= 0 && b.m_ply < MAXDEPTH);
+
+    return;
+} 
+
+void TakeNullMove(Board& b) 
+{
+    assert(b.checkBoard());
+
+    b.m_hisply--;
+    b.m_ply--;
+
+    if(b.m_enPas != NO_SQ) HASH_EP;
+
+    b.m_castling = b.m_history[b.m_hisply].castlingPerm;
+    b.m_fiftyMove = b.m_history[b.m_hisply].fiftyMove;
+    b.m_enPas = b.m_history[b.m_hisply].enPas;
+
+    if(b.m_enPas != NO_SQ) HASH_EP;
+    b.m_side = static_cast<Colour>(b.m_side^1);
+    HASH_SIDE;
+  
+    assert(b.checkBoard());
+	assert(b.m_hisply >= 0 && b.m_hisply < MAX_GAME_MOVES);
+	assert(b.m_ply >= 0 && b.m_ply < MAXDEPTH);
+}

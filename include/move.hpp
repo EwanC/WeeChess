@@ -87,6 +87,8 @@ void AddPiece(const int sq, Board& b, const Piece pce);
 void ClearPiece(const int sq, Board& b);
 bool MoveExists(Board& b, const int move);
 uint32_t parseMove(char *ptrChar, Board& b);
+void TakeNullMove(Board& b);
+void MakeNullMove(Board& b);
 
 
 #endif //MOVE_H
