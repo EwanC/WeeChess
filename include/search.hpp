@@ -40,6 +40,7 @@ void SearchPosition(Board& b, SearchInfo& info);
 void PickNextMove(std::vector<Move>::iterator move, MoveList& list);
 int GetTimeMs();
 int EvalPosition(const Board& b);
+bool MaterialDraw(const Board& b);
 
 // How to prioritize captures - MvvLva
 // Most Valuable Victim, Least Valuavle attacker 
@@ -108,5 +109,28 @@ const int Mirror64[64] = {
 0	,	1	,	2	,	3	,	4	,	5	,	6	,	7
 };
 
+const int KingE[64] = {	
+	-50	,	-10	,	0	,	0	,	0	,	0	,	-10	,	-50	,
+	-10,	0	,	10	,	10	,	10	,	10	,	0	,	-10	,
+	0	,	10	,	20	,	20	,	20	,	20	,	10	,	0	,
+	0	,	10	,	20	,	40	,	40	,	20	,	10	,	0	,
+	0	,	10	,	20	,	40	,	40	,	20	,	10	,	0	,
+	0	,	10	,	20	,	20	,	20	,	20	,	10	,	0	,
+	-10,	0	,	10	,	10	,	10	,	10	,	0	,	-10	,
+	-50	,	-10	,	0	,	0	,	0	,	0	,	-10	,	-50	
+};
+
+const int KingO[64] = {	
+	0	,	5	,	5	,	-10	,	-10	,	0	,	10	,	5	,
+	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,	-30	,
+	-50	,	-50	,	-50	,	-50	,	-50	,	-50	,	-50	,	-50	,
+	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,
+	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70	,	-70		
+};
+
+#define ENDGAME_MAT (1 * Board::PieceVal[wR] + 2 * Board::PieceVal[wN] + 2 * Board::PieceVal[wP] + Board::PieceVal[wK])
 
 #endif //SEARCH_H

@@ -489,6 +489,9 @@ int Search::EvalPosition(const Board& b) {
  
     // material score
 	int score = b.m_material[WHITE] - b.m_material[BLACK];
+	if(!Bitboard::countBits(b.m_pList[wP]) && !Bitboard::countBits(b.m_pList[bP]) && MaterialDraw(b) == true) {
+		return 0;
+	}
 
     // White pawns
 	bitboard wpBitboard = b.m_pList[wP];
@@ -617,11 +620,62 @@ int Search::EvalPosition(const Board& b) {
 		}
 	}	
 	
+	// White King
+    bitboard wkBitboard = b.m_pList[wK];
+	int sq64 = Bitboard::popBit(&wkBitboard); 
+	
+	if( (b.m_material[BLACK] <= ENDGAME_MAT) ) {
+		score += KingE[sq64];
+	} else {
+		score += KingO[sq64];
+	}
+	
+	// Black King
+	bitboard bkBitboard = b.m_pList[bK];
+	sq64 = Bitboard::popBit(&bkBitboard); 
+	
+	if( (b.m_material[WHITE] <= ENDGAME_MAT) ) {
+		score -= KingE[Mirror64[sq64]];
+	} else {
+		score -= KingO[Mirror64[sq64]];
+	}
+	
+	if(Bitboard::countBits(wbBitboard) >= 2) score += Search::BishopPair;
+	if(Bitboard::countBits(bbBitboard)  >= 2) score -= Search::BishopPair;
+	
+
+
 	if(b.m_side == WHITE) {
 		return score;
 	} else {
 		return -score;
 	}	
+}
+
+bool Search::MaterialDraw(const Board& b)
+{
+
+	assert(b.checkBoard());
+	
+    if (!Bitboard::countBits(b.m_pList[wR]) && !Bitboard::countBits(b.m_pList[bR]) && !Bitboard::countBits(b.m_pList[wQ]) && !Bitboard::countBits(b.m_pList[bQ])) {
+	  if (!Bitboard::countBits(b.m_pList[bB]) && !Bitboard::countBits(b.m_pList[wB])) {
+	      if (Bitboard::countBits(b.m_pList[wN]) < 3 && Bitboard::countBits(b.m_pList[bN]) < 3) {  return true; }
+	  } else if (!Bitboard::countBits(b.m_pList[wN]) && !Bitboard::countBits(b.m_pList[bN])) {
+	     if (abs(Bitboard::countBits(b.m_pList[wB]) - Bitboard::countBits(b.m_pList[bB])) < 2) { return true; }
+	  } else if ((Bitboard::countBits(b.m_pList[wN]) < 3 && !Bitboard::countBits(b.m_pList[wB])) || (Bitboard::countBits(b.m_pList[wB]) == 1 && !Bitboard::countBits(b.m_pList[wN]))) {
+	    if ((Bitboard::countBits(b.m_pList[bN]) < 3 && !Bitboard::countBits(b.m_pList[bB])) || (Bitboard::countBits(b.m_pList[bB]) == 1 && !Bitboard::countBits(b.m_pList[bN])))  { return true; }
+	  }
+	} else if (!Bitboard::countBits(b.m_pList[wQ]) && !Bitboard::countBits(b.m_pList[bQ])) {
+        if (Bitboard::countBits(b.m_pList[wR]) == 1 && Bitboard::countBits(b.m_pList[bR]) == 1) {
+            if ((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[wB])) < 2 && (Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB])) < 2)	{ return true; }
+        } else if (Bitboard::countBits(b.m_pList[wR]) == 1 && !Bitboard::countBits(b.m_pList[bR])) {
+            if ((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[wB]) == 0) && (((Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB])) == 1) || ((Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB])) == 2))) { return true; }
+        } else if (Bitboard::countBits(b.m_pList[bR]) == 1 && !Bitboard::countBits(b.m_pList[wR])) {
+            if ((Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB]) == 0) && (((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[bN])) == 1) 
+            	                                                            || ((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[wB])) == 2))) { return true; }
+        }
+    }
+  return false;
 }
 
 // Finds the best scoring move in the move list and swaps with current move
