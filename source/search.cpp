@@ -560,6 +560,16 @@ int Search::EvalPosition(const Board& b) {
 	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
 		int sq64 = Bitboard::popBit(&wrBitboard); 
 		score += RookTable[sq64];
+
+		assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+		
+		if(!((b.m_pList[bP] | b.m_pList[wP]) & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score += Search::RookOpenFile;
+		} else if(!(b.m_pList[wP] & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score += Search::RookSemiOpenFile;
+		}
+
+
 	}	
 
     // Black Rook
@@ -568,6 +578,43 @@ int Search::EvalPosition(const Board& b) {
 	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
 		int sq64 = Bitboard::popBit(&brBitboard); 
 		score -= RookTable[Mirror64[sq64]];
+
+
+		assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+		if(!((b.m_pList[bP] | b.m_pList[wP]) & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score -= Search::RookOpenFile;
+		} else if(!(b.m_pList[bP] & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score -= Search::RookSemiOpenFile;
+		}
+	}	
+
+
+	// White Queen
+	bitboard wqBitboard = b.m_pList[bR];
+	numPce = Bitboard::countBits(wqBitboard);		
+	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
+		int sq64 = Bitboard::popBit(&wqBitboard); 
+		assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+
+		if(!((b.m_pList[bP] | b.m_pList[wP]) & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score += Search::QueenOpenFile;
+		} else if(!(b.m_pList[wP] & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score += Search::QueenSemiOpenFile;
+		}
+	}	
+
+	// Black Queen
+	bitboard bqBitboard = b.m_pList[bQ];
+	numPce = Bitboard::countBits(bqBitboard);		
+	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
+		int sq64 = Bitboard::popBit(&bqBitboard); 
+		assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+
+		if(!((b.m_pList[bP] | b.m_pList[wP]) & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score -= Search::QueenOpenFile;
+		} else if(!(b.m_pList[bP] & Search::FileBBMask[Board::FilesBrd[sq64]])) {
+			score -= Search::QueenSemiOpenFile;
+		}
 	}	
 	
 	if(b.m_side == WHITE) {
