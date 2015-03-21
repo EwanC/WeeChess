@@ -261,8 +261,15 @@ void consoleLoop(Board& b, SearchInfo& info)
 			printf("depth x - set depth to x\n");
 			printf("time x - set thinking time to x seconds (depth still applies if set)\n");
 			printf("view - show current depth and movetime settings\n");
+			printf("setboard x - set position to fen x\n");
 			printf("** note ** - to reset time and depth, set to 0\n");
 			printf("enter moves using b7b8q notation\n\n\n");
+			continue;
+		}
+
+		if(!strcmp(command, "setboard")){
+			engineSide = BOTH;
+			b.parseFen(inBuf+9);
 			continue;
 		}
     

@@ -21,6 +21,15 @@ uint64_t RankBBMask[8];
 uint64_t BlackPassedMask[64];
 uint64_t WhitePassedMask[64];
 uint64_t IsolatedMask[64];
+
+const int PawnIsolated = -10;
+const int PawnPassed[8] = { 0, 5, 10, 20, 35, 60, 100, 200 }; 
+const int RookOpenFile = 10;
+const int RookSemiOpenFile = 5;
+const int QueenOpenFile = 5;
+const int QueenSemiOpenFile = 3;
+const int BishopPair = 30;
+
 }
 
 void Search::InitEvalMasks()
@@ -487,6 +496,14 @@ int Search::EvalPosition(const Board& b) {
 	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
 		int sq64 = Bitboard::popBit(&wpBitboard); 
 		score += PawnTable[sq64];
+
+		if( (Search::IsolatedMask[sq64] & wpBitboard) == 0) {
+			score += Search::PawnIsolated;
+		}
+		
+		if( (Search::WhitePassedMask[sq64] & b.m_pList[bP]) == 0) {
+			score += Search::PawnPassed[Board::RanksBrd[sq64]];
+		}
 	}	
 
     // Black pawns
@@ -495,6 +512,14 @@ int Search::EvalPosition(const Board& b) {
 	for(int pceNum = 0; pceNum < numPce; ++pceNum) {
 		int sq64 = Bitboard::popBit(&bpBitboard); 
 		score -= PawnTable[Mirror64[sq64]];
+
+		if( (Search::IsolatedMask[sq64] & bpBitboard) == 0) {
+			score -= Search::PawnIsolated;
+		}
+		
+		if( (Search::BlackPassedMask[sq64] & b.m_pList[wP]) == 0) {
+			score -= Search::PawnPassed[7 - Board::RanksBrd[sq64]];
+		}
 	}	
 	
 	// White Knight
