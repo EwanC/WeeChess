@@ -7,19 +7,19 @@
 // UCI GUI protocol
 namespace UCI {
 
-void UCILoop(Board& b, SearchInfo& info);
-void ParsePosition(char* lineIn, Board& b);
-void ParseGo(char* line, SearchInfo& info, Board& b);
-void ReadInput( SearchInfo& info);
-int InputWaiting();
+    void UCILoop(Board& b, SearchInfo& info);
+    void ParsePosition(char* lineIn, Board& b);
+    void ParseGo(char* line, SearchInfo& info, Board& b);
+    void ReadInput( SearchInfo& info);
+    int InputWaiting();
 
 }
 
-namespace CLI{
 // interact with engine thorugh command line
-void consoleLoop(Board& b, SearchInfo& info);
-void printHelp();
-void printUsage();
+namespace CLI{
+    void consoleLoop(Board& b, SearchInfo& info);
+    void printHelp();
+    void printUsage();
 
 }
 

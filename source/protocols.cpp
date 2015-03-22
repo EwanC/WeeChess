@@ -13,14 +13,17 @@
 // Returns true if data waiting to be read from stdin
 int UCI::InputWaiting()
 {
-  fd_set readfds;
-  struct timeval tv;
-  FD_ZERO (&readfds);
-  FD_SET (fileno(stdin), &readfds);
-  tv.tv_sec=0; tv.tv_usec=0;
-  select(16, &readfds, 0, 0, &tv);
+    fd_set readfds;
+    struct timeval tv;
+  
+    FD_ZERO (&readfds);
+    FD_SET (fileno(stdin), &readfds);
+   
+    tv.tv_sec=0;
+    tv.tv_usec=0;
+    select(16, &readfds, 0, 0, &tv);
 
-  return (FD_ISSET(fileno(stdin), &readfds));
+    return (FD_ISSET(fileno(stdin), &readfds));
 
 }
 
@@ -32,15 +35,18 @@ void UCI::ReadInput( SearchInfo& info)
 
     if (InputWaiting()) {    
 		info.stopped = true;
+		
 		do {
-		  bytes=read(fileno(stdin),input,256);
+		    bytes=read(fileno(stdin),input,256);
 		} while (bytes<0);
+
 		endc = strchr(input,'\n');
-		if (endc) *endc=0;
+		if (endc) 
+			*endc=0;
 
 		if (strlen(input) > 0) {
 			if (!strncmp(input, "quit", 4))    {
-			  info.quit = true;
+			    info.quit = true;
 			}
 		}
 		return;
@@ -176,10 +182,10 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
         fflush(stdout);
 
         if (!fgets(line, INPUTBUFFER, stdin)) //get input from standard input
-        continue;
+            continue;
 
         if (line[0] == '\n')
-        continue;
+            continue;
 
         if (!strncmp(line, "isready", 7)) {
             std::cout<<"readyok\n";
@@ -198,7 +204,8 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
             std::cout<<"id author Ewan Crawford\n";
             std::cout<<"uciok\n";
         }
-		if(info.quit) break;
+		if(info.quit) 
+			break;
     }
 	
 }
@@ -210,7 +217,6 @@ void CLI::printUsage()
     std::cout << "--cli         Interact with WeeChess thorugh command line.\n";
     std::cout << "--xboard      WeeChess uses the Xboard protocol.\n";
     std::cout << "--uci         WeeChess uses UCI protocol. Default if no option is specified.\n";
-
 
 }
 
@@ -249,6 +255,7 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 	int engineSide = BLACK;    
 	int move = 0;		
 	char inBuf[80], command[80];	
+	std::string input_buffer;
 	
 	b.parseFen(START_FEN);	// Setup initial board position
 	
@@ -277,7 +284,7 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 		memset(&inBuf[0], 0, sizeof(inBuf));
 		fflush(stdout);
 		if (!fgets(inBuf, 80, stdin))
-		continue;
+		    continue;
     
 		sscanf(inBuf, "%s", command);
 		
@@ -334,7 +341,8 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 		
 		if(!strcmp(command, "depth")) {
 			sscanf(inBuf, "depth %d", &depth); 
-		    if(depth==0) depth = MAXDEPTH;
+		    if(depth==0) 
+		    	depth = MAXDEPTH;
 			continue; 
 		}
 		
@@ -380,19 +388,31 @@ int XBoard::ThreeFoldRep(const Board& b) {
 // Returns true if both sides are drawn in material value
 bool XBoard::DrawMaterial(const Board& b) 
 {
-    if (Bitboard::countBits(b.m_pList[wP]) || Bitboard::countBits(b.m_pList[bP])) return false;
-    if (Bitboard::countBits(b.m_pList[wQ]) || Bitboard::countBits(b.m_pList[bQ]) ||
-        Bitboard::countBits(b.m_pList[wR]) || Bitboard::countBits(b.m_pList[bR])) return false;
-    if (Bitboard::countBits(b.m_pList[wB]) > 1 || Bitboard::countBits(b.m_pList[bB])  > 1) {return false;}
-    if (Bitboard::countBits(b.m_pList[wN]) > 1 || Bitboard::countBits(b.m_pList[bN]) > 1) {return false;}
-    if (Bitboard::countBits(b.m_pList[wN]) && Bitboard::countBits(b.m_pList[wB])) {return false;}
-    if (Bitboard::countBits(b.m_pList[bN]) && Bitboard::countBits(b.m_pList[bB])) {return false;}
+    if (Bitboard::countBits(b.m_pList[wP]) || Bitboard::countBits(b.m_pList[bP]))
+        return false;
+
+    if (Bitboard::countBits(b.m_pList[wQ]) || Bitboard::countBits(b.m_pList[bQ]) 
+    	|| Bitboard::countBits(b.m_pList[wR]) || Bitboard::countBits(b.m_pList[bR])) 
+        return false;
+
+    if (Bitboard::countBits(b.m_pList[wB]) > 1 || Bitboard::countBits(b.m_pList[bB])  > 1) 
+        return false;
+
+    if (Bitboard::countBits(b.m_pList[wN]) > 1 || Bitboard::countBits(b.m_pList[bN]) > 1) 
+    	return false;
+
+    if (Bitboard::countBits(b.m_pList[wN]) && Bitboard::countBits(b.m_pList[wB])) 
+    	return false;
+
+    if (Bitboard::countBits(b.m_pList[bN]) && Bitboard::countBits(b.m_pList[bB])) 
+    	return false;
 	
     return true;
 }
 
 // Returns true of game is over, and prints reason
-bool XBoard::checkResult(Board& b) {
+bool XBoard::checkResult(Board& b) 
+{
 
     if (b.m_fiftyMove > 100) {
         std::cout << "1/2-1/2 {fifty move rule (claimed by WeeChess)}\n"; 
@@ -425,7 +445,8 @@ bool XBoard::checkResult(Board& b) {
 		break;
     }
 	
-	if(found != 0) return false;
+	if(found != 0) 
+		return false;
 
     Colour oppostion = static_cast<Colour>(b.m_side^1);
 	int InCheck = b.isSquareAttacked(b.m_kingSq[b.m_side],oppostion);
@@ -439,20 +460,22 @@ bool XBoard::checkResult(Board& b) {
 	      return true;
         }
     } else {
-      std::cout<<"\n1/2-1/2 {stalemate (claimed by WeeChess)}\n";
-      return true;
+          std::cout<<"\n1/2-1/2 {stalemate (claimed by WeeChess)}\n";
+          return true;
     }	
 	return false;	
 }
 
 // Print xboard settings
-void XBoard::PrintOptions() {
+void XBoard::PrintOptions() 
+{
 	std::cout<<"feature ping=1 setboard=1 colors=0 usermove=1\n";      
 	std::cout<<"feature done=1\n";
 }
 
 // Xboard/Winboard GUI protocol loo[]
-void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
+void XBoard::XBoardLoop(Board& b, SearchInfo& info) 
+{
 
 	info.gameMode = XBMODE;
 	info.postThinking = true;
@@ -516,7 +539,7 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 		memset(&inBuf[0], 0, sizeof(inBuf));
 		fflush(stdout);
 		if (!fgets(inBuf, 80, stdin))
-		continue;
+		    continue;
     
 		sscanf(inBuf, "%s", command);
 		
@@ -560,10 +583,10 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 			sec = 0;
 			movetime = -1;
 			if( sscanf(inBuf, "level %d %d %d", &mps, &timeLeft, &inc) != 3) {
-			  sscanf(inBuf, "level %d %d:%d %d", &mps, &timeLeft, &sec, &inc);
-		      std::cout << "DEBUG level with :\n";
-			}	else {
-		      std::cout << "DEBUG level without :\n";
+			    sscanf(inBuf, "level %d %d:%d %d", &mps, &timeLeft, &sec, &inc);
+		        std::cout << "DEBUG level with :\n";
+			}else {
+		         std::cout << "DEBUG level without :\n";
 			}			
 			timeLeft *= 60000;
 			timeLeft += sec * 1000;
@@ -606,7 +629,8 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 		if(!strcmp(command, "usermove")){
 			movestogo[b.m_side]--;
 			move = parseMove(inBuf+9, b);	
-			if(move == 0) continue;
+			if(move == 0) 
+				continue;
 			MakeMove(b, move);
             b.m_ply=0;
 		}    

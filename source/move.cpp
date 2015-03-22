@@ -834,7 +834,8 @@ void MakeNullMove(Board& b)
     b.m_ply++;
     b.m_history[b.m_hisply].posHash = b.m_posHash;
 
-    if(b.m_enPas != NO_SQ) HASH_EP;
+    if(b.m_enPas != NO_SQ) 
+    	HASH_EP;
 
     b.m_history[b.m_hisply].move = 0;
     b.m_history[b.m_hisply].fiftyMove = b.m_fiftyMove;
@@ -860,13 +861,16 @@ void TakeNullMove(Board& b)
     b.m_hisply--;
     b.m_ply--;
 
-    if(b.m_enPas != NO_SQ) HASH_EP;
+    if(b.m_enPas != NO_SQ) 
+    	HASH_EP;
 
     b.m_castling = b.m_history[b.m_hisply].castlingPerm;
     b.m_fiftyMove = b.m_history[b.m_hisply].fiftyMove;
     b.m_enPas = b.m_history[b.m_hisply].enPas;
 
-    if(b.m_enPas != NO_SQ) HASH_EP;
+    if(b.m_enPas != NO_SQ) 
+    	HASH_EP;
+
     b.m_side = static_cast<Colour>(b.m_side^1);
     HASH_SIDE;
   
