@@ -3,6 +3,7 @@
 
 #include "stdio.h"
 #include <cstring>
+#include <iostream>
 #include "sys/time.h"
 #include "sys/select.h"
 #include "unistd.h"
@@ -200,8 +201,38 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
 	
 }
 
+void CLI::printUsage()
+{
+	std::cout << "Usage: WeeChess [--help|-h] [--xboard|-x] [--uci|-u] [--cli|-c]\n";
+    std::cout << "--help        Displays this mesage.\n";
+    std::cout << "--cli         Interact with WeeChess thorugh command line.\n";
+    std::cout << "--xboard      WeeChess uses the Xboard protocol.\n";
+    std::cout << "--uci         WeeChess uses UCI protocol. Default if no option is specified.\n";
+
+
+}
+
+void CLI::printHelp()
+{
+
+    printf("CLI Commands:\n");
+	printf("quit - quit game\n");
+	printf("force - computer will not think\n");
+	printf("print - show board\n");
+	printf("post - show thinking\n");
+	printf("nopost - do not show thinking\n");
+	printf("new - start new game\n");
+	printf("go - set computer thinking\n");
+	printf("depth x - set depth to x\n");
+	printf("time x - set thinking time to x seconds (depth still applies if set)\n");
+	printf("view - show current depth and movetime settings\n");
+	printf("setboard x - set position to fen x\n");
+	printf("** note ** - to reset time and depth, set to 0\n");
+	printf("enter moves using b7b8q notation\n\n\n");
+}
+
 // Interact with WeeChess through the console
-void consoleLoop(Board& b, SearchInfo& info)
+void CLI::consoleLoop(Board& b, SearchInfo& info)
 {
 
 	printf("Welcome to WeeChess Console Mode!\n");
@@ -250,20 +281,7 @@ void consoleLoop(Board& b, SearchInfo& info)
 		
 		// Print help for used
 		if(!strcmp(command, "help")) { 
-			printf("Commands:\n");
-			printf("quit - quit game\n");
-			printf("force - computer will not think\n");
-			printf("print - show board\n");
-			printf("post - show thinking\n");
-			printf("nopost - do not show thinking\n");
-			printf("new - start new game\n");
-			printf("go - set computer thinking\n");
-			printf("depth x - set depth to x\n");
-			printf("time x - set thinking time to x seconds (depth still applies if set)\n");
-			printf("view - show current depth and movetime settings\n");
-			printf("setboard x - set position to fen x\n");
-			printf("** note ** - to reset time and depth, set to 0\n");
-			printf("enter moves using b7b8q notation\n\n\n");
+			CLI::printHelp();
 			continue;
 		}
 

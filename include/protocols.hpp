@@ -15,8 +15,13 @@ int InputWaiting();
 
 }
 
+namespace CLI{
 // interact with engine thorugh command line
 void consoleLoop(Board& b, SearchInfo& info);
+void printHelp();
+void printUsage();
+
+}
 
 // XBOARD/WINBoard GUI protocl
 namespace XBoard{
