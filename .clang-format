@@ -1,0 +1,21 @@
+# Clang format rules
+---
+Language:        Cpp
+BreakBeforeBraces: Stroustrup
+AlignAfterOpenBracket: true
+AlignEscapedNewlinesLeft: false
+AlignOperands:   true
+AlignTrailingComments: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortIfStatementsOnASingleLine: false
+ColumnLimit:     100
+IndentFunctionDeclarationAfterType: false
+NamespaceIndentation: All
+PointerAlignment: Left
+SpacesBeforeTrailingComments: 1
+Cpp11BracedListStyle: true
+Standard:        Cpp11
+IndentWidth:     4
+UseTab:          Never
+...
+
