@@ -673,23 +673,32 @@ bool Search::MaterialDraw(const Board& b)
 {
 
 	assert(b.checkBoard());
+
+	const int numbR = Bitboard::countBits(b.m_pList[bR]);
+	const int numwR = Bitboard::countBits(b.m_pList[wR]);
+	const int numbQ = Bitboard::countBits(b.m_pList[bQ]);
+	const int numwQ = Bitboard::countBits(b.m_pList[wQ]);
+	const int numwN = Bitboard::countBits(b.m_pList[wN]);
+	const int numbN = Bitboard::countBits(b.m_pList[bN]);
+	const int numwB = Bitboard::countBits(b.m_pList[wB]);
+	const int numbB = Bitboard::countBits(b.m_pList[bB]);
+
 	
-    if (!Bitboard::countBits(b.m_pList[wR]) && !Bitboard::countBits(b.m_pList[bR]) && !Bitboard::countBits(b.m_pList[wQ]) && !Bitboard::countBits(b.m_pList[bQ])) {
-	  if (!Bitboard::countBits(b.m_pList[bB]) && !Bitboard::countBits(b.m_pList[wB])) {
-	      if (Bitboard::countBits(b.m_pList[wN]) < 3 && Bitboard::countBits(b.m_pList[bN]) < 3) {  return true; }
-	  } else if (!Bitboard::countBits(b.m_pList[wN]) && !Bitboard::countBits(b.m_pList[bN])) {
-	     if (abs(Bitboard::countBits(b.m_pList[wB]) - Bitboard::countBits(b.m_pList[bB])) < 2) { return true; }
-	  } else if ((Bitboard::countBits(b.m_pList[wN]) < 3 && !Bitboard::countBits(b.m_pList[wB])) || (Bitboard::countBits(b.m_pList[wB]) == 1 && !Bitboard::countBits(b.m_pList[wN]))) {
-	    if ((Bitboard::countBits(b.m_pList[bN]) < 3 && !Bitboard::countBits(b.m_pList[bB])) || (Bitboard::countBits(b.m_pList[bB]) == 1 && !Bitboard::countBits(b.m_pList[bN])))  { return true; }
+    if (numwR != 0 && numbR != 0 && numwQ != 0 && numbQ != 0) {
+	  if (numbB != 0 && numwB != 0) {
+	      if (numwN < 3 && numbN < 3) {  return true; }
+	  } else if (numwN != 0 && numbN != 0) {
+	     if (abs(numwB - numbB) < 2) { return true; }
+	  } else if ( (numwN < 3 && numwB !=0) || (numwB == 1 && numwN !=0 )) {
+	    if ( (numbN < 3 && numbB !=0) || (numbB == 1 && numbN != 0))  { return true; }
 	  }
-	} else if (!Bitboard::countBits(b.m_pList[wQ]) && !Bitboard::countBits(b.m_pList[bQ])) {
-        if (Bitboard::countBits(b.m_pList[wR]) == 1 && Bitboard::countBits(b.m_pList[bR]) == 1) {
-            if ((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[wB])) < 2 && (Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB])) < 2)	{ return true; }
-        } else if (Bitboard::countBits(b.m_pList[wR]) == 1 && !Bitboard::countBits(b.m_pList[bR])) {
-            if ((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[wB]) == 0) && (((Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB])) == 1) || ((Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB])) == 2))) { return true; }
-        } else if (Bitboard::countBits(b.m_pList[bR]) == 1 && !Bitboard::countBits(b.m_pList[wR])) {
-            if ((Bitboard::countBits(b.m_pList[bN]) + Bitboard::countBits(b.m_pList[bB]) == 0) && (((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[bN])) == 1) 
-            	                                                            || ((Bitboard::countBits(b.m_pList[wN]) + Bitboard::countBits(b.m_pList[wB])) == 2))) { return true; }
+	} else if (numwQ != 0 && numbQ != 0) {
+        if ( numwR == 1 && numbR == 1) {
+            if (numwN + numwB < 2 && numbN + numbB < 2)	{ return true; }
+        } else if ( numwR == 1 && numbR !=0 ) {
+            if ( (numwN + numwB == 0 && numbB == 1) || (numbN + numbB == 2)) { return true; }
+        } else if (numbR == 1 && numwR !=0 ) {
+            if (numbN + numbB == 0 && ((numwN + numbN == 1) || (numwN + numwB == 2))) { return true; }
         }
     }
   return false;
