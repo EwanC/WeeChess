@@ -1,7 +1,6 @@
 #include "protocols.hpp"
 #include "types.hpp"
 
-#include "stdio.h"
 #include <cstring>
 #include <iostream>
 #include "sys/time.h"
@@ -111,8 +110,11 @@ void UCI::ParseGo(char* line, SearchInfo& info, Board& b)
 	}
 	
 	// Search position
-	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n",
-		time,info.starttime,info.stoptime,info.depth,info.timeset);
+	std::cout << "time:"<<time;
+	std::cout << " start:"<<info.starttime; 
+	std::cout << " stop:" <<info.stoptime;
+	std::cout << " depth:"<<info.depth;
+	std::cout <<" timeset:"<<info.timeset<<std::endl;
 
 	Search::SearchPosition(b, info);
 
@@ -164,9 +166,9 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
 
     // Chess engine id
    	char line[INPUTBUFFER];
-    printf("id name WeeChess\n");
-    printf("id author Ewan Crawford\n");
-    printf("uciok\n");
+    std::cout<<"id name WeeChess\n";
+    std::cout<<"id author Ewan Crawford\n";
+    std::cout<<"uciok\n";
 
 
     while (true) {
@@ -180,7 +182,7 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
         continue;
 
         if (!strncmp(line, "isready", 7)) {
-            printf("readyok\n");
+            std::cout<<"readyok\n";
             continue;
         } else if (!strncmp(line, "position", 8)) {
             ParsePosition(line, b);
@@ -192,9 +194,9 @@ void UCI::UCILoop(Board& b, SearchInfo& info)
             info.quit = true;
             break;
         } else if (!strncmp(line, "uci", 3)) {
-            printf("id name WeeChess\n");
-            printf("id author Ewan Crawford\n");
-            printf("uciok\n");
+            std::cout<<"id name WeeChess\n";
+            std::cout<<"id author Ewan Crawford\n";
+            std::cout<<"uciok\n";
         }
 		if(info.quit) break;
     }
@@ -215,28 +217,28 @@ void CLI::printUsage()
 void CLI::printHelp()
 {
 
-    printf("CLI Commands:\n");
-	printf("quit - quit game\n");
-	printf("force - computer will not think\n");
-	printf("print - show board\n");
-	printf("post - show thinking\n");
-	printf("nopost - do not show thinking\n");
-	printf("new - start new game\n");
-	printf("go - set computer thinking\n");
-	printf("depth x - set depth to x\n");
-	printf("time x - set thinking time to x seconds (depth still applies if set)\n");
-	printf("view - show current depth and movetime settings\n");
-	printf("setboard x - set position to fen x\n");
-	printf("** note ** - to reset time and depth, set to 0\n");
-	printf("enter moves using b7b8q notation\n\n\n");
+    std::cout<<"CLI Commands:\n";
+	std::cout<<"quit - quit game\n";
+	std::cout<<"force - computer will not think\n";
+	std::cout<<"print - show board\n";
+	std::cout<<"post - show thinking\n";
+	std::cout<<"nopost - do not show thinking\n";
+	std::cout<<"new - start new game\n";
+	std::cout<<"go - set computer thinking\n";
+	std::cout<<"depth x - set depth to x\n";
+	std::cout<<"time x - set thinking time to x seconds (depth still applies if set)\n";
+	std::cout<<"view - show current depth and movetime settings\n";
+	std::cout<<"setboard x - set position to fen x\n";
+	std::cout<<"** note ** - to reset time and depth, set to 0\n";
+	std::cout<<"enter moves using b7b8q notation\n\n\n";
 }
 
 // Interact with WeeChess through the console
 void CLI::consoleLoop(Board& b, SearchInfo& info)
 {
 
-	printf("Welcome to WeeChess Console Mode!\n");
-	printf("Type help for commands\n\n");
+	std::cout<<"Welcome to WeeChess Console Mode!\n";
+	std::cout<<"Type help for commands\n\n";
 
 	info.gameMode = CONSOLEMODE;
 	info.postThinking = true;
@@ -268,7 +270,7 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 		}	
 		
 		// Get user input
-		printf("\nWeeChess > ");
+		std::cout<<"\nWeeChess > ";
 
 		fflush(stdout); 
 	
@@ -317,11 +319,15 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 		} 
 		
 		if(!strcmp(command, "view")) {
-			if(depth == MAXDEPTH) printf("depth not set ");
-			else printf("depth %d",depth);
+			if(depth == MAXDEPTH) 
+				std::cout << " depth not set ";
+			else 
+				std::cout << " depth "<<depth;
 			
-			if(movetime != 0) printf(" movetime %ds\n",movetime/1000);
-			else printf(" movetime not set\n");
+			if(movetime != 0) 
+				std::cout <<" movetime " << movetime/1000 << "s\n";
+			else 
+				std::cout <<" movetime not set\n";
 			
 			continue; 
 		}
@@ -352,7 +358,7 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 		// Get Move from user
 		move = parseMove(inBuf, b);	
 		if(move == 0) { // Invalud move
-			printf("Command unknown:%s\n",inBuf);
+			std::cout << "Command unknown:"<<inBuf<<std::endl;
 			continue;
 		}
 		MakeMove(b, move); // make user move
@@ -389,15 +395,18 @@ bool XBoard::DrawMaterial(const Board& b)
 bool XBoard::checkResult(Board& b) {
 
     if (b.m_fiftyMove > 100) {
-     printf("1/2-1/2 {fifty move rule (claimed by WeeChess)}\n"); return true;
+        std::cout << "1/2-1/2 {fifty move rule (claimed by WeeChess)}\n"; 
+        return true;
     }
 
     if (XBoard::ThreeFoldRep(b) >= 2) {
-     printf("1/2-1/2 {3-fold repetition (claimed by WeeChess)}\n"); return true;
+        std::cout << "1/2-1/2 {3-fold repetition (claimed by WeeChess)}\n"; 
+        return true;
     }
 	
 	if (XBoard::DrawMaterial(b) == true) {
-     printf("1/2-1/2 {insufficient material (claimed by WeeChess)}\n"); return true;
+        std::cout << "1/2-1/2 {insufficient material (claimed by WeeChess)}\n"; 
+        return true;
     }
 	
 	MoveList list;
@@ -423,20 +432,23 @@ bool XBoard::checkResult(Board& b) {
 	
 	if(InCheck == true)	{
 	    if(b.m_side == WHITE) {
-	      printf("0-1 {black mates (claimed by WeeChess)}\n");return true;
+	      std::cout << "0-1 {black mates (claimed by WeeChess)}\n";
+	      return true;
         } else {
-	      printf("0-1 {white mates (claimed by WeeChess)}\n");return true;
+	      std::cout << "0-1 {white mates (claimed by WeeChess)}\n";
+	      return true;
         }
     } else {
-      printf("\n1/2-1/2 {stalemate (claimed by WeeChess)}\n");return true;
+      std::cout<<"\n1/2-1/2 {stalemate (claimed by WeeChess)}\n";
+      return true;
     }	
 	return false;	
 }
 
 // Print xboard settings
 void XBoard::PrintOptions() {
-	printf("feature ping=1 setboard=1 colors=0 usermove=1\n");      
-	printf("feature done=1\n");
+	std::cout<<"feature ping=1 setboard=1 colors=0 usermove=1\n";      
+	std::cout<<"feature done=1\n";
 }
 
 // Xboard/Winboard GUI protocol loo[]
@@ -479,9 +491,15 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 				info.depth = MAXDEPTH;
 			}
 		
-			printf("time:%d start:%d stop:%d depth:%d timeset:%d movestogo:%d mps:%d\n",
-				time,info.starttime,info.stoptime,info.depth,info.timeset, movestogo[b.m_side], mps);
-				Search::SearchPosition(b, info);
+			std::cout<<"time:"<<time;
+			std::cout<<" start:"<<info.starttime; 
+			std::cout<<" stop:"<<info.stoptime; 
+			std::cout<<" depth:"<<info.depth; 
+			std::cout<<" timeset:"<<info.timeset; 
+			std::cout<<" movestogo:"<<movestogo[b.m_side]; 
+			std::cout<<" mps:"<<mps<<std::endl;
+
+			Search::SearchPosition(b, info);
 			
 			if(mps != 0) {
 				movestogo[b.m_side^1]--;
@@ -502,7 +520,7 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
     
 		sscanf(inBuf, "%s", command);
 		
-		printf("command seen:%s\n",inBuf);
+		std::cout<<"command seen:"<<inBuf<<std::endl;
     
 		if(!strcmp(command, "quit")) { 
 			info.quit = true;
@@ -521,20 +539,20 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 		
 		if(!strcmp(command, "sd")) {
 			sscanf(inBuf, "sd %d", &depth); 
-		    printf("DEBUG depth:%d\n",depth);
+		    std::cout << "DEBUG depth:" << depth<< std::endl;
 			continue; 
 		}
 		
 		if(!strcmp(command, "st")) {
 			sscanf(inBuf, "st %d", &movetime); 
-		    printf("DEBUG movetime:%d\n",movetime);
+		    std::cout << "DEBUG movetime:"<<movetime<<std::endl;
 			continue; 
 		}  
 		
 		if(!strcmp(command, "time")) {
 			sscanf(inBuf, "time %d", &time); 
 			time *= 10;
-		    printf("DEBUG time:%d\n",time);
+		    std::cout<<"DEBUG time:"<<time<<std::endl;
 			continue; 
 		}  
 
@@ -543,9 +561,9 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 			movetime = -1;
 			if( sscanf(inBuf, "level %d %d %d", &mps, &timeLeft, &inc) != 3) {
 			  sscanf(inBuf, "level %d %d:%d %d", &mps, &timeLeft, &sec, &inc);
-		      printf("DEBUG level with :\n");
+		      std::cout << "DEBUG level with :\n";
 			}	else {
-		      printf("DEBUG level without :\n");
+		      std::cout << "DEBUG level without :\n";
 			}			
 			timeLeft *= 60000;
 			timeLeft += sec * 1000;
@@ -554,12 +572,15 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info) {
 				movestogo[0] = movestogo[1] = mps;
 			}
 			time = -1;
-		    printf("DEBUG level timeLeft:%d movesToGo:%d inc:%d mps%d\n",timeLeft,movestogo[0],inc,mps);
+		    std::cout<<"DEBUG level timeLeft:"<<timeLeft; 
+		    std::cout<<" movesToGo:"<<movestogo[0]; 
+		    std::cout<<" inc:"<<inc;
+		    std::cout<<" mps:"<<mps<<std::endl;
 			continue; 
 		}  		
 		
 		if(!strcmp(command, "ping")) { 
-			printf("pong%s\n", inBuf+4); 
+			std::cout << "pong" << inBuf+4 << std::endl; 
 			continue; 
 		}
 		
