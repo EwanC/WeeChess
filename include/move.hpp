@@ -7,6 +7,7 @@
 #include "types.hpp"
 
 class Board;
+
 /* GAME MOVE 
   
    0000 0000 0000 0000 0000 0111 1111 -> From [0x7F]

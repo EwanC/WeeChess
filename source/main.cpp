@@ -58,16 +58,23 @@ Mode parseCommandLineArgs(int argc, char* argv[])
     return mode;
 }
 
+
+void initStaticData()
+{
+   Board::initStaticMembers(); 
+   Search::InitEvalMasks();   
+}
+
 int main(int argc, char* argv[])
 {
 
     Mode protocol = parseCommandLineArgs(argc, argv);
+    
+    initStaticData();
 
     Board b;
-    Board::initStaticMembers(); // TIDY UP
-    Search::InitEvalMasks();    // TIDY UP
-
     SearchInfo info;
+
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 

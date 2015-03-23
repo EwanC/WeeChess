@@ -6,36 +6,35 @@
 
 class Board;
 
-// Principle variation entry    
+// Principle variation entry
 // when a move is found in the search that beats alpha,
 // store best move and position key
-struct PVEntry{
-	uint64_t m_posKey;  // hash key 
-	int m_move;         // move
+struct PVEntry {
+    uint64_t m_posKey; // hash key
+    int m_move;        // move
 };
 
+class PVTable {
 
-class PVTable{ 
+    static const int PvSize; // Heap size of PVTable
 
-   static const int PvSize;
+  public:
+    PVTable();  // Allocate on heap
+    ~PVTable(); // Free from heap
 
-   public:
+    PVEntry* m_pTable; // heap array of PV entries representing pvtable
+    int m_numEntries;
 
-   PVTable();
-   ~PVTable();
+    int m_pvArray[MAXDEPTH]; // PV move at each level of the tree
 
-   PVEntry* m_pTable;   // vector of PV entries representing pvtable
-   int m_numEntries;
-
-   int m_pvArray[MAXDEPTH];         // PV move at each level of the tree 
-
-   void ClearPvTable();
-   void StorePvMove(const Board& b, const int move); // Stores move in table
-   int ProbePvTable(const Board& b);                 
-   int GetPvLine(const int depth, Board& b);
-
+    void ClearPvTable();                              // Clear PVTable entries
+    void StorePvMove(const Board& b, const int move); // Stores move in table
+    int ProbePvTable(const Board& b); // Retrieves PV move from table is PV entry is found with same
+                                      // position hash
+    int
+    GetPvLine(const int depth,
+              Board& b); // For a given depth, returns the count of number of moves we've inserted
+    // into pv_array. i.e populates PV array
 };
-
-
 
 #endif

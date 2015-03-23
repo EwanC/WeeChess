@@ -15,6 +15,7 @@
 				 (uint64_t)rand() << 45 | \
 				 ((uint64_t)rand() & 0xf) << 60 )  
 
+
 namespace Bitboard{
 
 
@@ -127,6 +128,7 @@ void Board::initStaticMembers()
 	}
 }
 
+// Set all board data to 0
 void Board::resetBoard() 
 {
 
@@ -155,6 +157,7 @@ void Board::resetBoard()
 
 }
 
+// Flip board to opposition side
 void Board::MirrorBoard()
 {
  

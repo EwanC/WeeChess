@@ -9,68 +9,68 @@
 #include "perft.hpp"
 #include "board.hpp"
 
+// Run perftest to defined depth
 bool runPerft(Board& b, const int depth)
 {
-   std::ifstream infile("../perftsuite.epd");
-   std::string line;
+    std::ifstream infile("../perftsuite.epd"); // Input file of perft cases
+    std::string line;
 
-   int count = 0;
-   bool pass = true;
+    int count = 0;
+    bool pass = true;
 
-   assert(depth > 0 && depth < 7);
-   while (std::getline(infile, line))
-   {
+    assert(depth > 0 && depth < 7);
+    while (std::getline(infile, line)) {
 
-       b.parseFen(line.c_str());
+        b.parseFen(line.c_str());
 
-       std::size_t pos =0;      // expected leaf nodes
-       
-       for(int i = 0; i<depth;++i){
-          pos = line.find(";",pos+1);      // expected leaf nodes
-       }
+        std::size_t pos = 0; // expected leaf nodes
 
-      int expected = atoi((line.substr(pos+3)).c_str());
+        for (int i = 0; i < depth; ++i) {
+            pos = line.find(";", pos + 1); // expected leaf nodes
+        }
 
-      uint32_t result = PerftTest(depth,b);
-      std::cout << "\nTest "<<std::dec<<count++<<" to depth "<<depth;
-      std::cout << " ===> expected: "<<expected<< ", calculated "<<result; 
+        int expected = atoi((line.substr(pos + 3)).c_str());
 
-      if(expected == result){
-        std::cout << " PASS\n";
-      }
-      else{
-        std::cout << " FAIL\n";
-        pass = false;
-      }
+        uint32_t result = PerftTest(depth, b);
+        std::cout << "\nTest " << std::dec << count++ << " to depth " << depth;
+        std::cout << " ===> expected: " << expected << ", calculated " << result;
 
-   }
+        if (expected == result) {
+            std::cout << " PASS\n";
+        }
+        else {
+            std::cout << " FAIL\n";
+            pass = false;
+        }
+    }
 
-   if(pass)
-    std::cout << "\nPerft Success\n";
-   else
-    std::cout << "\nPerft Failure\n";
+    if (pass)
+        std::cout << "\nPerft Success\n";
+    else
+        std::cout << "\nPerft Failure\n";
 
-   return pass;
+    return pass;
 }
 
+// Run pert test on single board
+uint32_t Perft(const int depth, Board& b)
+{
 
-uint32_t Perft(const int depth, Board& b) {
+    assert(b.checkBoard());
 
-    assert(b.checkBoard());  
-
-	if(depth == 0) {
+    if (depth == 0) {
         return 1;
-    }	
+    }
 
     MoveList list;
     list.genAllMoves(b);
-      
+
     std::vector<Move>::iterator itr;
 
     int nodesAccum = 0;
-	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {	
-       
-        if (!MakeMove(b,itr->m_move))  {
+    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
+
+        if (!MakeMove(b, itr->m_move)) {
             continue;
         }
         nodesAccum += Perft(depth - 1, b);
@@ -80,44 +80,35 @@ uint32_t Perft(const int depth, Board& b) {
     return nodesAccum;
 }
 
-
-uint32_t PerftTest(const int depth, Board& b,bool verbose) {
+// Run individual perft test
+uint32_t PerftTest(const int depth, Board& b, bool verbose)
+{
 
     assert(b.checkBoard());
 
-    if(verbose)
-	    b.printBoard();
-	
+    if (verbose)
+        b.printBoard();
+
     uint32_t leafNodes = 0;
-	
+
     MoveList list;
-    list.genAllMoves(b);	
-    
+    list.genAllMoves(b);
+
     std::vector<Move>::iterator itr;
     int moveNum = 0;
-    for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) { 
+    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
         uint32_t move = itr->m_move;
-        if ( !MakeMove(b,move))  {
+        if (!MakeMove(b, move)) {
             continue;
         }
         uint32_t calcNodes = Perft(depth - 1, b);
         leafNodes += calcNodes;
-        TakeMove(b);        
+        TakeMove(b);
 
-        if(verbose)
-            std::cout << "move "<< moveNum++ << " : "<<itr->moveString() << " : "<< calcNodes<< std::endl;
+        if (verbose)
+            std::cout << "move " << moveNum++ << " : " << itr->moveString() << " : " << calcNodes
+                      << std::endl;
     }
-	
+
     return leafNodes;
 }
-
-
-
-
-
-
-
-
-
-
-
