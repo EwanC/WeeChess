@@ -211,7 +211,7 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo& info) {
 		PickNextMove(itr, list);	
 		
 		// Not legal move
-        if ( !MakeMove(b,itr->m_move))  {
+        if ( !MoveGen::makeMove(b,itr->m_move))  {
             continue;
         }
         
@@ -221,7 +221,7 @@ int Search::Quiescence(int alpha, int beta, Board& b, SearchInfo& info) {
 		Score = -Quiescence( -beta, -alpha, b, info);	
       
 		// Take back move	
-        TakeMove(b);
+        MoveGen::takeMove(b);
 		
         if(info.stopped == true)
         	return 0;
@@ -296,9 +296,9 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
     int Score = 0;
 
 	if( DoNull && !inCheck && b.m_ply && (b.m_majPce[b.m_side] > 0) && depth >= 4) {
-		MakeNullMove(b);
+		MoveGen::makeNullMove(b);
 		Score = -AlphaBeta( -beta, -beta + 1, depth-4, b, info, false);
-		TakeNullMove(b);
+		MoveGen::takeNullMove(b);
 		if(info.stopped == true) {
 			return 0;
 		}
@@ -338,7 +338,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
 		PickNextMove(itr, list);	
 		
 		// Not legal move
-        if ( !MakeMove(b,itr->m_move))  {
+        if ( !MoveGen::makeMove(b,itr->m_move))  {
             continue;
         }
         
@@ -363,7 +363,7 @@ int Search::AlphaBeta(int alpha, int beta, int depth, Board& b, SearchInfo& info
         #endif
        
 		// Take back move	
-        TakeMove(b);
+        MoveGen::takeMove(b);
 		
         if(info.stopped == true)
         	return 0;
@@ -475,9 +475,7 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 		if(info.gameMode == UCIMODE || info.postThinking == true) {
 			printf("pv");		
 			for(int pvNum = 0; pvNum < pvMoves; ++pvNum) {
-                Move m;
-                m.m_move = b.m_pvTable.m_pvArray[pvNum];
-			    printf(" %s",m.moveString().c_str());			
+			    printf(" %s",MoveGen::moveString(b.m_pvTable.m_pvArray[pvNum]).c_str());			
 			}
 			printf("\n");
 		}   
@@ -485,16 +483,17 @@ void Search::SearchPosition(Board& b, SearchInfo& info) {
 		
 		//////////////////////////////////////////////	
 	}
-	Move m;
-	m.m_move = b.m_pvTable.m_pvArray[0];
+	
+	uint32_t bestMove = b.m_pvTable.m_pvArray[0];
+	std::string moveString = MoveGen::moveString(bestMove);
 	if(info.gameMode == UCIMODE) {
-	    printf("bestmove %s\n",m.moveString().c_str());
+	    printf("bestmove %s\n",moveString.c_str());
 	} else if(info.gameMode == XBMODE) {		
-		printf("move %s\n",m.moveString().c_str());
-		MakeMove(b, m.m_move);
+		printf("move %s\n",moveString.c_str());
+		MoveGen::makeMove(b, bestMove);
 	} else {	
-		printf("\n\n*** WeeChess makes move %s ***\n\n",m.moveString().c_str());
-		MakeMove(b, m.m_move);
+		printf("\n\n*** WeeChess makes move %s ***\n\n",moveString.c_str());
+		MoveGen::makeMove(b, bestMove);
 		b.printBoard();
 	}
 	

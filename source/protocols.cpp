@@ -152,9 +152,9 @@ void UCI::ParsePosition(char* lineIn, Board& b) {
 	if(ptrChar != NULL) {
         ptrChar += 6;
         while(*ptrChar) {
-              move = parseMove(ptrChar, b);
+              move = MoveGen::parseMove(ptrChar, b);
 			  if(move == 0) break;
-			     MakeMove(b, move);
+			     MoveGen::makeMove(b, move);
               b.m_ply=0;
               while(*ptrChar && *ptrChar!= ' ') ptrChar++;
               ptrChar++;
@@ -364,12 +364,12 @@ void CLI::consoleLoop(Board& b, SearchInfo& info)
 		}	
 		
 		// Get Move from user
-		move = parseMove(inBuf, b);	
+		move = MoveGen::parseMove(inBuf, b);	
 		if(move == 0) { // Invalud move
 			std::cout << "Command unknown:"<<inBuf<<std::endl;
 			continue;
 		}
-		MakeMove(b, move); // make user move
+		MoveGen::makeMove(b, move); // make user move
 		b.m_ply=0;
     }	
 }
@@ -436,12 +436,12 @@ bool XBoard::checkResult(Board& b)
 	std::vector<Move>::iterator itr;
 	for(itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); ++itr) {	
        
-        if ( !MakeMove(b,itr->m_move)){
+        if ( !MoveGen::makeMove(b,itr->m_move)){
             continue;
         }
 
         found++;
-		TakeMove(b);
+		MoveGen::takeMove(b);
 		break;
     }
 	
@@ -628,10 +628,10 @@ void XBoard::XBoardLoop(Board& b, SearchInfo& info)
 		  
 		if(!strcmp(command, "usermove")){
 			movestogo[b.m_side]--;
-			move = parseMove(inBuf+9, b);	
+			move = MoveGen::parseMove(inBuf+9, b);	
 			if(move == 0) 
 				continue;
-			MakeMove(b, move);
+			MoveGen::makeMove(b, move);
             b.m_ply=0;
 		}    
     }	

@@ -51,9 +51,7 @@ void PVTable::StorePvMove(const Board& b, const int move)
 
     Log* log = Log::getInstance();
     char str[50];
-    Move m;
-    m.m_move = move;
-    sprintf(str, "Store pv move %s at %d\n", m.moveString().c_str(), m_numEntries);
+    sprintf(str, "Store pv move %s at %d\n", MoveGen::moveString(move).c_str(), m_numEntries);
     log->writeLine(str);
 #endif
 }
@@ -86,8 +84,8 @@ int PVTable::GetPvLine(const int depth, Board& b)
 
         assert(count < MAXDEPTH);
 
-        if (MoveExists(b, move)) {
-            MakeMove(b, move);
+        if (MoveGen::moveExists(b, move)) {
+            MoveGen::makeMove(b, move);
             m_pvArray[count++] = move;
         }
         else {
@@ -98,7 +96,7 @@ int PVTable::GetPvLine(const int depth, Board& b)
 
     // Takes back all moves made to find PV array
     while (b.m_ply > 0) {
-        TakeMove(b);
+        MoveGen::takeMove(b);
     }
 
     return count;

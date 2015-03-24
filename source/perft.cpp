@@ -70,11 +70,11 @@ uint32_t Perft(const int depth, Board& b)
     int nodesAccum = 0;
     for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
 
-        if (!MakeMove(b, itr->m_move)) {
+        if (!MoveGen::makeMove(b, itr->m_move)) {
             continue;
         }
         nodesAccum += Perft(depth - 1, b);
-        TakeMove(b);
+        MoveGen::takeMove(b);
     }
 
     return nodesAccum;
@@ -98,12 +98,12 @@ uint32_t PerftTest(const int depth, Board& b, bool verbose)
     int moveNum = 0;
     for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
         uint32_t move = itr->m_move;
-        if (!MakeMove(b, move)) {
+        if (!MoveGen::makeMove(b, move)) {
             continue;
         }
         uint32_t calcNodes = Perft(depth - 1, b);
         leafNodes += calcNodes;
-        TakeMove(b);
+        MoveGen::takeMove(b);
 
         if (verbose)
             std::cout << "move " << moveNum++ << " : " << itr->moveString() << " : " << calcNodes
