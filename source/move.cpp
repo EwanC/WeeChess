@@ -1,6 +1,7 @@
 #include "move.hpp"
 #include "board.hpp"
 #include "search.hpp"
+#include "eval.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -39,7 +40,7 @@ MoveList::MoveList()
     for (int Attacker = wP; Attacker <= bK; ++Attacker) {
         for (int Victim = wP; Victim <= bK; ++Victim) {
             MvvLvaScores[Victim][Attacker] =
-                Search::VictimScore[Victim] + 6 - (Search::VictimScore[Attacker] / 100);
+                Eval::VictimScore[Victim] + 6 - (Eval::VictimScore[Attacker] / 100);
         }
     }
 }

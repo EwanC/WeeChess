@@ -12,4 +12,5 @@ add_executable(${EXE_NAME}
                search.cpp
                log.cpp
                protocols.cpp
+               eval.cpp
 )

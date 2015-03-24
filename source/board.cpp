@@ -1,5 +1,6 @@
 #include "board.hpp"
 #include "search.hpp"
+#include "eval.hpp"
 #include <cassert>
 #include <ctime>
 #include <cstdlib>
@@ -176,11 +177,11 @@ void Board::MirrorBoard()
     if (m_castling & BQCA) tempCastlePerm |= WQCA;
 
 	if (m_enPas != NO_SQ)  {
-        tempEnPas = SQ120(Mirror64[SQ64(m_enPas)]);
+        tempEnPas = SQ120(Eval::Mirror64[SQ64(m_enPas)]);
     }
 
     for (int sq = 0; sq < 64; sq++) {
-        tempPiecesArray[sq] = m_board[SQ120(Mirror64[sq])];
+        tempPiecesArray[sq] = m_board[SQ120(Eval::Mirror64[sq])];
     }
 
     resetBoard();

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "protocols.hpp"
+#include "eval.hpp"
 #include <cstring>
 
 void printWelcome(Mode mode)
@@ -62,7 +63,7 @@ Mode parseCommandLineArgs(int argc, char* argv[])
 void initStaticData()
 {
    Board::initStaticMembers(); 
-   Search::InitEvalMasks();   
+   Eval::initEvalMasks();   
 }
 
 int main(int argc, char* argv[])
