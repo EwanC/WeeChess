@@ -103,14 +103,15 @@ int Eval::evalPosition(const Board& b)
     numPce = Bitboard::countBits(wrBitboard);
     for (int pceNum = 0; pceNum < numPce; ++pceNum) {
         int sq64 = Bitboard::popBit(&wrBitboard);
+        int sq120 = SQ120(sq64);
         score += RookTable[sq64];
 
-        assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+        assert(Board::FilesBrd[sq120] >= 0 && Board::FilesBrd[sq120] <= 7);
 
-        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score += Eval::RookOpenFile;
         }
-        else if (!(b.m_pList[wP] & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        else if (!(b.m_pList[wP] & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score += Eval::RookSemiOpenFile;
         }
     }
@@ -120,13 +121,14 @@ int Eval::evalPosition(const Board& b)
     numPce = Bitboard::countBits(brBitboard);
     for (int pceNum = 0; pceNum < numPce; ++pceNum) {
         int sq64 = Bitboard::popBit(&brBitboard);
+        int sq120 = SQ120(sq64);
         score -= RookTable[Mirror64[sq64]];
 
-        assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
-        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        assert(Board::FilesBrd[sq120] >= 0 && Board::FilesBrd[sq120] <= 7);
+        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score -= Eval::RookOpenFile;
         }
-        else if (!(b.m_pList[bP] & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        else if (!(b.m_pList[bP] & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score -= Eval::RookSemiOpenFile;
         }
     }
@@ -136,12 +138,13 @@ int Eval::evalPosition(const Board& b)
     numPce = Bitboard::countBits(wqBitboard);
     for (int pceNum = 0; pceNum < numPce; ++pceNum) {
         int sq64 = Bitboard::popBit(&wqBitboard);
-        assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+        int sq120 = SQ120(sq64);
+        assert(Board::FilesBrd[sq120] >= 0 && Board::FilesBrd[sq120] <= 7);
 
-        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score += Eval::QueenOpenFile;
         }
-        else if (!(b.m_pList[wP] & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        else if (!(b.m_pList[wP] & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score += Eval::QueenSemiOpenFile;
         }
     }
@@ -151,12 +154,13 @@ int Eval::evalPosition(const Board& b)
     numPce = Bitboard::countBits(bqBitboard);
     for (int pceNum = 0; pceNum < numPce; ++pceNum) {
         int sq64 = Bitboard::popBit(&bqBitboard);
-        assert(Board::FilesBrd[sq64] > 0 && Board::FilesBrd[sq64] < 7);
+        int sq120 = SQ120(sq64);
+        assert(Board::FilesBrd[sq120] >= 0 && Board::FilesBrd[sq120] <= 7);
 
-        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        if (!((b.m_pList[bP] | b.m_pList[wP]) & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score -= Eval::QueenOpenFile;
         }
-        else if (!(b.m_pList[bP] & Eval::FileBBMask[Board::FilesBrd[sq64]])) {
+        else if (!(b.m_pList[bP] & Eval::FileBBMask[Board::FilesBrd[sq120]])) {
             score -= Eval::QueenSemiOpenFile;
         }
     }
@@ -164,7 +168,6 @@ int Eval::evalPosition(const Board& b)
     // White King
     bitboard wkBitboard = b.m_pList[wK];
     int sq64 = Bitboard::popBit(&wkBitboard);
-
     if ((b.m_material[BLACK] <= ENDGAME_MAT)) {
         score += Eval::KingE[sq64];
     }
