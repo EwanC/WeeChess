@@ -13,4 +13,6 @@ add_executable(${EXE_NAME}
                log.cpp
                protocols.cpp
                eval.cpp
+               ocl.cpp
 )
+target_link_libraries(WeeChess ${OCL_LIBRARY})

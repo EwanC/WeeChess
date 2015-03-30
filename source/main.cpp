@@ -1,6 +1,8 @@
 #include <iostream>
 #include "protocols.hpp"
 #include "eval.hpp"
+#include "perft.hpp"
+#include "ocl.hpp"
 #include <cstring>
 
 void printWelcome(Mode mode)
@@ -64,6 +66,7 @@ void initStaticData()
 {
    Board::initStaticMembers(); 
    Eval::initEvalMasks();   
+   OCL *ptr  =OCL::getInstance();
 }
 
 int main(int argc, char* argv[])
@@ -75,6 +78,12 @@ int main(int argc, char* argv[])
 
     Board b;
     SearchInfo info;
+
+    if(runPerft(b, 5))
+      std::cout << "Perft passed\n";
+    else
+      std::cout << "Perft failed\n";
+
 
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
