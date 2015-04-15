@@ -74,21 +74,21 @@ int main(int argc, char* argv[])
 
     Mode protocol = parseCommandLineArgs(argc, argv);
     
-    initStaticData();
+    printWelcome(protocol);
 
+    initStaticData();
     Board b;
     SearchInfo info;
-
+#if 0
+    std::cout << "Running Perft\n";
     if(runPerft(b, 5))
       std::cout << "Perft passed\n";
     else
       std::cout << "Perft failed\n";
-
+#endif
 
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
-
-    printWelcome(protocol);
 
     while (true) {
 

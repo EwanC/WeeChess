@@ -27,11 +27,6 @@ OCL::OCL()
     err = clGetDeviceIDs(m_platform, CL_DEVICE_TYPE_GPU, 1, &m_device, NULL);
     if (err == CL_DEVICE_NOT_FOUND) {
         err = clGetDeviceIDs(m_platform, CL_DEVICE_TYPE_CPU, 1, &m_device, NULL);
-        if (err != CL_DEVICE_NOT_FOUND)
-            std::cout << "OPENCL CPU Found\n";
-    }
-    else {
-        std::cout << "OPENCL GPU Found\n";
     }
     if (err < 0) {
         std::cout << "Couldn't locate an OCL device\n";
@@ -43,6 +38,11 @@ OCL::OCL()
         std::cout << "Couldn't create an OCL context\n";
         exit(1);
     }
+
+    char buffer[1024];
+    err = clGetDeviceInfo(m_device,CL_DEVICE_NAME,sizeof(buffer),buffer,NULL);
+    std::cout << "OpenCL Device: "<<buffer<<std::endl;
+
 }
 
 OCL::~OCL()
