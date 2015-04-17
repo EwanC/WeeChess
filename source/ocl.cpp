@@ -19,7 +19,7 @@ OCL::OCL()
     /* Identify a platform */
     err = clGetPlatformIDs(1, &m_platform, NULL);
     if (err < 0) {
-        std::cout << "Couldn't locate an OCL platform\n";
+        std::cout << "Couldn't locate an OCL platform "<<err<<"\n";
         exit(1);
     }
 
@@ -50,5 +50,5 @@ OCL::~OCL()
     /* Deallocate resources */
 
     clReleaseContext(m_context);
-    clReleaseDevice(m_device);
+    //clReleaseDevice(m_device);
 }

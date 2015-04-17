@@ -5,7 +5,8 @@ IF(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 message( FATAL_ERROR "Only Linux currently supported." )
 endif()
 
-find_library(OCL_LIBRARY NAMES OpenCL)
+find_library(OCL_LIBRARY NAMES OpenCL PATHS /usr/local/cuda/lib)
+include_directories(/usr/local/cuda/include)
 
 IF(NOT OCL_LIBRARY)
 message(FATAL_ERROR "Need OpenCL Library")
