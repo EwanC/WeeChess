@@ -13,15 +13,17 @@ class OCL {
     cl_device_id m_device;
     cl_context m_context;
 
-    // cl_program;
-    // cl_kernel;
-    // cl_command_queue;
+    cl_program m_program;
+    cl_command_queue m_queue;
+    cl_kernel m_evalKernel;
 
 
   private:
 
 
     static OCL* m_instance;
+
+    void BuildProgram();
 
     OCL();
     OCL(OCL const&);
