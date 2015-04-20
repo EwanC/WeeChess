@@ -2,6 +2,7 @@
 #define OCL_H
 
 #include <CL/cl.h>
+#include "board.hpp"
 
 // Singleton class used for holding OpenCL objects
 class OCL {
@@ -16,6 +17,8 @@ class OCL {
     cl_program m_program;
     cl_command_queue m_queue;
     cl_kernel m_evalKernel;
+
+    int RunEvalKernel(const Board& board);
 
 
   private:

@@ -12,7 +12,10 @@ const char programString[] = "__kernel void evalKernel(\
                         )\
 {\
     int i = get_group_id(0);\
-    score[i] = 12;\
+    int j = get_local_id(0);\
+    //int score = bitboards[i*13 + j];\
+    if(j == 0)\
+        score[i] = 5;\
 }";
 
 // Singleton class
@@ -91,6 +94,59 @@ void OCL::BuildProgram()
         std::cout << "Couldn't build program\n";
         exit(1);
     }
+}
+
+int OCL::RunEvalKernel(const Board& board)
+{
+
+    /* local vars */
+    const unsigned int bitboards_per_board = 13;
+    const unsigned int num_boards = 1;
+    const size_t global_size = bitboards_per_board * num_boards;
+    const size_t local_size = bitboards_per_board;
+    cl_int scores[num_boards] = {0};
+
+    /* Create Buffers */
+    int err;
+    cl_mem bitboard_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY,bitboards_per_board * sizeof(bitboard),(void *)board.m_pList,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create cl buffer\n";
+        exit(1);
+    }
+
+    cl_mem score_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, num_boards * sizeof(cl_int),scores,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create cl buffer\n";
+        exit(1);
+    }
+
+    /* Set kernel args */
+    err = clSetKernelArg(m_evalKernel,0,sizeof(cl_mem),&bitboard_buffer);
+    err |= clSetKernelArg(m_evalKernel,1,sizeof(cl_mem),&score_buffer);
+    if (err < 0) {
+        std::cout << "Couldn't set kernel arg\n";
+        exit(1);
+    }
+
+    /* Enqueue Kernel*/
+    err = clEnqueueNDRangeKernel(m_queue,m_evalKernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
+    if (err < 0) {
+        std::cout << "Couldn't enqueue the kernel\n";
+        exit(1);
+    }
+
+    /* Enqueue ReadBuffer */
+    err = clEnqueueReadBuffer(m_queue,score_buffer,CL_TRUE,0, num_boards * sizeof(cl_int),scores,0,NULL,NULL);
+    if (err < 0) {
+        std::cout << "Couldn't read cl buffer\n";
+        exit(1);
+    }
+
+    clReleaseMemObject(bitboard_buffer);
+    clReleaseMemObject(score_buffer);
+
+    // Just one board for now
+    return scores[0];
 }
 
 OCL::~OCL()
