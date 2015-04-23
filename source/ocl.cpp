@@ -5,18 +5,7 @@ OCL* OCL::m_instance = 0; // Singleton instance
 
 
 #define EVALKERNEL "evalKernel"
-
-const char programString[] = "__kernel void evalKernel(\
-                         __global int* bitboards,\
-                         __global int* score\
-                        )\
-{\
-    int i = get_group_id(0);\
-    int j = get_local_id(0);\
-    //int score = bitboards[i*13 + j];\
-    if(j == 0)\
-        score[i] = 5;\
-}";
+#define PROGRAM_FILE "/home/ewan/Development/WeeChess/source/kernels.cl" // Nasty hack
 
 // Singleton class
 OCL* OCL::getInstance()
@@ -68,7 +57,7 @@ OCL::OCL()
 
     m_evalKernel = clCreateKernel(m_program,EVALKERNEL,&err);
     if (err < 0) {
-        std::cout << "Couldn't create OCL kernel "<<EVALKERNEL<<std::endl;
+        std::cout << "Couldn't create OCL kernel "<<EVALKERNEL << " "<<err<<std::endl;
         exit(1);
     }
 }
@@ -77,12 +66,24 @@ void OCL::BuildProgram()
 {
 
     int err;
+    
+    FILE *fp = fopen(PROGRAM_FILE, "r");
+    if (!fp) {
+        std::cout << "Failed to read kernel file "<<PROGRAM_FILE<<std::endl;
+        exit(1);
+    }
 
-    const size_t programSize = strlen(programString);
-    const char* srcptr[] = {programString};
+    fseek(fp, 0, SEEK_END);
+    const size_t programSize = ftell(fp);
+    rewind(fp);
+    char* program_buffer = new char[programSize + 1];
+    program_buffer[programSize] = '\0';
+    fread(program_buffer, sizeof(char), programSize, fp);
+    fclose(fp);
+
 
     /* Create program from file */
-    m_program = clCreateProgramWithSource(m_context, 1, srcptr, &programSize, &err);
+    m_program = clCreateProgramWithSource(m_context, 1, (const char**)&program_buffer, &programSize, &err);
     if (err < 0) {
         std::cout << "Couldn't create the program\n";
         exit(1);
@@ -92,6 +93,10 @@ void OCL::BuildProgram()
     err = clBuildProgram(m_program, 0, NULL, NULL, NULL, NULL);
     if (err < 0) {
         std::cout << "Couldn't build program\n";
+        char buffer[2048];
+        size_t length;
+        clGetProgramBuildInfo(m_program, m_device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
+        std::cout<<"--- Build log ---\n "<<buffer<<std::endl;
         exit(1);
     }
 }
@@ -123,6 +128,8 @@ int OCL::RunEvalKernel(const Board& board)
     /* Set kernel args */
     err = clSetKernelArg(m_evalKernel,0,sizeof(cl_mem),&bitboard_buffer);
     err |= clSetKernelArg(m_evalKernel,1,sizeof(cl_mem),&score_buffer);
+    err |= clSetKernelArg(m_evalKernel,2,13 * sizeof(cl_int),NULL);
+
     if (err < 0) {
         std::cout << "Couldn't set kernel arg\n";
         exit(1);
@@ -131,7 +138,7 @@ int OCL::RunEvalKernel(const Board& board)
     /* Enqueue Kernel*/
     err = clEnqueueNDRangeKernel(m_queue,m_evalKernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
     if (err < 0) {
-        std::cout << "Couldn't enqueue the kernel\n";
+        std::cout << "Couldn't enqueue the kernel "<<err <<"\n";
         exit(1);
     }
 

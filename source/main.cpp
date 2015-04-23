@@ -66,7 +66,7 @@ void initStaticData()
 {
    Board::initStaticMembers(); 
    Eval::initEvalMasks();   
-   OCL *ptr  =OCL::getInstance();
+   OCL *ptr = OCL::getInstance();
 }
 
 int main(int argc, char* argv[])

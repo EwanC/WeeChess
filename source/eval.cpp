@@ -2,6 +2,7 @@
 #include "search.hpp"
 
 #include <cassert>
+#include "ocl.hpp"
 
 namespace Eval {
 
@@ -24,6 +25,10 @@ namespace Eval {
 // Uses Piece table to evaulate position
 int Eval::evalPosition(const Board& b)
 {
+
+    //
+    return OCL::getInstance()->RunEvalKernel(b);
+    //
 
     Piece pce;
 
