@@ -27,7 +27,7 @@ int Eval::evalPosition(const Board& b)
 {
 
     //
-    return OCL::getInstance()->RunEvalKernel(b);
+    int ocl_score = OCL::getInstance()->RunEvalKernel(b);
     //
 
     Piece pce;
