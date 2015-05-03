@@ -158,12 +158,6 @@ int OCL::RunEvalKernel(const Board& board)
     clReleaseMemObject(bitboard_buffer);
     clReleaseMemObject(score_buffer);
 
-    uint64_t tst = board.m_pList[1];
-    while(tst != 0)
-    {
-        int bit = Bitboard::popBit(&tst);
-    }
-
     // Just one board for now
     return scores[0];
 }
