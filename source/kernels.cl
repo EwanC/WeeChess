@@ -4,8 +4,9 @@ int constant BitTable[64] = {
   26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
   58, 20, 37, 17, 36, 8
 };
-// TODO NEED TO REVERSE BLACK TABLES
-int constant BitMasks1[13][64] = { //Piece Tables
+
+
+int constant PieceSqMasks[13][64] = { //Piece Tables
                                   { // All
                                     0,   0,   0,   0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -44,13 +45,20 @@ int constant BitMasks1[13][64] = { //Piece Tables
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                   },
-                                  { // White King Opening Table
-                                    0,   5,   5,   -10, -10, 0,   10,  5,   -30, -30, -30, -30, -30,
-                                    -30, -30, -30, -50, -50, -50, -50, -50, -50, -50, -50, -70, -70,
-                                    -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70,
-                                    -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70,
-                                    -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70
+                                  { // W King
+                                    0,   0,   0,   0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                   },
+                                  // { // White King Opening Table
+                                  //   0,   5,   5,   -10, -10, 0,   10,  5,   -30, -30, -30, -30, -30,
+                                  //   -30, -30, -30, -50, -50, -50, -50, -50, -50, -50, -50, -70, -70,
+                                  //   -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70,
+                                  //   -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70,
+                                  //   -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70, -70
+                                  // },
                                   { // Black PawnTable
                           
                                       0,   0,   0,   0,   0,   0,   0,   0,
@@ -103,13 +111,20 @@ int constant BitMasks1[13][64] = { //Piece Tables
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                   },
-                                  { // Black King Opening Table
-                                    0,   -5,   -5,   10, 10, 0,   -10,  -5,   30, 30, 30, 30, 30,
-                                    30, 30, 30, 50, 50, 50, 50, 50, 50, 50, 50, 70, 70,
-                                    70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
-                                    70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
-                                    70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70
+                                  { // B King 
+                                    0,   0,   0,   0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                   }
+                                  // { // Black King Opening Table
+                                  //   0,   -5,   -5,   10, 10, 0,   -10,  -5,   30, 30, 30, 30, 30,
+                                  //   30, 30, 30, 50, 50, 50, 50, 50, 50, 50, 50, 70, 70,
+                                  //   70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
+                                  //   70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,
+                                  //   70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70
+                                  // }
                                 };
 
 unsigned long constant WhitePassedMask[64] = 
@@ -185,7 +200,7 @@ unsigned long constant IsolatedMask[64] =
                         };
 
 
-inline int popBit(unsigned long* bb)
+inline int popBit( unsigned long* bb)
  {
   unsigned long b = *bb ^ (*bb - 1);
   unsigned int fold = (unsigned int) ((b & 0xffffffff) ^ (b >> 32));
@@ -193,33 +208,46 @@ inline int popBit(unsigned long* bb)
   return BitTable[(fold * 0x783a9b23) >> 26];
 }
 
+
+int constant PawnIsolated[13] = {0,-10,10,-10,10,-10,10,-10,10,-10,10,-10,10};
+int constant PawnPassed[8] = {0, 5, 10, 20, 35, 60, 100, 200};
+int constant RookOpenFile = 10;
+int constant RookSemiOpenFile = 5;
+int constant QueenOpenFile = 5;
+int constant QueenSemiOpenFile = 3;
+int constant BishopPair = 30;
+
+
 __kernel void evalKernel(
                          __global unsigned long* bitboards,
                          __global int* score,
                          __local int* local_score
                         )
 {
-    int i = get_group_id(0);
-    int j = get_local_id(0);
+    int group_id = get_group_id(0);
+    int local_id = get_local_id(0);
 
-    unsigned long board = bitboards[i*13 + j];
+    unsigned long board = bitboards[group_id*13 + local_id];
     local_score[0] = 0;
     int priv_score = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-
     while(board != 0)
     {
         int sq64 = popBit(&board);
-        priv_score += BitMasks1[j][sq64];
+        priv_score += PieceSqMasks[local_id][sq64];
+        //if (IsolatedMask[sq64] & bitboards[i*13 + j]/* Global mem access*/ == 0)
+        //   priv_score += PawnIsolated[j];
+
         //priv_score += BitMasks2[j][sq64];
         //priv_score += BitMasks3[j][sq64];
     }
-
+ 
+    
     atomic_add(local_score, priv_score);
     barrier(CLK_LOCAL_MEM_FENCE);
 
 
-    if(j == 0)
-       score[i] = local_score;
+    if(local_id == 0)
+      score[group_id] = local_score[0];
 }

@@ -109,17 +109,17 @@ int OCL::RunEvalKernel(const Board& board)
     const unsigned int num_boards = 1;
     const size_t global_size = bitboards_per_board * num_boards;
     const size_t local_size = bitboards_per_board;
-    cl_int scores[num_boards] = {0};
+    int scores[num_boards] = {0};
 
     /* Create Buffers */
     int err;
-    cl_mem bitboard_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY,bitboards_per_board * sizeof(bitboard),(void *)board.m_pList,&err);
+    cl_mem bitboard_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, bitboards_per_board * sizeof(bitboard),(void *)board.m_pList,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl buffer\n";
         exit(1);
     }
 
-    cl_mem score_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, num_boards * sizeof(cl_int),scores,&err);
+    cl_mem score_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, num_boards * sizeof(int),scores,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl buffer\n";
         exit(1);
@@ -128,7 +128,7 @@ int OCL::RunEvalKernel(const Board& board)
     /* Set kernel args */
     err = clSetKernelArg(m_evalKernel,0,sizeof(cl_mem),&bitboard_buffer);
     err |= clSetKernelArg(m_evalKernel,1,sizeof(cl_mem),&score_buffer);
-    err |= clSetKernelArg(m_evalKernel,2,13 * sizeof(cl_int),NULL);
+    err |= clSetKernelArg(m_evalKernel,2,num_boards * sizeof(cl_int),NULL);
 
     if (err < 0) {
         std::cout << "Couldn't set kernel arg\n";
@@ -143,14 +143,26 @@ int OCL::RunEvalKernel(const Board& board)
     }
 
     /* Enqueue ReadBuffer */
-    err = clEnqueueReadBuffer(m_queue,score_buffer,CL_TRUE,0, num_boards * sizeof(cl_int),scores,0,NULL,NULL);
+    err = clEnqueueReadBuffer(m_queue,score_buffer,CL_TRUE,0, num_boards * sizeof(int),scores,0,NULL,NULL);
     if (err < 0) {
         std::cout << "Couldn't read cl buffer\n";
         exit(1);
     }
 
+    err = clFinish(m_queue);
+     if (err < 0) {
+        std::cout << "Couldn't wait for CL tae finish\n";
+        exit(1);
+    }
+
     clReleaseMemObject(bitboard_buffer);
     clReleaseMemObject(score_buffer);
+
+    uint64_t tst = board.m_pList[1];
+    while(tst != 0)
+    {
+        int bit = Bitboard::popBit(&tst);
+    }
 
     // Just one board for now
     return scores[0];
