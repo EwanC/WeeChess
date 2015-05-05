@@ -65,7 +65,6 @@ Mode parseCommandLineArgs(int argc, char* argv[])
 void initStaticData()
 {
    Board::initStaticMembers(); 
-   Eval::initEvalMasks();   
    OCL *ptr = OCL::getInstance();
 }
 

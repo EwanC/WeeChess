@@ -12,7 +12,9 @@ IF(NOT OCL_LIBRARY)
 message(FATAL_ERROR "Need OpenCL Library")
 endif(NOT OCL_LIBRARY)
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -std=c++11")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
 include_directories("include")
 add_subdirectory(source)
