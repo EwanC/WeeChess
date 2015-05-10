@@ -398,12 +398,12 @@ int constant adjustment[13] = {
 
 
 
-inline int popBit( unsigned long* bb)
- {
-  unsigned long b = *bb ^ (*bb - 1);
-  unsigned int fold = (unsigned int) ((b & 0xffffffff) ^ (b >> 32));
-  *bb &= (*bb - 1);
-  return BitTable[(fold * 0x783a9b23) >> 26];
+inline int popBit(unsigned long* bb)
+{
+    unsigned long b = *bb ^ (*bb - 1);
+    unsigned int fold = (unsigned int) ((b & 0xffffffff) ^ (b >> 32));
+    *bb &= (*bb - 1);
+    return BitTable[(fold * 0x783a9b23) >> 26];
 }
 
 

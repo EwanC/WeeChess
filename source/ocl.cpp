@@ -5,7 +5,7 @@ OCL* OCL::m_instance = 0; // Singleton instance
 
 
 #define EVALKERNEL "evalKernel"
-#define PROGRAM_FILE "/home/ewan/Development/WeeChess/source/kernels.cl" // Nasty hack
+#define PROGRAM_FILE "/home/ewan/Development/WeeChess/source/EvalKernel.cl" // Nasty hack
 
 // Singleton class
 OCL* OCL::getInstance()
