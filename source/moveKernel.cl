@@ -33,15 +33,9 @@ int constant PceDir[13][8] = {
 // How many directinons each piece has
 unsigned int contant NumDir[13] = {0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8};
 
+// How many directinons each piece has
+unsigned int contant isSlider[13] = {0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0};
 
-
-// Bittable needed for poping bits from the Bitboard
-int constant BitTable[64] = {
-  63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2,
-  51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57, 0, 35, 62, 31, 40, 4, 49, 5, 52,
-  26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28,
-  58, 20, 37, 17, 36, 8
-};
 
 int constant FilesBrd[120] = {
                               100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
@@ -73,51 +67,130 @@ int constant RanksBrd[120] = {
                               100, 100, 100, 100, 100, 100, 100, 100, 100, 100
                             };
 
-int constant Sq64ToSq120[64] =  {
-	                             21, 22, 23, 24, 25, 26, 27, 28,
-                                 31, 32, 33, 34, 35, 36, 37, 38,
-                                 41, 42, 43, 44, 45, 46, 47, 48,
-                                 51, 52, 53, 54, 55, 56, 57, 58,
-                                 61, 62, 63, 64, 65, 66, 67, 68,
-                                 71, 72, 73, 74, 75, 76, 77, 78,
-                                 81, 82, 83, 84, 85, 86, 87, 88,
-                                 91, 92, 93, 94, 95, 96, 97, 98
-                                };
+#define BOTH 2 
+#define WHITE 0
+#define BLACK 1
+int constant PieceCol[13] = { BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK };
+
 
 
 // MACROS
 #define OFFBOARD 100
-#define SQ120(sq64) (Sq64ToSq120[(sq64)])        // Convery 64 base board index to 120
+#define EMPTY 0
 #define SQOFFBOARD(sq) (FilesBrd[(sq)] == OFFBOARD)
 #define MOVE(f, t, ca, pro, fl) ((f) | ((t) << 7) | ((ca) << 14) | ((pro) << 20) | (fl))
 
-// Helper functions
-inline int countBits(unsigned long* bb) {
-  int r;
-  for(r = 0; bb; r++, bb &= bb - 1);
-  return r;
-}
 
-
-inline int popBit(unsigned long* bb)
-{
-    unsigned long b = *bb ^ (*bb - 1);
-    unsigned int fold = (unsigned int) ((b & 0xffffffff) ^ (b >> 32));
-    *bb &= (*bb - 1);
-    return BitTable[(fold * 0x783a9b23) >> 26];
-}
+#define MFLAGEP 0x40000   // Move flag En Pass
+#define MFLAGPS 0x80000   // Move flag pawn start
 
 // Kernel
 // Workgroup - Piece Type
 // WorkItem - Individual Piece
+// No score eval!
 __kernel void moveKernel(
-                         __global unsigned long* bitboards,
-                         __global unsigned long* moves, // Return Value
+                            __global unsigned int* squares,
+                            __global const int* side,
+                            __global const int* pieces,
+                            __global unsigned long* moves, // Return Value
                         )
 {
 
+    int group_id = get_group_id(0); // Piece Type
+    int global_id = get_global_id(0);
+    int sq120 = squares[global_id];
   
+    for (int index = 0; index < NumDir[group_id]; ++index) 
+    {
+        int dir = PceDir[group_id][index];
+        int t_sq = sq120 + dir;
+
+        while (!SQOFFBOARD(t_sq)) {
+
+            // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+            if (pieces[t_sq] != EMPTY) {
+                if (PieceCol[pieces[t_sq]] == (side ^ 1))
+                {
+                    moves[global_id] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+                }
+                break;
+            }
+            moves[global_id] =  MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
+
+            if(isSlider[group_id]) // Horrific performace
+            	break;
+            else
+            	t_sq += dir;
+
+        }
+    }
+
+}
+
+__kernel void pawnKernel(
+                            __global unsigned int* squares,
+                            __global const int* side,
+                            __global const int* pieces,
+                            __global unsigned long* moves, // Return Value
+                        )
+{
+
+    int group_id = get_group_id(0); // Piece Type
+    int global_id = get_global_id(0);
+    int sq120 = squares[global_id];
 
 
+    // JUST FOR WHITE SIDE AT THE MO, NEED TO DO BOTH COLOURS
+
+    if (pieces[sq120 + 10] == EMPTY)
+    {
+               
+        if (Board::RanksBrd[sq120] == RANK_7 && side == WHITE) 
+        {
+            moves[global_id] = MOVE(sq120, sq120 + 10, EMPTY, wQ, 0);
+            moves[global_id] = MOVE(sq120, sq120 + 10, EMPTY, wR, 0);
+            moves[global_id] = MOVE(sq120, sq120 + 10, EMPTY, wB, 0);
+            moves[global_id] = MOVE(sq120, sq120 + 10, EMPTY, wN, 0);
+        }
+        else 
+            moves[global_id] = MOVE(from, to, EMPTY, EMPTY, 0);
+  
+        if (RanksBrd[sq120] == RANK_2 && pieces[sq120 + 20] == EMPTY) {
+             moves[global_id] =  MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS);
+        }
+    }
+
+  
+    if (!SQOFFBOARD(sq120 + 9) && PieceCol[pieces[sq120 + 9]] == BLACK) {
+
+        if (Board::RanksBrd[sq120] == RANK_7 && side == WHITE) {
+            moves[global_id] =  MOVE(sq120, sq120 + 9, pieces[sq120 + 9], wQ, 0);
+            moves[global_id] =  MOVE(sq120, sq120 + 9, pieces[sq120 + 9], wR, 0);
+            moves[global_id] =  MOVE(sq120, sq120 + 9, pieces[sq120 + 9], wB, 0);
+            moves[global_id] =  MOVE(sq120, sq120 + 9, pieces[sq120 + 9], wN, 0);
+        }
+        else
+        	 moves[global_id] = MOVE(sq120, sq120 + 9, pieces[sq120 + 9], EMPTY, 0);
+
+    }
+            
+    if (!SQOFFBOARD(sq120 + 11) && PieceCol[pieces[sq120 + 11]] == BLACK) {
+        if (Board::RanksBrd[sq120] == RANK_7 && side == WHITE) {
+            moves[global_id] =  MOVE(sq120, sq120 + 11, pieces[sq120 + 11], wQ, 0);
+            moves[global_id] =  MOVE(sq120, sq120 + 11, pieces[sq120 + 11], wR, 0);
+            moves[global_id] =  MOVE(sq120, sq120 + 11, pieces[sq120 + 11], wB, 0);
+            moves[global_id] =  MOVE(sq120, sq120 + 11, pieces[sq120 + 11], wN, 0);
+        }
+        else
+        	addCaptureMove(b, MOVE(sq120, sq120 + 9, pieces[sq120 + 9], EMPTY, 0);    
+    }
+
+    if (b.m_enPas != NO_SQ && sq120 + 9 == b.m_enPas) {
+        moves[global_id] = MOVE(sq120, sq120 + 9, EMPTY, EMPTY, MFLAGEP);
+    }
+    
+    if (b.m_enPas != NO_SQ && sq120 + 11 == b.m_enPas) {
+        moves[get_global_id] = MOVE(sq120, sq120 + 11, EMPTY, EMPTY, MFLAGEP);
+    }
 
 }
