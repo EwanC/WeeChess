@@ -14,7 +14,10 @@ class OCL {
     cl_device_id m_device;
     cl_context m_context;
 
-    cl_program m_program;
+    cl_program m_evalProgram;
+    cl_program m_moveProgram;
+
+
     cl_command_queue m_queue;
     cl_kernel m_evalKernel;
 

@@ -5,7 +5,9 @@ OCL* OCL::m_instance = 0; // Singleton instance
 
 
 #define EVALKERNEL "evalKernel"
-#define PROGRAM_FILE "/home/ewan/Development/WeeChess/source/EvalKernel.cl" // Nasty hack
+#define EVAL_PROGRAM_FILE "/home/ewan/Development/WeeChess/source/EvalKernel.cl" // Nasty hack
+#define MOVE_PROGRAM_FILE "/home/ewan/Development/WeeChess/source/moveKernel.cl" // Nasty hack
+
 
 // Singleton class
 OCL* OCL::getInstance()
@@ -55,7 +57,7 @@ OCL::OCL()
 
     BuildProgram();
 
-    m_evalKernel = clCreateKernel(m_program,EVALKERNEL,&err);
+    m_evalKernel = clCreateKernel(m_evalProgram,EVALKERNEL,&err);
     if (err < 0) {
         std::cout << "Couldn't create OCL kernel "<<EVALKERNEL << " "<<err<<std::endl;
         exit(1);
@@ -67,14 +69,14 @@ void OCL::BuildProgram()
 
     int err;
     
-    FILE *fp = fopen(PROGRAM_FILE, "r");
+    FILE *fp = fopen(EVAL_PROGRAM_FILE, "r");
     if (!fp) {
-        std::cout << "Failed to read kernel file "<<PROGRAM_FILE<<std::endl;
+        std::cout << "Failed to read kernel file "<<EVAL_PROGRAM_FILE<<std::endl;
         exit(1);
     }
 
     fseek(fp, 0, SEEK_END);
-    const size_t programSize = ftell(fp);
+    size_t programSize = ftell(fp);
     rewind(fp);
     char* program_buffer = new char[programSize + 1];
     program_buffer[programSize] = '\0';
@@ -83,19 +85,52 @@ void OCL::BuildProgram()
 
 
     /* Create program from file */
-    m_program = clCreateProgramWithSource(m_context, 1, (const char**)&program_buffer, &programSize, &err);
+    m_evalProgram = clCreateProgramWithSource(m_context, 1, (const char**)&program_buffer, &programSize, &err);
     if (err < 0) {
         std::cout << "Couldn't create the program\n";
         exit(1);
     }
 
     /* Build program */
-    err = clBuildProgram(m_program, 0, NULL, NULL, NULL, NULL);
+    err = clBuildProgram(m_evalProgram, 0, NULL, NULL, NULL, NULL);
     if (err < 0) {
-        std::cout << "Couldn't build program\n";
+        std::cout << "Couldn't build program" << EVAL_PROGRAM_FILE <<"\n";
         char buffer[2048];
         size_t length;
-        clGetProgramBuildInfo(m_program, m_device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
+        clGetProgramBuildInfo(m_evalProgram, m_device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
+        std::cout<<"--- Build log ---\n "<<buffer<<std::endl;
+        exit(1);
+    }
+
+    fp = fopen(MOVE_PROGRAM_FILE, "r");
+    if (!fp) {
+        std::cout << "Failed to read kernel file "<<MOVE_PROGRAM_FILE<<std::endl;
+        exit(1);
+    }
+
+    fseek(fp, 0, SEEK_END);
+    programSize = ftell(fp);
+    rewind(fp);
+    program_buffer = new char[programSize + 1];
+    program_buffer[programSize] = '\0';
+    fread(program_buffer, sizeof(char), programSize, fp);
+    fclose(fp);
+
+
+    /* Create program from file */
+    m_moveProgram = clCreateProgramWithSource(m_context, 1, (const char**)&program_buffer, &programSize, &err);
+    if (err < 0) {
+        std::cout << "Couldn't create the program\n";
+        exit(1);
+    }
+
+    /* Build program */
+    err = clBuildProgram(m_moveProgram, 0, NULL, NULL, NULL, NULL);
+    if (err < 0) {
+        std::cout << "Couldn't build program" << MOVE_PROGRAM_FILE <<"\n";
+        char buffer[2048];
+        size_t length;
+        clGetProgramBuildInfo(m_moveProgram, m_device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &length);
         std::cout<<"--- Build log ---\n "<<buffer<<std::endl;
         exit(1);
     }
