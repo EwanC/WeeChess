@@ -16,6 +16,10 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -std=c++11")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
+SET(K_DIR "${CMAKE_SOURCE_DIR}/source")
+MESSAGE( STATUS "source dir:" ${K_DIR} )
+add_definitions(-D__DIR__=${K_DIR})
+
 include_directories("include")
 add_subdirectory(source)
 

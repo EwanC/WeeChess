@@ -1,12 +1,45 @@
 #include "ocl.hpp"
 #include <iostream>
 #include <cstring>
+
 OCL* OCL::m_instance = 0; // Singleton instance
 
+#define QUOTE(name) #name
+#define STR(macro) QUOTE(macro)
+#define KERNEL_DIR STR(__DIR__)
 
 #define EVALKERNEL "evalKernel"
-#define EVAL_PROGRAM_FILE "/home/ewan/Development/WeeChess/source/EvalKernel.cl" // Nasty hack
-#define MOVE_PROGRAM_FILE "/home/ewan/Development/WeeChess/source/moveKernel.cl" // Nasty hack
+#define PIECEMOVEKERNEL "moveKernel"
+#define WPAWNMOVEKERNEL "WhitePawnKernel"
+#define BPAWNMOVEKERNEL "BlackPawnKernel"
+#define EVAL_PROGRAM_FILE "/EvalKernel.cl"
+#define MOVE_PROGRAM_FILE "/moveKernel.cl"
+
+
+
+std::string OCL::getSourceDir()
+{
+#ifdef KERNEL_DIR
+    std::string file(KERNEL_DIR); 
+#else
+    std::string file(__FILE__); // assume .cl filesin same dir
+
+    size_t last_slash_idx = file.rfind('\\');
+    if ( std::string::npos != last_slash_idx)
+    {
+        return file.substr(0, last_slash_idx);
+    }
+
+    last_slash_idx = file.rfind('/');
+    if ( std::string::npos != last_slash_idx)
+    {
+        return file.substr(0, last_slash_idx);
+    }
+
+#endif
+
+    return file;
+}
 
 
 // Singleton class
@@ -16,6 +49,8 @@ OCL* OCL::getInstance()
         m_instance = new OCL;
     return m_instance;
 }
+
+
 
 OCL::OCL()
 {
@@ -62,6 +97,24 @@ OCL::OCL()
         std::cout << "Couldn't create OCL kernel "<<EVALKERNEL << " "<<err<<std::endl;
         exit(1);
     }
+
+    m_pieceMoveKernel = clCreateKernel(m_evalProgram,EVALKERNEL,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create OCL kernel "<<EVALKERNEL << " "<<err<<std::endl;
+        exit(1);
+    }
+
+    m_wPawnMoveKernel = clCreateKernel(m_moveProgram,WPAWNMOVEKERNEL,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create OCL kernel "<<WPAWNMOVEKERNEL << " "<<err<<std::endl;
+        exit(1);
+    }
+
+    m_bPawnMoveKernel = clCreateKernel(m_moveProgram,BPAWNMOVEKERNEL,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create OCL kernel "<<BPAWNMOVEKERNEL << " "<<err<<std::endl;
+        exit(1);
+    }
 }
 
 void OCL::BuildProgram()
@@ -69,9 +122,12 @@ void OCL::BuildProgram()
 
     int err;
     
-    FILE *fp = fopen(EVAL_PROGRAM_FILE, "r");
+    std::string evalFile = OCL::getSourceDir().append(EVAL_PROGRAM_FILE);
+    
+
+    FILE *fp = fopen(evalFile.c_str(), "r");
     if (!fp) {
-        std::cout << "Failed to read kernel file "<<EVAL_PROGRAM_FILE<<std::endl;
+        std::cout << "Failed to read kernel file "<<evalFile<<std::endl;
         exit(1);
     }
 
@@ -102,9 +158,10 @@ void OCL::BuildProgram()
         exit(1);
     }
 
-    fp = fopen(MOVE_PROGRAM_FILE, "r");
+    std::string moveFile = OCL::getSourceDir().append(MOVE_PROGRAM_FILE);
+    fp = fopen(moveFile.c_str(), "r");
     if (!fp) {
-        std::cout << "Failed to read kernel file "<<MOVE_PROGRAM_FILE<<std::endl;
+        std::cout << "Failed to read kernel file "<<moveFile<<std::endl;
         exit(1);
     }
 

@@ -3,6 +3,8 @@
 
 #include <CL/cl.h>
 #include "board.hpp"
+#include <string>
+
 
 // Singleton class used for holding OpenCL objects
 class OCL {
@@ -20,6 +22,10 @@ class OCL {
 
     cl_command_queue m_queue;
     cl_kernel m_evalKernel;
+    
+    cl_kernel m_pieceMoveKernel;
+    cl_kernel m_wPawnMoveKernel;
+    cl_kernel m_bPawnMoveKernel;
 
     int RunEvalKernel(const Board& board);
 
@@ -28,6 +34,7 @@ class OCL {
 
 
     static OCL* m_instance;
+    static std::string getSourceDir();
 
     void BuildProgram();
 
