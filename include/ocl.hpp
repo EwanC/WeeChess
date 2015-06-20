@@ -29,6 +29,9 @@ class OCL {
 
     int RunEvalKernel(const Board& board);
 
+    void RunPawnMoveKernel(const Board& board);
+    void RunPieceMoveKernel(const Board& b);
+
 
   private:
 

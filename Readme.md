@@ -5,8 +5,8 @@ Ewan Crawford <ewan.cr@gmail.com>, Jan 2015
 Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
 
-### OCL Board Eval
+### OCL Move Kernel
 
-Add King bitmasks <br>
-Add other info bitmasks <br>
-What to do with other All Bitboard ? <br>
++ Arrange pieces in piece move kernel  buffer
++ Add way to passback score
+

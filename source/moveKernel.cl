@@ -150,7 +150,7 @@ __kernel void WhitePawnKernel(
     int group_id = get_group_id(0); // Piece Type
     int global_id = get_global_id(0);
     int sq120 = squares[global_id];
-    int enPas = enpass[global_id];
+    int enPas = enpass[0];
 
     const unsigned int sqInfront = sq120 + 10;
 

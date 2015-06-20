@@ -2,6 +2,7 @@
 #include "board.hpp"
 #include "search.hpp"
 #include "eval.hpp"
+#include "ocl.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -93,40 +94,41 @@ std::string Move::moveString() const
 void MoveList::genAllMoves(const Board& b)
 {
 
-    static const Piece SlidePce[2][3] = {{wB, wR, wQ}, {bB, bR, bQ}};
 
-    static const Piece NonSlidePce[2][2] = {{wN, wK}, {bN, bK}};
+    OCL* ocl = OCL::getInstance();
+    ocl->RunPawnMoveKernel(b);
 
     if (b.m_side == WHITE) {
-        bitboard wpBitboard = b.m_pList[wP];
-        int pawns = Bitboard::countBits(wpBitboard);
-        for (int pceNum = 0; pceNum < pawns; ++pceNum) {
-            int sq64 = (Bitboard::popBit(&wpBitboard));
-            int sq120 = SQ120(sq64);
+        // bitboard wpBitboard = b.m_pList[wP];
+        // int pawns = Bitboard::countBits(wpBitboard);
+        // for (int pceNum = 0; pceNum < pawns; ++pceNum) {
+        //     int sq64 = (Bitboard::popBit(&wpBitboard));
+        //     int sq120 = SQ120(sq64);
 
-            assert(!SQOFFBOARD(sq120));
+        //     assert(!SQOFFBOARD(sq120));
 
-            if (b.m_board[sq120 + 10] == EMPTY) {
-                addPawnMove<WHITE>(b, sq120, sq120 + 10);
-                if (Board::RanksBrd[sq120] == RANK_2 && b.m_board[sq120 + 20] == EMPTY) {
-                    addQuietMove(b, MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS));
-                }
-            }
+        //     if (b.m_board[sq120 + 10] == EMPTY) {
+        //         addPawnMove<WHITE>(b, sq120, sq120 + 10);
+        //         if (Board::RanksBrd[sq120] == RANK_2 && b.m_board[sq120 + 20] == EMPTY) {
+        //             addQuietMove(b, MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS));
+        //         }
+        //     }
 
-            if (!SQOFFBOARD(sq120 + 9) && Board::PieceCol[b.m_board[sq120 + 9]] == BLACK) {
-                addPawnCapMove<WHITE>(b, sq120, sq120 + 9, b.m_board[sq120 + 9]);
-            }
-            if (!SQOFFBOARD(sq120 + 11) && Board::PieceCol[b.m_board[sq120 + 11]] == BLACK) {
-                addPawnCapMove<WHITE>(b, sq120, sq120 + 11, b.m_board[sq120 + 11]);
-            }
+        //     if (!SQOFFBOARD(sq120 + 9) && Board::PieceCol[b.m_board[sq120 + 9]] == BLACK) {
+        //         addPawnCapMove<WHITE>(b, sq120, sq120 + 9, b.m_board[sq120 + 9]);
+        //     }
+        //     if (!SQOFFBOARD(sq120 + 11) && Board::PieceCol[b.m_board[sq120 + 11]] == BLACK) {
+        //         addPawnCapMove<WHITE>(b, sq120, sq120 + 11, b.m_board[sq120 + 11]);
+        //     }
 
-            if (b.m_enPas != NO_SQ && sq120 + 9 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 + 9, EMPTY, EMPTY, MFLAGEP));
-            }
-            if (b.m_enPas != NO_SQ && sq120 + 11 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 + 11, EMPTY, EMPTY, MFLAGEP));
-            }
-        }
+        //     if (b.m_enPas != NO_SQ && sq120 + 9 == b.m_enPas) {
+        //         addEnPassantMove(b, MOVE(sq120, sq120 + 9, EMPTY, EMPTY, MFLAGEP));
+        //     }
+        //     if (b.m_enPas != NO_SQ && sq120 + 11 == b.m_enPas) {
+        //         addEnPassantMove(b, MOVE(sq120, sq120 + 11, EMPTY, EMPTY, MFLAGEP));
+        //     }
+        // }
+
 
         // castling
         if (b.m_castling & WKCA) {
@@ -147,36 +149,37 @@ void MoveList::genAllMoves(const Board& b)
     }
     else {
 
-        bitboard bpBitboard = b.m_pList[bP];
-        int pawns = Bitboard::countBits(bpBitboard);
+        // bitboard bpBitboard = b.m_pList[bP];
+        // int pawns = Bitboard::countBits(bpBitboard);
 
-        for (int pceNum = 0; pceNum < pawns; ++pceNum) {
-            int sq120 = SQ120(Bitboard::popBit(&bpBitboard));
-            assert(!SQOFFBOARD(sq120));
+        // for (int pceNum = 0; pceNum < pawns; ++pceNum) {
+        //     int sq120 = SQ120(Bitboard::popBit(&bpBitboard));
+        //     assert(!SQOFFBOARD(sq120));
 
-            if (b.m_board[sq120 - 10] == EMPTY) {
-                addPawnMove<BLACK>(b, sq120, sq120 - 10);
-                if (Board::RanksBrd[sq120] == RANK_7 && b.m_board[sq120 - 20] == EMPTY) {
-                    addQuietMove(b, MOVE(sq120, (sq120 - 20), EMPTY, EMPTY, MFLAGPS));
-                }
-            }
+        //     if (b.m_board[sq120 - 10] == EMPTY) {
+        //         addPawnMove<BLACK>(b, sq120, sq120 - 10);
+        //         if (Board::RanksBrd[sq120] == RANK_7 && b.m_board[sq120 - 20] == EMPTY) {
+        //             addQuietMove(b, MOVE(sq120, (sq120 - 20), EMPTY, EMPTY, MFLAGPS));
+        //         }
+        //     }
 
-            if (!SQOFFBOARD(sq120 - 9) && Board::PieceCol[b.m_board[sq120 - 9]] == WHITE) {
-                addPawnCapMove<BLACK>(b, sq120, sq120 - 9, b.m_board[sq120 - 9]);
-            }
+        //     if (!SQOFFBOARD(sq120 - 9) && Board::PieceCol[b.m_board[sq120 - 9]] == WHITE) {
+        //         addPawnCapMove<BLACK>(b, sq120, sq120 - 9, b.m_board[sq120 - 9]);
+        //     }
 
-            if (!SQOFFBOARD(sq120 - 11) && Board::PieceCol[b.m_board[sq120 - 11]] == WHITE) {
-                addPawnCapMove<BLACK>(b, sq120, sq120 - 11, b.m_board[sq120 - 11]);
-            }
+        //     if (!SQOFFBOARD(sq120 - 11) && Board::PieceCol[b.m_board[sq120 - 11]] == WHITE) {
+        //         addPawnCapMove<BLACK>(b, sq120, sq120 - 11, b.m_board[sq120 - 11]);
+        //     }
 
-            if (b.m_enPas != NO_SQ && sq120 - 9 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 - 9, EMPTY, EMPTY, MFLAGEP));
-            }
-            if (b.m_enPas != NO_SQ && sq120 - 11 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 - 11, EMPTY, EMPTY, MFLAGEP));
-            }
-        }
+        //     if (b.m_enPas != NO_SQ && sq120 - 9 == b.m_enPas) {
+        //         addEnPassantMove(b, MOVE(sq120, sq120 - 9, EMPTY, EMPTY, MFLAGEP));
+        //     }
+        //     if (b.m_enPas != NO_SQ && sq120 - 11 == b.m_enPas) {
+        //         addEnPassantMove(b, MOVE(sq120, sq120 - 11, EMPTY, EMPTY, MFLAGEP));
+        //     }
+        // }
 
+    
         // castling
         if (b.m_castling & BKCA) {
             if (b.m_board[F8] == EMPTY && b.m_board[G8] == EMPTY) {
@@ -195,65 +198,67 @@ void MoveList::genAllMoves(const Board& b)
         }
     }
 
-    /* Loop for slide pieces */
+    ocl->RunPieceMoveKernel(b);
 
-    for (Piece pce : SlidePce[b.m_side]) {
-        assert(pce >= wP && pce <= bK);
-        bitboard bb = b.m_pList[static_cast<int>(pce)];
-        int pieces = Bitboard::countBits(bb);
 
-        for (int pceNum = 0; pceNum < pieces; ++pceNum) {
-            int sq120 = SQ120(Bitboard::popBit(&bb));
-            assert(!SQOFFBOARD(sq120));
+    // /* Loop for slide pieces */
+    // for (Piece pce : SlidePce[b.m_side]) {
+    //     assert(pce >= wP && pce <= bK);
+    //     bitboard bb = b.m_pList[static_cast<int>(pce)];
+    //     int pieces = Bitboard::countBits(bb);
 
-            for (int index = 0; index < NumDir[pce]; ++index) {
-                int dir = PceDir[pce][index];
-                int t_sq = sq120 + dir;
+    //     for (int pceNum = 0; pceNum < pieces; ++pceNum) {
+    //         int sq120 = SQ120(Bitboard::popBit(&bb));
+    //         assert(!SQOFFBOARD(sq120));
 
-                while (!SQOFFBOARD(t_sq)) {
-                    // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-                    if (b.m_board[t_sq] != EMPTY) {
-                        if (Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
-                            addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
-                        }
-                        break;
-                    }
-                    addQuietMove(b, MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
-                    t_sq += dir;
-                }
-            }
-        }
-    }
+    //         for (int index = 0; index < NumDir[pce]; ++index) {
+    //             int dir = PceDir[pce][index];
+    //             int t_sq = sq120 + dir;
 
-    /* Loop for non slide */
-    for (Piece pce : NonSlidePce[b.m_side]) {
-        assert(pce >= wP && pce <= bK);
-        bitboard bb = b.m_pList[static_cast<int>(pce)];
-        int pieces = Bitboard::countBits(bb);
+    //             while (!SQOFFBOARD(t_sq)) {
+    //                 // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+    //                 if (b.m_board[t_sq] != EMPTY) {
+    //                     if (Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
+    //                         addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
+    //                     }
+    //                     break;
+    //                 }
+    //                 addQuietMove(b, MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
+    //                 t_sq += dir;
+    //             }
+    //         }
+    //     }
+    // }
 
-        for (int pceNum = 0; pceNum < pieces; ++pceNum) {
-            int sq120 = SQ120(Bitboard::popBit(&bb));
-            assert(!SQOFFBOARD(sq120));
+    // /* Loop for non slide */
+    // for (Piece pce : NonSlidePce[b.m_side]) {
+    //     assert(pce >= wP && pce <= bK);
+    //     bitboard bb = b.m_pList[static_cast<int>(pce)];
+    //     int pieces = Bitboard::countBits(bb);
 
-            for (int index = 0; index < NumDir[pce]; ++index) {
-                int dir = PceDir[pce][index];
-                int t_sq = sq120 + dir;
+    //     for (int pceNum = 0; pceNum < pieces; ++pceNum) {
+    //         int sq120 = SQ120(Bitboard::popBit(&bb));
+    //         assert(!SQOFFBOARD(sq120));
 
-                if (SQOFFBOARD(t_sq)) {
-                    continue;
-                }
+    //         for (int index = 0; index < NumDir[pce]; ++index) {
+    //             int dir = PceDir[pce][index];
+    //             int t_sq = sq120 + dir;
 
-                // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-                if (b.m_board[t_sq] != EMPTY) {
-                    if (Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
-                        addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
-                    }
-                    continue;
-                }
-                addQuietMove(b, MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
-            }
-        }
-    }
+    //             if (SQOFFBOARD(t_sq)) {
+    //                 continue;
+    //             }
+
+    //             // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+    //             if (b.m_board[t_sq] != EMPTY) {
+    //                 if (Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
+    //                     addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
+    //                 }
+    //                 continue;
+    //             }
+    //             addQuietMove(b, MOVE(sq120, t_sq, EMPTY, EMPTY, 0));
+    //         }
+    //     }
+    // }
 }
 
 /*
