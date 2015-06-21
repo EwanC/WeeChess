@@ -40,6 +40,7 @@ class OCL {
     static std::string getSourceDir();
 
     void BuildProgram();
+    void SetPieceHostBuffer(unsigned int* pieces, bitboard bb, unsigned int& itr, const unsigned short piece_count);
 
     OCL();
     OCL(OCL const&);

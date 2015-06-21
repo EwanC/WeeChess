@@ -285,36 +285,57 @@ void OCL::RunPawnMoveKernel(const Board& b)
 
 }
 
+
+void OCL::SetPieceHostBuffer(unsigned int* pieces, bitboard bb, unsigned int& itr, const unsigned short piece_count)
+{
+    int count = Bitboard::countBits(bb);
+    for (int pceNum = 0; pceNum < piece_count; ++pceNum) 
+    {
+        if (pceNum < count)
+        {  
+           int sq120 = SQ120(Bitboard::popBit(&bb));
+           pieces[itr++] = sq120;
+        }
+        else
+            itr++;
+    }
+}
+
 void OCL::RunPieceMoveKernel(const Board& b)
 {
 
-    // static const Piece SlidePce[2][3] = {{wB, wR, wQ}, {bB, bR, bQ}};
-    // static const Piece NonSlidePce[2][2] = {{wN, wK}, {bN, bK}};
-    // for (Piece pce : SlidePce[b.m_side]) {
-    //        assert(pce >= wP && pce <= bK);
-    //        bitboard bb = b.m_pList[static_cast<int>(pce)];
-    //        int pieces = Bitboard::countBits(bb);
-    // }
+    static const Piece SlidePce[2][3] = {{wB, wR, wQ}, {bB, bR, bQ}};
+    static const Piece NonSlidePce[2][2] = {{wN, wK}, {bN, bK}};
 
+    // Piece Buffer
+    // WB, WB, WR, WR, WQ, WN, WN, WK
+    const int num_pieces = 8;
+    unsigned int pieces[num_pieces];
+    unsigned int itr = 0;
 
-    //
-    //
-    // TODO ARRANGE PIECES IN BUFFER
-    //
-    //
-    bitboard Bitboard = b.m_side == Colour::WHITE ? b.m_pList[Piece::wP] : b.m_pList[Piece::bP];
-
-    int pawns = Bitboard::countBits(Bitboard);
-
-    unsigned int* pawn_squares = new unsigned int[pawns];
-  
-    for (int pceNum = 0; pceNum < pawns; ++pceNum) {
-            int sq64 = (Bitboard::popBit(&Bitboard));
-            pawn_squares[pceNum] = SQ120(sq64);
+    for(int i = 0; i < num_pieces;++i){
+        pieces[i] = Square::NO_SQ;
     }
 
+    bitboard Bbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][0])];
+    SetPieceHostBuffer(pieces, Bbb, itr, 2);
+   
+    
+    bitboard Rbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][1])];
+    SetPieceHostBuffer(pieces, Rbb, itr, 2);
+
+
+    bitboard Qbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][2])];
+    SetPieceHostBuffer(pieces, Qbb, itr, 1);
+
+    bitboard Nbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][0])];
+    SetPieceHostBuffer(pieces, Nbb, itr, 2);
+
+    bitboard Kbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][1])];
+    SetPieceHostBuffer(pieces, Kbb, itr, 1);
+
     int err;
-    cl_mem square_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, pawns * sizeof(unsigned int),(void *)pawn_squares,&err);
+    cl_mem square_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_pieces * sizeof(unsigned int),(void *)pieces,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl side square buffer\n";
         exit(1);
@@ -344,8 +365,8 @@ void OCL::RunPieceMoveKernel(const Board& b)
 
   
 
-    const size_t global_size = pawns;
-    const size_t local_size = pawns;
+    const size_t global_size = num_pieces;
+    const size_t local_size = 2;
     
 
     /* Set kernel args */
@@ -383,8 +404,6 @@ void OCL::RunPieceMoveKernel(const Board& b)
     clReleaseMemObject(pieces_buffer);
     clReleaseMemObject(side_buffer);
     clReleaseMemObject(moves_buffer);
-
-    delete[] pawn_squares;
 
 }
 
