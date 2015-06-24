@@ -99,9 +99,9 @@ OCL::OCL()
         exit(1);
     }
 
-    m_pieceMoveKernel = clCreateKernel(m_evalProgram,EVALKERNEL,&err);
+    m_pieceMoveKernel = clCreateKernel(m_moveProgram,PIECEMOVEKERNEL,&err);
     if (err < 0) {
-        std::cout << "Couldn't create OCL kernel "<<EVALKERNEL << " "<<err<<std::endl;
+        std::cout << "Couldn't create OCL kernel "<<PIECEMOVEKERNEL << " "<<err<<std::endl;
         exit(1);
     }
 
@@ -252,7 +252,7 @@ void OCL::RunPawnMoveKernel(const Board& b)
     err |= clSetKernelArg(kernel,3,sizeof(cl_mem),&moves_buffer);
 
     if (err < 0) {
-        std::cout << "Couldn't set kernel arg\n";
+        std::cout << "Couldn't set pawn move kernel arg\n";
         exit(1);
     }
 
@@ -341,16 +341,16 @@ void OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    cl_mem side_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, sizeof(int),(void *)b.m_side,&err);
+    cl_mem side_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY, sizeof(int),(void *)b.m_side,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl piece side buffer\n";
         exit(1);
     }
 
 
-    cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, TOTAL_SQUARES * sizeof(int),(void *)b.m_board,&err);
+    cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY, TOTAL_SQUARES * sizeof(int),(void*)b.m_board,&err);
     if (err < 0) {
-        std::cout << "Couldn't create cl pawn  peices buffer\n";
+        std::cout << "Couldn't create cl pawn peices buffer\n";
         exit(1);
     }
 
@@ -371,12 +371,23 @@ void OCL::RunPieceMoveKernel(const Board& b)
 
     /* Set kernel args */
     err = clSetKernelArg(m_pieceMoveKernel,0,sizeof(cl_mem),&square_buffer);
+     if (err < 0) {
+        std::cout << "A Couldn't set Piece move kernel arg\n";
+        exit(1);
+    }
     err |= clSetKernelArg(m_pieceMoveKernel,1,sizeof(cl_mem),&side_buffer);
+     if (err < 0) {
+        std::cout << "B Couldn't set Piece move kernel arg\n";
+        exit(1);
+    }
     err |= clSetKernelArg(m_pieceMoveKernel,2,sizeof(cl_mem),&pieces_buffer);
+     if (err < 0) {
+        std::cout << "C Couldn't set Piece move kernel arg: "<< err<<"\n";
+        exit(1);
+    }
     err |= clSetKernelArg(m_pieceMoveKernel,3,sizeof(cl_mem),&moves_buffer);
-
     if (err < 0) {
-        std::cout << "Couldn't set kernel arg\n";
+        std::cout << "D Couldn't set Piece move kernel arg\n";
         exit(1);
     }
 

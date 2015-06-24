@@ -99,7 +99,7 @@ int constant PieceCol[13] = { BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BL
 // WorkItem - Individual Piece
 // No score eval!
 __kernel void moveKernel(
-                            __global unsigned int* squares,
+                            __global const unsigned int* squares,
                             __global const int* side,
                             __global const int* pieces,
                             __global unsigned long* moves // Return Value

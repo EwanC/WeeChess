@@ -68,8 +68,6 @@ class MoveList {
 
     void printList() const;
 
-    template <Colour colour> void addPawnMove(const Board& b, const int from, const int to);
-
     template <Colour colour>
     void addPawnCapMove(const Board& b, const int from, const int to, const Piece cap);
 
