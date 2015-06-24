@@ -78,13 +78,14 @@ int main(int argc, char* argv[])
     initStaticData();
     Board b;
     SearchInfo info;
-#if 0
-    std::cout << "Running Perft\n";
-    if(runPerft(b, 5))
+#if 1
+    const int level = 1;
+    std::cout << "Running Perft to level "<<level <<std::endl;
+    if(runPerft(b, level))
       std::cout << "Perft passed\n";
     else
       std::cout << "Perft failed\n";
-#endif
+#else
 
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
@@ -116,6 +117,6 @@ int main(int argc, char* argv[])
             continue;
         }
     }
-
+#endif
     return 0;
 }
