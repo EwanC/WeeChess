@@ -102,7 +102,8 @@ __kernel void moveKernel(
                             __global const unsigned int* squares,
                             __global const int* side,
                             __global const int* pieces,
-                            __global unsigned long* moves // Return Value
+                            __global unsigned long* moves, // Return Value
+                            __global unsigned int* move_ctr
                         )
 {
 
@@ -116,22 +117,26 @@ __kernel void moveKernel(
         int dir = PceDir[group_id][index];
         int t_sq = sq120 + dir;
 
-        while (!SQOFFBOARD(t_sq)) {
+         while (!SQOFFBOARD(t_sq)) {
 
             // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
             if (pieces[t_sq] != EMPTY) {
                 if (PieceCol[pieces[t_sq]] == (myside ^ 1))
                 {
-                    moves[global_id] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+               //     moves[*move_ctr] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+                    atomic_inc(move_ctr);
+
                 }
-                break;
+
+
             }
-            moves[global_id] =  MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+           // moves[*move_ctr] = //MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+            atomic_inc(move_ctr);
 
             if(slider) // Horrific performace
-            	break;
+                break;
             else
-            	t_sq += dir;
+                t_sq += dir;
 
         }
     }
@@ -143,7 +148,9 @@ __kernel void WhitePawnKernel(
                                 __global unsigned int* squares,
                                 __global const int* pieces,
                                 __global int* enpass,
-                                __global unsigned long* moves // Return Value
+                                __global unsigned long* moves, // Return Value
+                                __global unsigned int* move_ctr
+
                              )
 {
 
@@ -160,17 +167,26 @@ __kernel void WhitePawnKernel(
         // Pawn can be promoted
         if (RanksBrd[sq120] == RANK_7) 
         {
-            moves[global_id] = MOVE(sq120, sqInfront, EMPTY, wQ, 0);
-            moves[global_id] = MOVE(sq120, sqInfront, EMPTY, wR, 0);
-            moves[global_id] = MOVE(sq120, sqInfront, EMPTY, wB, 0);
-            moves[global_id] = MOVE(sq120, sqInfront, EMPTY, wN, 0);
+            moves[*move_ctr] = MOVE(sq120, sqInfront, EMPTY, wQ, 0);
+            atomic_inc(move_ctr);
+            moves[*move_ctr] = MOVE(sq120, sqInfront, EMPTY, wR, 0);
+            atomic_inc(move_ctr);
+            moves[*move_ctr] = MOVE(sq120, sqInfront, EMPTY, wB, 0);
+            atomic_inc(move_ctr);
+            moves[*move_ctr] = MOVE(sq120, sqInfront, EMPTY, wN, 0);
+            atomic_inc(move_ctr);
+
         }
-        else 
-            moves[global_id] = MOVE(sq120, sqInfront, EMPTY, EMPTY, 0);
+        else {
+            moves[*move_ctr] = MOVE(sq120, sqInfront, EMPTY, EMPTY, 0);
+            atomic_inc(move_ctr);
+
+        }
   
         // Pawn hasn't moved yet, can move two squares
         if (RanksBrd[sq120] == RANK_2 && pieces[sq120 + 20] == EMPTY) {
-             moves[global_id] =  MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS);
+            moves[*move_ctr] =  MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS);
+            atomic_inc(move_ctr);
         }
     }
 
@@ -180,13 +196,20 @@ __kernel void WhitePawnKernel(
 
         // Pawn can be promoted
         if (RanksBrd[sq120] == RANK_7) {
-            moves[global_id] =  MOVE(sq120, sqRight, pieces[sqRight], wQ, 0);
-            moves[global_id] =  MOVE(sq120, sqRight, pieces[sqRight], wR, 0);
-            moves[global_id] =  MOVE(sq120, sqRight, pieces[sqRight], wB, 0);
-            moves[global_id] =  MOVE(sq120, sqRight, pieces[sqRight], wN, 0);
+            moves[*move_ctr] =  MOVE(sq120, sqRight, pieces[sqRight], wQ, 0);
+            atomic_inc(move_ctr);
+            moves[*move_ctr] =  MOVE(sq120, sqRight, pieces[sqRight], wR, 0);
+            atomic_inc(move_ctr);
+            moves[*move_ctr] =  MOVE(sq120, sqRight, pieces[sqRight], wB, 0);
+            atomic_inc(move_ctr);
+            moves[*move_ctr] =  MOVE(sq120, sqRight, pieces[sqRight], wN, 0);
+            atomic_inc(move_ctr);
+
         }
-        else
-        	moves[global_id] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
+        else{
+        	moves[*move_ctr] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
+            atomic_inc(move_ctr);
+        }
 
     }
     
@@ -194,23 +217,37 @@ __kernel void WhitePawnKernel(
     const unsigned int sqLeft = sq120 + 11;
     if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == BLACK) {
         if (RanksBrd[sq120] == RANK_7) {
-            moves[global_id] =  MOVE(sq120, sqLeft, pieces[sqLeft], wQ, 0);
-            moves[global_id] =  MOVE(sq120, sqLeft, pieces[sqLeft], wR, 0);
-            moves[global_id] =  MOVE(sq120, sqLeft, pieces[sqLeft], wB, 0);
-            moves[global_id] =  MOVE(sq120, sqLeft, pieces[sqLeft], wN, 0);
+            moves[*move_ctr] =  MOVE(sq120, sqLeft, pieces[sqLeft], wQ, 0);            
+            atomic_inc(move_ctr);
+
+            moves[*move_ctr] =  MOVE(sq120, sqLeft, pieces[sqLeft], wR, 0);
+            atomic_inc(move_ctr);
+
+            moves[*move_ctr] =  MOVE(sq120, sqLeft, pieces[sqLeft], wB, 0);
+            atomic_inc(move_ctr);
+
+            moves[*move_ctr] =  MOVE(sq120, sqLeft, pieces[sqLeft], wN, 0);
+            atomic_inc(move_ctr);
+
         }
-        else
+        else{
         	moves[global_id] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
+        	atomic_inc(move_ctr);
+
+        }
     }
 
     //Enpassanet right
     if (enPas != NO_SQ && sqRight == enPas) {
-        moves[global_id] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
+        moves[*move_ctr] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
+        atomic_inc(move_ctr);
+
     }
     
     // Enpassanet left
     if (enPas != NO_SQ && sqLeft == enPas) {
-        moves[global_id] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
+        moves[*move_ctr] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
+        atomic_inc(move_ctr);
     }
 }
 

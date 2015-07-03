@@ -96,7 +96,8 @@ void MoveList::genAllMoves(const Board& b)
 
 
     OCL* ocl = OCL::getInstance();
-    ocl->RunPawnMoveKernel(b);
+    std::vector<Move> pawn_moves = ocl->RunPawnMoveKernel(b);
+    m_move_vec.insert(m_move_vec.end(),pawn_moves.begin(), pawn_moves.end());
 
     if (b.m_side == WHITE) {
      
@@ -137,8 +138,8 @@ void MoveList::genAllMoves(const Board& b)
         }
     }
 
-    ocl->RunPieceMoveKernel(b);
-
+    std::vector<Move> piece_moves = ocl->RunPieceMoveKernel(b);
+    m_move_vec.insert(m_move_vec.end(),piece_moves.begin(), piece_moves.end());
 }
 
 /*

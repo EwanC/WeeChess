@@ -3,7 +3,10 @@
 
 #include <CL/cl.h>
 #include "board.hpp"
+#include "move.hpp"
 #include <string>
+#include <vector>
+
 
 
 // Singleton class used for holding OpenCL objects
@@ -29,8 +32,8 @@ class OCL {
 
     int RunEvalKernel(const Board& board);
 
-    void RunPawnMoveKernel(const Board& board);
-    void RunPieceMoveKernel(const Board& b);
+    std::vector<Move> RunPawnMoveKernel(const Board& board);
+    std::vector<Move> RunPieceMoveKernel(const Board& b);
 
 
   private:

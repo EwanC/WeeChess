@@ -31,7 +31,7 @@ bool runPerft(Board& b, const int depth)
 
         int expected = atoi((line.substr(pos + 3)).c_str());
 
-        uint32_t result = PerftTest(depth, b);
+        uint32_t result = PerftTest(depth, b, true);
         std::cout << "\nTest " << std::dec << count++ << " to depth " << depth;
         std::cout << " ===> expected: " << expected << ", calculated " << result;
 

@@ -195,9 +195,11 @@ void OCL::BuildProgram()
 }
 
 
-void OCL::RunPawnMoveKernel(const Board& b)
+std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
 {
     
+    std::vector<Move> pawn_move_vec;
+
     bitboard Bitboard = b.m_side == Colour::WHITE ? b.m_pList[Piece::wP] : b.m_pList[Piece::bP];
 
     int pawns = Bitboard::countBits(Bitboard);
@@ -236,7 +238,13 @@ void OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
-  
+    unsigned int move_count = 0;
+    cl_mem move_num_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR, sizeof(unsigned int),&move_count,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create cl pawn peices buffer\n";
+        exit(1);
+    }
+    
 
     const size_t global_size = pawns;
     const size_t local_size = pawns;
@@ -250,6 +258,7 @@ void OCL::RunPawnMoveKernel(const Board& b)
     err |= clSetKernelArg(kernel,1,sizeof(cl_mem),&pieces_buffer);
     err |= clSetKernelArg(kernel,2,sizeof(cl_mem),&Enpass_buffer);
     err |= clSetKernelArg(kernel,3,sizeof(cl_mem),&moves_buffer);
+    err |= clSetKernelArg(kernel,4,sizeof(cl_mem),&move_num_buffer);
 
     if (err < 0) {
         std::cout << "Couldn't set pawn move kernel arg\n";
@@ -270,10 +279,25 @@ void OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
+
+    err = clEnqueueReadBuffer(m_queue,move_num_buffer,CL_TRUE,0, sizeof(unsigned int),&move_count,0,NULL,NULL);
+    if (err < 0) {
+        std::cout << "Couldn't read cl buffer\n";
+        exit(1);
+    }
+
     err = clFinish(m_queue);
      if (err < 0) {
         std::cout << "Couldn't wait for CL tae finish\n";
         exit(1);
+    }
+
+
+    for(int i = 0; i < move_count; ++i)
+    {
+        Move m;
+        m.m_move = moves[i];
+        pawn_move_vec.push_back(m);
     }
 
     clReleaseMemObject(square_buffer);
@@ -283,6 +307,7 @@ void OCL::RunPawnMoveKernel(const Board& b)
 
     delete[] pawn_squares;
 
+    return pawn_move_vec;
 }
 
 
@@ -301,11 +326,14 @@ void OCL::SetPieceHostBuffer(unsigned int* pieces, bitboard bb, unsigned int& it
     }
 }
 
-void OCL::RunPieceMoveKernel(const Board& b)
+std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
 {
 
     static const Piece SlidePce[2][3] = {{wB, wR, wQ}, {bB, bR, bQ}};
     static const Piece NonSlidePce[2][2] = {{wN, wK}, {bN, bK}};
+
+
+    std::vector<Move> piece_move_vec;
 
     // Piece Buffer
     // WB, WB, WR, WR, WQ, WN, WN, WK
@@ -354,16 +382,24 @@ void OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
+    unsigned int move_count = 0;
+    cl_mem move_num_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR, sizeof(unsigned int),&move_count,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create cl pawn peices buffer\n";
+        exit(1);
+    }
     
     #define MAX_MOVES_PER_POS 218
-    unsigned long moves[MAX_MOVES_PER_POS] = {0};
-    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, MAX_MOVES_PER_POS * sizeof(unsigned long),moves,&err);
+    unsigned long moves[MAX_MOVES_PER_POS];
+    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
+        moves[i] = 0;
+
+    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR , MAX_MOVES_PER_POS * sizeof(unsigned long),moves,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl side moves buffer\n";
         exit(1);
     }
 
-  
 
     const size_t global_size = num_pieces;
     const size_t local_size = 2;
@@ -390,6 +426,12 @@ void OCL::RunPieceMoveKernel(const Board& b)
         std::cout << "D Couldn't set Piece move kernel arg\n";
         exit(1);
     }
+    
+    err |= clSetKernelArg(m_pieceMoveKernel,4,sizeof(cl_mem),&move_num_buffer);
+    if (err < 0) {
+        std::cout << "E Couldn't set Piece move kernel arg\n";
+        exit(1);
+    }
 
     /* Enqueue Kernel*/
     err = clEnqueueNDRangeKernel(m_queue,m_pieceMoveKernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
@@ -405,10 +447,23 @@ void OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
+    err = clEnqueueReadBuffer(m_queue,move_num_buffer,CL_TRUE,0, sizeof(unsigned int),&move_count,0,NULL,NULL);
+    if (err < 0) {
+        std::cout << "Couldn't read cl buffer\n";
+        exit(1);
+    }
+
     err = clFinish(m_queue);
      if (err < 0) {
         std::cout << "Couldn't wait for CL tae finish\n";
         exit(1);
+    }
+
+    for(int i = 0; i < move_count; ++i)
+    {
+        Move m;
+        m.m_move = moves[i];
+        piece_move_vec.push_back(m);
     }
 
     clReleaseMemObject(square_buffer);
@@ -416,6 +471,8 @@ void OCL::RunPieceMoveKernel(const Board& b)
     clReleaseMemObject(side_buffer);
     clReleaseMemObject(moves_buffer);
 
+
+    return piece_move_vec;
 }
 
 
