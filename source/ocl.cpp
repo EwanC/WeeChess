@@ -203,6 +203,8 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     bitboard Bitboard = b.m_side == Colour::WHITE ? b.m_pList[Piece::wP] : b.m_pList[Piece::bP];
 
     int pawns = Bitboard::countBits(Bitboard);
+    if(pawns == 0)
+        return pawn_move_vec;
 
     unsigned int* pawn_squares = new unsigned int[pawns];
   
@@ -211,22 +213,22 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
             pawn_squares[pceNum] = SQ120(sq64);
     }
 
-    int err;
+    int err = CL_SUCCESS;
     cl_mem square_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, pawns * sizeof(unsigned int),(void *)pawn_squares,&err);
     if (err < 0) {
-        std::cout << "Couldn't create cl pawn square buffer\n";
+        std::cout << "Couldn't create cl pawn square buffer " << err <<"\n";
         exit(1);
     }
 
     cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE| CL_MEM_COPY_HOST_PTR, TOTAL_SQUARES * sizeof(int),(void *)b.m_board,&err);
     if (err < 0) {
-        std::cout << "Couldn't create cl pawn  peices buffer\n";
+        std::cout << "Couldn't create cl pawn peices buffer\n";
         exit(1);
     }
 
     cl_mem Enpass_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, sizeof(unsigned int),(void *)b.m_enPas,&err);
     if (err < 0) {
-        std::cout << "Couldn't create cl pawn  enpass buffer\n";
+        std::cout << "Couldn't create cl pawn enpass buffer\n";
         exit(1);
     }
 

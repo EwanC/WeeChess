@@ -19,6 +19,8 @@ bool runPerft(Board& b, const int depth)
     bool pass = true;
 
     assert(depth > 0 && depth < 7);
+    unsigned short passes = 0;
+    unsigned short tests = 0;
     while (std::getline(infile, line)) {
 
         b.parseFen(line.c_str());
@@ -37,13 +39,16 @@ bool runPerft(Board& b, const int depth)
 
         if (expected == result) {
             std::cout << " PASS\n";
+            ++passes;
         }
         else {
             std::cout << " FAIL\n";
             pass = false;
         }
+        ++tests;
     }
 
+    std::cout << "\nPassed "<<passes<< "/"<<tests<<std::endl;
     if (pass)
         std::cout << "\nPerft Success\n";
     else
