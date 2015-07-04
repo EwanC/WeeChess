@@ -102,13 +102,17 @@ __kernel void moveKernel(
                             __global const unsigned int* squares,
                             __global const int* side,
                             __global const int* pieces,
-                            __global unsigned long* moves, // Return Value
-                            __global unsigned int* move_ctr
+                            __global unsigned long* moves // Return Value
                         )
 {
 
-    int group_id = get_group_id(0); // Piece Type
-    int global_id = get_global_id(0);
+    const int group_id = get_group_id(0); // Piece Type
+    const int global_id = get_global_id(0);
+
+    unsigned int buffer_idx = 0;
+    const unsigned int buffer_offset = MAX_PIECE_MOVES * global_id;
+
+
     int sq120 = squares[global_id];
     int myside = side[global_id];
     bool slider = isSlider[group_id];
@@ -123,15 +127,15 @@ __kernel void moveKernel(
             if (pieces[t_sq] != EMPTY) {
                 if (PieceCol[pieces[t_sq]] == (myside ^ 1))
                 {
-               //     moves[*move_ctr] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
-                    atomic_inc(move_ctr);
+                    moves[buffer_idx + buffer_offset] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+                    buffer_idx++;
 
                 }
 
 
             }
-           // moves[*move_ctr] = //MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
-            atomic_inc(move_ctr);
+            moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+            buffer_idx++;
 
             if(slider) // Horrific performace
                 break;

@@ -138,8 +138,8 @@ void MoveList::genAllMoves(const Board& b)
         }
     }
 
-    //std::vector<Move> piece_moves = ocl->RunPieceMoveKernel(b);
-    //m_move_vec.insert(m_move_vec.end(),piece_moves.begin(), piece_moves.end());
+    std::vector<Move> piece_moves = ocl->RunPieceMoveKernel(b);
+    m_move_vec.insert(m_move_vec.end(),piece_moves.begin(), piece_moves.end());
 }
 
 /*

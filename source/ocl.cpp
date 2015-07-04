@@ -183,7 +183,7 @@ void OCL::BuildProgram()
     }
 
     /* Build program */
-    err = clBuildProgram(m_moveProgram, 0, NULL,"-DMAX_PAWN_MOVES=12", NULL, NULL);
+    err = clBuildProgram(m_moveProgram, 0, NULL,"-DMAX_PAWN_MOVES=12 -DMAX_PIECE_MOVES=20", NULL, NULL);
     if (err < 0) {
         std::cout << "Couldn't build program" << MOVE_PROGRAM_FILE <<"\n";
         char buffer[2048];
@@ -368,7 +368,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
     }
 
 
-    cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY, TOTAL_SQUARES * sizeof(int),(void*)b.m_board,&err);
+    cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, TOTAL_SQUARES * sizeof(int),(void*)b.m_board,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl pawn peices buffer\n";
         exit(1);
@@ -418,12 +418,6 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         std::cout << "D Couldn't set Piece move kernel arg\n";
         exit(1);
     }
-    
-    err |= clSetKernelArg(m_pieceMoveKernel,4,sizeof(cl_mem),&move_num_buffer);
-    if (err < 0) {
-        std::cout << "E Couldn't set Piece move kernel arg\n";
-        exit(1);
-    }
 
     /* Enqueue Kernel*/
     err = clEnqueueNDRangeKernel(m_queue,m_pieceMoveKernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
@@ -439,20 +433,16 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    err = clEnqueueReadBuffer(m_queue,move_num_buffer,CL_TRUE,0, sizeof(unsigned int),&move_count,0,NULL,NULL);
-    if (err < 0) {
-        std::cout << "Couldn't read cl buffer\n";
-        exit(1);
-    }
-
     err = clFinish(m_queue);
-     if (err < 0) {
+    if (err < 0) {
         std::cout << "Couldn't wait for CL tae finish\n";
         exit(1);
     }
-
-    for(int i = 0; i < move_count; ++i)
+   
+    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
     {
+        if (moves[i] == 0) continue;
+
         Move m;
         m.m_move = moves[i];
         piece_move_vec.push_back(m);
