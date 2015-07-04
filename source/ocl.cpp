@@ -183,7 +183,7 @@ void OCL::BuildProgram()
     }
 
     /* Build program */
-    err = clBuildProgram(m_moveProgram, 0, NULL, NULL, NULL, NULL);
+    err = clBuildProgram(m_moveProgram, 0, NULL,"-DMAX_PAWN_MOVES=12", NULL, NULL);
     if (err < 0) {
         std::cout << "Couldn't build program" << MOVE_PROGRAM_FILE <<"\n";
         char buffer[2048];
@@ -218,7 +218,7 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
-    cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, TOTAL_SQUARES * sizeof(int),(void *)b.m_board,&err);
+    cl_mem pieces_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE| CL_MEM_COPY_HOST_PTR, TOTAL_SQUARES * sizeof(int),(void *)b.m_board,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl pawn  peices buffer\n";
         exit(1);
@@ -231,17 +231,13 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     }
 
     #define MAX_MOVES_PER_POS 218
-    unsigned long moves[MAX_MOVES_PER_POS] = {0};
-    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, MAX_MOVES_PER_POS * sizeof(unsigned long),moves,&err);
+    unsigned long moves[MAX_MOVES_PER_POS];
+    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
+        moves[i] = 0;
+
+    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, MAX_MOVES_PER_POS * sizeof(unsigned long),moves,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl wp moves buffer\n";
-        exit(1);
-    }
-
-    unsigned int move_count = 0;
-    cl_mem move_num_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR, sizeof(unsigned int),&move_count,&err);
-    if (err < 0) {
-        std::cout << "Couldn't create cl pawn peices buffer\n";
         exit(1);
     }
     
@@ -258,7 +254,6 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     err |= clSetKernelArg(kernel,1,sizeof(cl_mem),&pieces_buffer);
     err |= clSetKernelArg(kernel,2,sizeof(cl_mem),&Enpass_buffer);
     err |= clSetKernelArg(kernel,3,sizeof(cl_mem),&moves_buffer);
-    err |= clSetKernelArg(kernel,4,sizeof(cl_mem),&move_num_buffer);
 
     if (err < 0) {
         std::cout << "Couldn't set pawn move kernel arg\n";
@@ -279,13 +274,6 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
-
-    err = clEnqueueReadBuffer(m_queue,move_num_buffer,CL_TRUE,0, sizeof(unsigned int),&move_count,0,NULL,NULL);
-    if (err < 0) {
-        std::cout << "Couldn't read cl buffer\n";
-        exit(1);
-    }
-
     err = clFinish(m_queue);
      if (err < 0) {
         std::cout << "Couldn't wait for CL tae finish\n";
@@ -293,8 +281,10 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     }
 
 
-    for(int i = 0; i < move_count; ++i)
+    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
     {
+        if (moves[i] == 0) continue;
+
         Move m;
         m.m_move = moves[i];
         pawn_move_vec.push_back(m);
