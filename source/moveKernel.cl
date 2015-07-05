@@ -114,34 +114,30 @@ __kernel void moveKernel(
         int dir = PceDir[group_id][index];
         int t_sq = sq120 + dir;
 
-        if (!slider && !SQOFFBOARD(t_sq)){
-        
-                   moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
-                   buffer_idx++;
+          while (!SQOFFBOARD(t_sq)) {
+
+            // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+            if (pieces[t_sq] != EMPTY) {
+                if (PieceCol[pieces[t_sq]] == (myside ^ 1))
+                {
+                    moves[buffer_idx + buffer_offset] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+                    buffer_idx++;
+
+                }
+                break;
+            }
+            else{
+               moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+               buffer_idx++;
+            }
+     
+
+            if(!slider) // Horrific performace
+                break;
+            else
+                t_sq += dir;
+
         }
-
-        //  while (!SQOFFBOARD(t_sq)) {
-
-        //     // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-        //     if (pieces[t_sq] != EMPTY) {
-        //         if (PieceCol[pieces[t_sq]] == (myside ^ 1))
-        //         {
-        //             moves[buffer_idx + buffer_offset] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
-        //             buffer_idx++;
-
-        //         }
-
-
-        //     }
-        //     moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
-        //     buffer_idx++;
-
-        //     if(slider) // Horrific performace
-        //         break;
-        //     else
-        //         t_sq += dir;
-
-        // }
     }
 
 }

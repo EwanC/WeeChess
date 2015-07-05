@@ -102,6 +102,10 @@ uint32_t PerftTest(const int depth, Board& b, bool verbose)
     std::vector<Move>::iterator itr;
     int moveNum = 0;
     for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
+
+        if (verbose)
+            std::cout <<std::dec << "move " << moveNum++ << " : " << itr->moveString() << " : ";
+
         uint32_t move = itr->m_move;
         if (!MoveGen::makeMove(b, move)) {
             continue;
@@ -111,8 +115,7 @@ uint32_t PerftTest(const int depth, Board& b, bool verbose)
         MoveGen::takeMove(b);
 
         if (verbose)
-            std::cout << "move " << moveNum++ << " : " << itr->moveString() << " : " << calcNodes
-                      << std::endl;
+            std::cout << calcNodes << std::endl;
     }
 
     return leafNodes;
