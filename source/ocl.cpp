@@ -226,7 +226,7 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
-    cl_mem Enpass_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE, sizeof(unsigned int),(void *)b.m_enPas,&err);
+    cl_mem Enpass_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(unsigned int),(void *)&b.m_enPas,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl pawn enpass buffer\n";
         exit(1);
@@ -364,7 +364,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    cl_mem side_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY, sizeof(int),(void *)b.m_side,&err);
+    cl_mem side_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), (void *)&b.m_side,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl piece side buffer\n";
         exit(1);

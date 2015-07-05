@@ -106,8 +106,11 @@ __kernel void moveKernel(
 
 
     int sq120 = squares[global_id];
-    int myside = side[global_id];
+    int myside = side[0];
     bool slider = isSlider[group_id];
+
+    if(sq120 == NO_SQ)
+    	return;
 
     for (int index = 0; index < NumDir[group_id]; ++index) 
     {
