@@ -312,7 +312,7 @@ __kernel void BlackPawnKernel(
 
     // Oppostion piece diagonally to the right
     const unsigned int sqRight = sq120 - 9;
-    if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == BLACK) {
+    if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == WHITE) {
 
         // Pawn can be promoted
         if (RanksBrd[sq120] == RANK_2) {
@@ -335,8 +335,8 @@ __kernel void BlackPawnKernel(
     }
     
     // Oppostion piece diagonally to the left
-    const unsigned int sqLeft = sq120 + 11;
-    if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == BLACK) {
+    const unsigned int sqLeft = sq120 - 11;
+    if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == WHITE) {
         if (RanksBrd[sq120] == RANK_2) {
             moves[buffer_idx + buffer_offset] =  MOVE(sq120, sqLeft, pieces[sqLeft], bQ, 0);
             buffer_idx++;

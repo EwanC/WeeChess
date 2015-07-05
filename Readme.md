@@ -7,6 +7,5 @@ Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
 ### OCL Move Kernel
 
-+ Arrange pieces in piece move kernel  buffer
-+ Add way to passback score
++ Clean up move code to fix remaining two perft fails.
 
