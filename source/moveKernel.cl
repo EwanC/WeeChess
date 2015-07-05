@@ -14,27 +14,19 @@
 
 
 // Directions that each piece can move in
-int constant PceDir[13][8] = {    
-	                            {0, 0, 0, 0, 0, 0, 0}, // ALL
-                                {0, 0, 0, 0, 0, 0, 0}, // WP
+int constant PceDir[5][8] = {    
                                 {-8, -19, -21, -12, 8, 19, 21, 12}, // WN
                                 {-9, -11, 11, 9, 0, 0, 0, 0}, // WB
                                 {-1, -10, 1, 10, 0, 0, 0, 0}, // WR
                                 {-1, -10, 1, 10, -9, -11, 11, 9}, // WQ
-                                {-1, -10, 1, 10, -9, -11, 11, 9}, // WK
-                                {0, 0, 0, 0, 0, 0, 0}, // WP
-                                {-8, -19, -21, -12, 8, 19, 21, 12}, // WN
-                                {-9, -11, 11, 9, 0, 0, 0, 0}, // WB
-                                {-1, -10, 1, 10, 0, 0, 0, 0}, // WR
-                                {-1, -10, 1, 10, -9, -11, 11, 9}, // WQ
-                                {-1, -10, 1, 10, -9, -11, 11, 9}  //WK
+                                {-1, -10, 1, 10, -9, -11, 11, 9} // WK
                             };
 
 // How many directinons each piece has
-unsigned int constant NumDir[13] = {0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8};
+unsigned int constant NumDir[5] = {8, 4, 4, 8, 8};
 
 // How many directinons each piece has
-unsigned int constant isSlider[13] = {0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0};
+unsigned int constant isSlider[5] = {0, 1, 1, 1, 0};
 
 
 int constant FilesBrd[120] = {
@@ -116,33 +108,40 @@ __kernel void moveKernel(
     int sq120 = squares[global_id];
     int myside = side[global_id];
     bool slider = isSlider[group_id];
+
     for (int index = 0; index < NumDir[group_id]; ++index) 
     {
         int dir = PceDir[group_id][index];
         int t_sq = sq120 + dir;
 
-         while (!SQOFFBOARD(t_sq)) {
-
-            // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-            if (pieces[t_sq] != EMPTY) {
-                if (PieceCol[pieces[t_sq]] == (myside ^ 1))
-                {
-                    moves[buffer_idx + buffer_offset] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
-                    buffer_idx++;
-
-                }
-
-
-            }
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
-            buffer_idx++;
-
-            if(slider) // Horrific performace
-                break;
-            else
-                t_sq += dir;
-
+        if (!slider && !SQOFFBOARD(t_sq)){
+        
+                   moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+                   buffer_idx++;
         }
+
+        //  while (!SQOFFBOARD(t_sq)) {
+
+        //     // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+        //     if (pieces[t_sq] != EMPTY) {
+        //         if (PieceCol[pieces[t_sq]] == (myside ^ 1))
+        //         {
+        //             moves[buffer_idx + buffer_offset] =  MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+        //             buffer_idx++;
+
+        //         }
+
+
+        //     }
+        //     moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+        //     buffer_idx++;
+
+        //     if(slider) // Horrific performace
+        //         break;
+        //     else
+        //         t_sq += dir;
+
+        // }
     }
 
 }

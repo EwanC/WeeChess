@@ -329,7 +329,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
 
     // Piece Buffer
     // WB, WB, WR, WR, WQ, WN, WN, WK
-    const int num_pieces = 8;
+    const int num_pieces = 10; // Pretend we have extra king and queen
     unsigned int pieces[num_pieces];
     unsigned int itr = 0;
 
@@ -337,22 +337,25 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         pieces[i] = Square::NO_SQ;
     }
 
-    bitboard Bbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][0])];
-    SetPieceHostBuffer(pieces, Bbb, itr, 2);
-   
-    
-    bitboard Rbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][1])];
-    SetPieceHostBuffer(pieces, Rbb, itr, 2);
-
-
-    bitboard Qbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][2])];
-    SetPieceHostBuffer(pieces, Qbb, itr, 1);
 
     bitboard Nbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][0])];
     SetPieceHostBuffer(pieces, Nbb, itr, 2);
 
+    bitboard Bbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][0])];
+    SetPieceHostBuffer(pieces, Bbb, itr, 2);
+   
+    bitboard Rbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][1])];
+    SetPieceHostBuffer(pieces, Rbb, itr, 2);
+
+    bitboard Qbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][2])];
+    SetPieceHostBuffer(pieces, Qbb, itr, 1);
+    SetPieceHostBuffer(pieces, Qbb, itr, 1); // HACK 
+
+
     bitboard Kbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][1])];
     SetPieceHostBuffer(pieces, Kbb, itr, 1);
+    SetPieceHostBuffer(pieces, Kbb, itr, 1); // HACK
+
 
     int err;
     cl_mem square_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_pieces * sizeof(unsigned int),(void *)pieces,&err);
