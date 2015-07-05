@@ -49,6 +49,16 @@ class Move {
 
     uint32_t m_move;
     int m_score;
+ 
+    bool operator == (const Move &Rhs) const 
+    {
+            return(this->m_move == Rhs.m_move && this->m_score == Rhs.m_score);
+    }
+
+    bool operator < (const Move &Rhs) const 
+    {
+            return(this->m_move < Rhs.m_move);
+    }
 
     std::string moveString() const; // Converts move into string for printing
 };

@@ -114,7 +114,7 @@ __kernel void moveKernel(
         int dir = PceDir[group_id][index];
         int t_sq = sq120 + dir;
 
-          while (!SQOFFBOARD(t_sq)) {
+        while (!SQOFFBOARD(t_sq)) {
 
             // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
             if (pieces[t_sq] != EMPTY) {
