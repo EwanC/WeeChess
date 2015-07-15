@@ -377,13 +377,6 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    unsigned int move_count = 0;
-    cl_mem move_num_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR, sizeof(unsigned int),&move_count,&err);
-    if (err < 0) {
-        std::cout << "Couldn't create cl pawn peices buffer\n";
-        exit(1);
-    }
-    
     #define MAX_MOVES_PER_POS 218
     unsigned long moves[MAX_MOVES_PER_POS];
     for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
