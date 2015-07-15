@@ -4,7 +4,7 @@
 #include "board.hpp"
 #include "move.hpp"
 
-enum Mode { CONSOLEMODE = 0, UCIMODE, XBMODE };
+enum Mode { CONSOLEMODE = 0, UCIMODE, XBMODE, PERFTMODE };
 
 // Information about the current search
 struct SearchInfo {

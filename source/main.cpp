@@ -56,6 +56,12 @@ Mode parseCommandLineArgs(int argc, char* argv[])
             mode = CONSOLEMODE;
             break;
         }
+
+        if (strncmp(argv[i], "--perf", 6) == 0 || strncmp(argv[i], "-p", 2) == 0) // Run Perft tests
+        {
+            mode = PERFTMODE;
+            break;
+        }
     }
 
     return mode;
@@ -78,45 +84,49 @@ int main(int argc, char* argv[])
     initStaticData();
     Board b;
     SearchInfo info;
-#if 1
-    const int level = 1;
-    std::cout << "Running Perft to level "<<level <<std::endl;
-    if(runPerft(b, level))
-      std::cout << "Perft passed\n";
+
+    if(protocol == PERFTMODE)
+    {
+        const int level = 1;
+        std::cout << "Running Perft to level "<<level <<std::endl;
+        if(runPerft(b, level))
+            std::cout << "Perft passed\n";
+        else
+            std::cout << "Perft failed\n";
+    }
     else
-      std::cout << "Perft failed\n";
-#else
+    {
+ 
+        setbuf(stdin, NULL);
+        setbuf(stdout, NULL);
 
-    setbuf(stdin, NULL);
-    setbuf(stdout, NULL);
+        while (true) {
 
-    while (true) {
+            fflush(stdout);
 
-        fflush(stdout);
+            // Pick protocl to interact with engine, TODO parse these from invoke args
+            if (protocol == UCIMODE) {
+                UCI::UCILoop(b, info);
 
-        // Pick protocl to interact with engine, TODO parse these from invoke args
-        if (protocol == UCIMODE) {
-            UCI::UCILoop(b, info);
+                if (info.quit == true)
+                    break;
+                continue;
+            }
+            else if (protocol == XBMODE) {
+                XBoard::XBoardLoop(b, info);
 
-            if (info.quit == true)
-                break;
-            continue;
-        }
-        else if (protocol == XBMODE) {
-            XBoard::XBoardLoop(b, info);
+                if (info.quit == true)
+                    break;
+                continue;
+            }
+            else if (protocol == CONSOLEMODE) {
+                 CLI::consoleLoop(b, info);
 
-            if (info.quit == true)
-                break;
-            continue;
-        }
-        else if (protocol == CONSOLEMODE) {
-            CLI::consoleLoop(b, info);
-
-            if (info.quit == true)
-                break;
-            continue;
+                if (info.quit == true)
+                     break;
+                continue;
+            }
         }
     }
-#endif
     return 0;
 }
