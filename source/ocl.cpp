@@ -16,6 +16,8 @@ OCL* OCL::m_instance = 0; // Singleton instance
 #define EVAL_PROGRAM_FILE "/EvalKernel.cl"
 #define MOVE_PROGRAM_FILE "/moveKernel.cl"
 
+uint possible_pawn_moves = 12;
+uint possible_piece_moves = 30;
 
 
 std::string OCL::getSourceDir()
@@ -183,7 +185,10 @@ void OCL::BuildProgram()
     }
 
     /* Build program */
-    err = clBuildProgram(m_moveProgram, 0, NULL,"-DMAX_PAWN_MOVES=12 -DMAX_PIECE_MOVES=30", NULL, NULL);
+    char macro_str[128];
+    sprintf(macro_str, "-DMAX_PAWN_MOVES=%u -DMAX_PIECE_MOVES=%u",possible_pawn_moves, possible_piece_moves);
+
+    err = clBuildProgram(m_moveProgram, 0, NULL,macro_str, NULL, NULL);
     if (err < 0) {
         std::cout << "Couldn't build program" << MOVE_PROGRAM_FILE <<"\n";
         char buffer[2048];
@@ -232,12 +237,12 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
-    #define MAX_MOVES_PER_POS 218
-    unsigned long moves[MAX_MOVES_PER_POS];
-    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
+    const uint move_buffer_size = pawns * possible_pawn_moves;
+    unsigned long moves[move_buffer_size];
+    for(int i = 0; i < move_buffer_size; ++i)
         moves[i] = 0;
 
-    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, MAX_MOVES_PER_POS * sizeof(unsigned long),moves,&err);
+    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, move_buffer_size * sizeof(unsigned long),moves,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl wp moves buffer\n";
         exit(1);
@@ -270,7 +275,7 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     }
 
     /* Enqueue ReadBuffer */
-    err = clEnqueueReadBuffer(m_queue,moves_buffer,CL_TRUE,0, MAX_MOVES_PER_POS * sizeof(unsigned long),moves,0,NULL,NULL);
+    err = clEnqueueReadBuffer(m_queue,moves_buffer,CL_TRUE,0, move_buffer_size * sizeof(unsigned long),moves,0,NULL,NULL);
     if (err < 0) {
         std::cout << "Couldn't read cl buffer\n";
         exit(1);
@@ -283,7 +288,7 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     }
 
 
-    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
+    for(int i = 0; i < move_buffer_size; ++i)
     {
         if (moves[i] == 0) continue;
 
@@ -393,12 +398,12 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    #define MAX_MOVES_PER_POSI 1000
-    unsigned long moves[MAX_MOVES_PER_POSI];
-    for(int i = 0; i < MAX_MOVES_PER_POSI; ++i)
+    const uint move_buffer_size = global_size * possible_piece_moves;
+    unsigned long moves[move_buffer_size];
+    for(int i = 0; i < move_buffer_size; ++i)
         moves[i] = 0;
 
-    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR , MAX_MOVES_PER_POSI * sizeof(unsigned long),moves,&err);
+    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR , move_buffer_size * sizeof(unsigned long),moves,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl side moves buffer\n";
         exit(1);
@@ -435,7 +440,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
     }
 
     /* Enqueue ReadBuffer */
-    err = clEnqueueReadBuffer(m_queue,moves_buffer,CL_TRUE,0, MAX_MOVES_PER_POSI * sizeof(unsigned long),moves,0,NULL,NULL);
+    err = clEnqueueReadBuffer(m_queue,moves_buffer,CL_TRUE,0, move_buffer_size * sizeof(unsigned long),moves,0,NULL,NULL);
     if (err < 0) {
         std::cout << "Couldn't read cl buffer\n";
         exit(1);
@@ -447,7 +452,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
    
-    for(int i = 0; i < MAX_MOVES_PER_POSI; ++i)
+    for(int i = 0; i < move_buffer_size; ++i)
     {
         if (moves[i] == 0) continue;
 
