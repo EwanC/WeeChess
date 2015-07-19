@@ -183,7 +183,7 @@ void OCL::BuildProgram()
     }
 
     /* Build program */
-    err = clBuildProgram(m_moveProgram, 0, NULL,"-DMAX_PAWN_MOVES=12 -DMAX_PIECE_MOVES=20", NULL, NULL);
+    err = clBuildProgram(m_moveProgram, 0, NULL,"-DMAX_PAWN_MOVES=12 -DMAX_PIECE_MOVES=30", NULL, NULL);
     if (err < 0) {
         std::cout << "Couldn't build program" << MOVE_PROGRAM_FILE <<"\n";
         char buffer[2048];
@@ -327,38 +327,54 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
 
     std::vector<Move> piece_move_vec;
 
-    // Piece Buffer
-    // WB, WB, WR, WR, WQ, WN, WN, WK
-    const int num_pieces = 10; // Pretend we have extra king and queen
-    unsigned int pieces[num_pieces];
-    unsigned int itr = 0;
-
-    for(int i = 0; i < num_pieces;++i){
-        pieces[i] = Square::NO_SQ;
-    }
-
+    ushort max_pieces = 0;
 
     bitboard Nbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][0])];
-    SetPieceHostBuffer(pieces, Nbb, itr, 2);
+    ushort numN = Bitboard::countBits(Nbb);
+    if (numN == 0 ) numN = 1; 
+    max_pieces = numN > max_pieces ? numN : max_pieces;
 
     bitboard Bbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][0])];
-    SetPieceHostBuffer(pieces, Bbb, itr, 2);
-   
+    ushort numB = Bitboard::countBits(Bbb);
+    if (numB == 0 ) numB = 1; 
+    max_pieces = numB > max_pieces ? numB : max_pieces;
+
     bitboard Rbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][1])];
-    SetPieceHostBuffer(pieces, Rbb, itr, 2);
+    ushort numR = Bitboard::countBits(Rbb);
+    if (numR == 0 ) numR = 1; 
+    max_pieces = numR > max_pieces ? numR : max_pieces;
 
     bitboard Qbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][2])];
-    SetPieceHostBuffer(pieces, Qbb, itr, 1);
-    SetPieceHostBuffer(pieces, Qbb, itr, 1); // HACK 
+    ushort numQ = Bitboard::countBits(Qbb);
+    if (numQ == 0 ) numQ = 1;
+    max_pieces = numQ > max_pieces ? numQ : max_pieces;
 
+    const size_t global_size = 5 * max_pieces;
+    const size_t local_size = max_pieces;
+    
+ 
+    // Piece Buffer
+    // WB, WB, WR, WR, WQ, WN, WN, WK
+    unsigned int* pieces = new unsigned int [global_size];
+    unsigned int itr = 0;
+
+    for(int i = 0; i < global_size;++i)
+        pieces[i] = Square::NO_SQ;
+    
+    SetPieceHostBuffer(pieces, Nbb, itr, local_size);
+
+    SetPieceHostBuffer(pieces, Bbb, itr, local_size);
+   
+    SetPieceHostBuffer(pieces, Rbb, itr, local_size);
+
+    SetPieceHostBuffer(pieces, Qbb, itr, local_size);
 
     bitboard Kbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][1])];
-    SetPieceHostBuffer(pieces, Kbb, itr, 1);
-    SetPieceHostBuffer(pieces, Kbb, itr, 1); // HACK
+    SetPieceHostBuffer(pieces, Kbb, itr, local_size);
 
 
     int err;
-    cl_mem square_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, num_pieces * sizeof(unsigned int),(void *)pieces,&err);
+    cl_mem square_buffer = clCreateBuffer(m_context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, global_size * sizeof(unsigned int),(void *)pieces,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl side square buffer\n";
         exit(1);
@@ -377,21 +393,17 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    #define MAX_MOVES_PER_POS 218
-    unsigned long moves[MAX_MOVES_PER_POS];
-    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
+    #define MAX_MOVES_PER_POSI 1000
+    unsigned long moves[MAX_MOVES_PER_POSI];
+    for(int i = 0; i < MAX_MOVES_PER_POSI; ++i)
         moves[i] = 0;
 
-    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR , MAX_MOVES_PER_POS * sizeof(unsigned long),moves,&err);
+    cl_mem moves_buffer = clCreateBuffer(m_context,CL_MEM_READ_WRITE  | CL_MEM_COPY_HOST_PTR , MAX_MOVES_PER_POSI * sizeof(unsigned long),moves,&err);
     if (err < 0) {
         std::cout << "Couldn't create cl side moves buffer\n";
         exit(1);
     }
 
-
-    const size_t global_size = num_pieces;
-    const size_t local_size = 2;
-    
 
     /* Set kernel args */
     err = clSetKernelArg(m_pieceMoveKernel,0,sizeof(cl_mem),&square_buffer);
@@ -423,7 +435,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
     }
 
     /* Enqueue ReadBuffer */
-    err = clEnqueueReadBuffer(m_queue,moves_buffer,CL_TRUE,0, MAX_MOVES_PER_POS * sizeof(unsigned long),moves,0,NULL,NULL);
+    err = clEnqueueReadBuffer(m_queue,moves_buffer,CL_TRUE,0, MAX_MOVES_PER_POSI * sizeof(unsigned long),moves,0,NULL,NULL);
     if (err < 0) {
         std::cout << "Couldn't read cl buffer\n";
         exit(1);
@@ -435,7 +447,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
    
-    for(int i = 0; i < MAX_MOVES_PER_POS; ++i)
+    for(int i = 0; i < MAX_MOVES_PER_POSI; ++i)
     {
         if (moves[i] == 0) continue;
 
@@ -448,7 +460,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
     clReleaseMemObject(pieces_buffer);
     clReleaseMemObject(side_buffer);
     clReleaseMemObject(moves_buffer);
-
+    delete[] pieces;
 
     return piece_move_vec;
 }
