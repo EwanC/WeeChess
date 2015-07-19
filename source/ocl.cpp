@@ -4,6 +4,9 @@
 #include <cstring>
 
 OCL* OCL::m_instance = 0; // Singleton instance
+uint OCL::possible_pawn_moves = 12;
+uint OCL::possible_piece_moves = 30;
+
 
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
@@ -16,8 +19,7 @@ OCL* OCL::m_instance = 0; // Singleton instance
 #define EVAL_PROGRAM_FILE "/EvalKernel.cl"
 #define MOVE_PROGRAM_FILE "/moveKernel.cl"
 
-uint possible_pawn_moves = 12;
-uint possible_piece_moves = 30;
+
 
 
 std::string OCL::getSourceDir()
@@ -186,7 +188,7 @@ void OCL::BuildProgram()
 
     /* Build program */
     char macro_str[128];
-    sprintf(macro_str, "-DMAX_PAWN_MOVES=%u -DMAX_PIECE_MOVES=%u",possible_pawn_moves, possible_piece_moves);
+    sprintf(macro_str, "-DMAX_PAWN_MOVES=%u -DMAX_PIECE_MOVES=%u",OCL::possible_pawn_moves, OCL::possible_piece_moves);
 
     err = clBuildProgram(m_moveProgram, 0, NULL,macro_str, NULL, NULL);
     if (err < 0) {
@@ -237,7 +239,7 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
         exit(1);
     }
 
-    const uint move_buffer_size = pawns * possible_pawn_moves;
+    const uint move_buffer_size = pawns * OCL::possible_pawn_moves;
     unsigned long moves[move_buffer_size];
     for(int i = 0; i < move_buffer_size; ++i)
         moves[i] = 0;
@@ -335,29 +337,28 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
     ushort max_pieces = 0;
 
     bitboard Nbb = b.m_pList[static_cast<int>(NonSlidePce[b.m_side][0])];
-    ushort numN = Bitboard::countBits(Nbb);
-    if (numN == 0 ) numN = 1; 
-    max_pieces = numN > max_pieces ? numN : max_pieces;
+    ushort bbCount = Bitboard::countBits(Nbb);
+    max_pieces = bbCount > max_pieces ? bbCount : max_pieces;
 
     bitboard Bbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][0])];
-    ushort numB = Bitboard::countBits(Bbb);
-    if (numB == 0 ) numB = 1; 
-    max_pieces = numB > max_pieces ? numB : max_pieces;
+    bbCount = Bitboard::countBits(Bbb);
+    max_pieces = bbCount > max_pieces ? bbCount : max_pieces;
 
     bitboard Rbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][1])];
-    ushort numR = Bitboard::countBits(Rbb);
-    if (numR == 0 ) numR = 1; 
-    max_pieces = numR > max_pieces ? numR : max_pieces;
+    bbCount = Bitboard::countBits(Rbb);
+    max_pieces = bbCount > max_pieces ? bbCount : max_pieces;
 
     bitboard Qbb = b.m_pList[static_cast<int>(SlidePce[b.m_side][2])];
-    ushort numQ = Bitboard::countBits(Qbb);
-    if (numQ == 0 ) numQ = 1;
-    max_pieces = numQ > max_pieces ? numQ : max_pieces;
+    bbCount = Bitboard::countBits(Qbb);
+    max_pieces = bbCount > max_pieces ? bbCount : max_pieces;
+
+    if (max_pieces == 0 ) max_pieces = 1; 
+
 
     const size_t global_size = 5 * max_pieces;
     const size_t local_size = max_pieces;
     
- 
+
     // Piece Buffer
     // WB, WB, WR, WR, WQ, WN, WN, WK
     unsigned int* pieces = new unsigned int [global_size];
@@ -398,7 +399,7 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         exit(1);
     }
 
-    const uint move_buffer_size = global_size * possible_piece_moves;
+    const uint move_buffer_size = global_size * OCL::possible_piece_moves;
     unsigned long moves[move_buffer_size];
     for(int i = 0; i < move_buffer_size; ++i)
         moves[i] = 0;

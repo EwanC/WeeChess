@@ -41,6 +41,8 @@ class OCL {
 
     static OCL* m_instance;
     static std::string getSourceDir();
+    static uint possible_pawn_moves;
+    static uint possible_piece_moves;
 
     void BuildProgram();
     void SetPieceHostBuffer(unsigned int* pieces, bitboard bb, unsigned int& itr, const unsigned short piece_count);
