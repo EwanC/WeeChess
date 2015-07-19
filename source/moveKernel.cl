@@ -273,7 +273,7 @@ __kernel void BlackPawnKernel(
     const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
 
     int sq120 = squares[global_id];
-    int enPas = enpass[global_id];
+    int enPas = enpass[0];
 
     const unsigned int sqInfront = sq120 - 10;
 
@@ -361,14 +361,14 @@ __kernel void BlackPawnKernel(
     //Enpassanet right
     if (enPas != NO_SQ && sqRight == enPas) {
         moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
-            buffer_idx++;
+        buffer_idx++;
 
     }
     
     // Enpassanet left
     if (enPas != NO_SQ && sqLeft == enPas) {
         moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
-            buffer_idx++;
+        buffer_idx++;
 
     }
 }

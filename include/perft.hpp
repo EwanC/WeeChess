@@ -5,7 +5,7 @@
 bool runPerft(Board& b, const int depth);
 
 // Run pert test on single board
-uint32_t Perft(const int depth, Board& b);
+uint32_t Perft(const int depth, Board& b, const bool verbose);
 
 // Run individual perft test
 uint32_t PerftTest(const int depth, Board& b, bool verbose = false);

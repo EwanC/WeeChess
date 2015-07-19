@@ -467,7 +467,7 @@ void Board::printBoard() const
 	if(m_enPas == NO_SQ )
 	    std::cout <<"enPas:"<<'-' <<std::endl;
     else
-    	std::cout << static_cast<int>(m_enPas)<<std::endl;
+    	std::cout <<"enPas:"<<static_cast<int>(m_enPas)<<std::endl;
 	std::cout <<"castle:";
 	std::cout << (m_castling & WKCA ? 'K' : '-');
 	std::cout << (m_castling & WQCA ? 'Q' : '-');

@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 
     if(protocol == PERFTMODE)
     {
-        const int level = 1;
+        const int level = 3;
         std::cout << "Running Perft to level "<<level <<std::endl;
         if(runPerft(b, level))
             std::cout << "Perft passed\n";
