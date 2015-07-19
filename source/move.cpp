@@ -139,10 +139,6 @@ void MoveList::genAllMoves(const Board& b)
     }
 
     std::vector<Move> piece_moves = ocl->RunPieceMoveKernel(b);
- 
-    // Beacuse of extra K and Q there may be dupilcates
-    std::sort( piece_moves.begin(), piece_moves.end() );
-    piece_moves.erase( unique( piece_moves.begin(), piece_moves.end() ), piece_moves.end() );
 
     m_move_vec.insert(m_move_vec.end(),piece_moves.begin(), piece_moves.end());
 
