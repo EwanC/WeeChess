@@ -7,5 +7,5 @@ Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
 ### OCL Move Kernel
 
-+ Get move gen to support extra pieces from promoted pawns
++ improve search
 
