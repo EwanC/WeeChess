@@ -126,19 +126,19 @@ OCL::OCL()
 
     m_pieceCaptureKernel = clCreateKernel(m_moveProgram,PIECECAPTUREKERNEL,&err);
     if (err < 0) {
-        std::cout << "Couldn't create OCL kernel "<<PIECEMOVEKERNEL << " "<<err<<std::endl;
+        std::cout << "Couldn't create OCL kernel "<<PIECECAPTUREKERNEL<< " "<<err<<std::endl;
         exit(1);
     }
 
     m_wPawnCaptureKernel = clCreateKernel(m_moveProgram,WPAWNCAPTUREKERNEL,&err);
     if (err < 0) {
-        std::cout << "Couldn't create OCL kernel "<<WPAWNMOVEKERNEL << " "<<err<<std::endl;
+        std::cout << "Couldn't create OCL kernel "<<WPAWNCAPTUREKERNEL << " "<<err<<std::endl;
         exit(1);
     }
 
     m_bPawnCaptureKernel = clCreateKernel(m_moveProgram,BPAWNCAPTUREKERNEL,&err);
     if (err < 0) {
-        std::cout << "Couldn't create OCL kernel "<<BPAWNMOVEKERNEL << " "<<err<<std::endl;
+        std::cout << "Couldn't create OCL kernel "<<BPAWNCAPTUREKERNEL << " "<<err<<std::endl;
         exit(1);
     }
 }

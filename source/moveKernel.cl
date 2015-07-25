@@ -511,7 +511,7 @@ __kernel void WhitePawnCapture(
     }
 }
 
-__kernel void BlackPawnCaptures(
+__kernel void BlackPawnCapture(
                             __global unsigned int* squares,
                             __global const int* pieces,
                             __global const int* enpass,
