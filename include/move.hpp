@@ -65,10 +65,7 @@ class Move {
 
 class MoveList {
 
-    int MvvLvaScores[13][13]; // Most Valuable victim, least valuable attacker
-
   public:
-    MoveList(); // Consultors, inits search MvvLva scores
 
     void genAllMoves(const Board& b); // Generate all moves for a board position
     void genAllCaps(const Board& b);  //  Generate all capture moves

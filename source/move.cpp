@@ -18,17 +18,6 @@ static const int CastlePerm[120] = {
     15, 15, 11, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15};
 
 
-MoveList::MoveList()
-{
-    // init search MvvLva scores
-    for (int Attacker = wP; Attacker <= bK; ++Attacker) {
-        for (int Victim = wP; Victim <= bK; ++Victim) {
-            MvvLvaScores[Victim][Attacker] =
-                Eval::VictimScore[Victim] + 6 - (Eval::VictimScore[Attacker] / 100);
-        }
-    }
-}
-
 Move::Move() : m_move(0), m_score(0) {}
 
 // Converts move into string for printing

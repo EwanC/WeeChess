@@ -12,11 +12,6 @@ namespace Eval {
     int evalPosition(const Board& b);  // Uses Piece table to evaulate position
     bool materialDraw(const Board& b); //  Returns true if based on material left game is a draw
 
-    // How to prioritize captures - MvvLva
-    // Most Valuable Victim, Least Valuavle attacker
-    const int VictimScore[13] = {0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600};
-
-   
 
     // Mirror table for conveting black piece locations into white, so
     // black cacn used the same evaluation piece tables
