@@ -151,117 +151,12 @@ void MoveList::genAllMoves(const Board& b)
 void MoveList::genAllCaps(const Board& b)
 {
 
-    static const Piece SlidePce[2][3] = {{wB, wR, wQ}, {bB, bR, bQ}};
+    OCL* ocl = OCL::getInstance();
+    std::vector<Move> pawn_caps = ocl->RunPawnMoveKernel(b, true);
+    m_move_vec.insert(m_move_vec.end(),pawn_caps.begin(), pawn_caps.end());
+    std::vector<Move> piece_caps = ocl->RunPieceMoveKernel(b, true);
+    m_move_vec.insert(m_move_vec.end(),piece_caps.begin(), piece_caps.end());
 
-    static const Piece NonSlidePce[2][2] = {{wN, wK}, {bN, bK}};
-
-    if (b.m_side == WHITE) {
-        bitboard wpBitboard = b.m_pList[wP];
-        int pawns = Bitboard::countBits(wpBitboard);
-        for (int pceNum = 0; pceNum < pawns; ++pceNum) {
-            int sq64 = (Bitboard::popBit(&wpBitboard));
-            int sq120 = SQ120(sq64);
-
-            assert(!SQOFFBOARD(sq120));
-
-            if (!SQOFFBOARD(sq120 + 9) && Board::PieceCol[b.m_board[sq120 + 9]] == BLACK) {
-                addPawnCapMove<WHITE>(b, sq120, sq120 + 9, b.m_board[sq120 + 9]);
-            }
-            if (!SQOFFBOARD(sq120 + 11) && Board::PieceCol[b.m_board[sq120 + 11]] == BLACK) {
-                addPawnCapMove<WHITE>(b, sq120, sq120 + 11, b.m_board[sq120 + 11]);
-            }
-
-            if (b.m_enPas != NO_SQ && sq120 + 9 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 + 9, EMPTY, EMPTY, MFLAGEP));
-            }
-            if (b.m_enPas != NO_SQ && sq120 + 11 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 + 11, EMPTY, EMPTY, MFLAGEP));
-            }
-        }
-    }
-    else {
-
-        bitboard bpBitboard = b.m_pList[bP];
-        int pawns = Bitboard::countBits(bpBitboard);
-
-        for (int pceNum = 0; pceNum < pawns; ++pceNum) {
-            int sq120 = SQ120(Bitboard::popBit(&bpBitboard));
-            assert(!SQOFFBOARD(sq120));
-
-            if (!SQOFFBOARD(sq120 - 9) && Board::PieceCol[b.m_board[sq120 - 9]] == WHITE) {
-                addPawnCapMove<BLACK>(b, sq120, sq120 - 9, b.m_board[sq120 - 9]);
-            }
-
-            if (!SQOFFBOARD(sq120 - 11) && Board::PieceCol[b.m_board[sq120 - 11]] == WHITE) {
-                addPawnCapMove<BLACK>(b, sq120, sq120 - 11, b.m_board[sq120 - 11]);
-            }
-
-            if (b.m_enPas != NO_SQ && sq120 - 9 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 - 9, EMPTY, EMPTY, MFLAGEP));
-            }
-            if (b.m_enPas != NO_SQ && sq120 - 11 == b.m_enPas) {
-                addEnPassantMove(b, MOVE(sq120, sq120 - 11, EMPTY, EMPTY, MFLAGEP));
-            }
-        }
-    }
-
-    /* Loop for slide pieces */
-
-    for (Piece pce : SlidePce[b.m_side]) {
-        assert(pce >= wP && pce <= bK);
-        bitboard bb = b.m_pList[static_cast<int>(pce)];
-        int pieces = Bitboard::countBits(bb);
-
-        for (int pceNum = 0; pceNum < pieces; ++pceNum) {
-            int sq120 = SQ120(Bitboard::popBit(&bb));
-            assert(!SQOFFBOARD(sq120));
-
-            for (int index = 0; index < NumDir[pce]; ++index) {
-                int dir = PceDir[pce][index];
-                int t_sq = sq120 + dir;
-
-                while (!SQOFFBOARD(t_sq)) {
-                    // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-                    if (b.m_board[t_sq] != EMPTY) {
-                        if (Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
-                            addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
-                        }
-                        break;
-                    }
-                    t_sq += dir;
-                }
-            }
-        }
-    }
-
-    /* Loop for non slide */
-    for (Piece pce : NonSlidePce[b.m_side]) {
-        assert(pce >= wP && pce <= bK);
-        bitboard bb = b.m_pList[static_cast<int>(pce)];
-        int pieces = Bitboard::countBits(bb);
-
-        for (int pceNum = 0; pceNum < pieces; ++pceNum) {
-            int sq120 = SQ120(Bitboard::popBit(&bb));
-            assert(!SQOFFBOARD(sq120));
-
-            for (int index = 0; index < NumDir[pce]; ++index) {
-                int dir = PceDir[pce][index];
-                int t_sq = sq120 + dir;
-
-                if (SQOFFBOARD(t_sq)) {
-                    continue;
-                }
-
-                // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-                if (b.m_board[t_sq] != EMPTY) {
-                    if (Board::PieceCol[b.m_board[t_sq]] == (b.m_side ^ 1)) {
-                        addCaptureMove(b, MOVE(sq120, t_sq, b.m_board[t_sq], EMPTY, 0));
-                    }
-                    continue;
-                }
-            }
-        }
-    }
 }
 
 

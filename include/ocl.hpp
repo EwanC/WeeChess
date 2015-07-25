@@ -30,11 +30,14 @@ class OCL {
     cl_kernel m_wPawnMoveKernel;
     cl_kernel m_bPawnMoveKernel;
 
+    cl_kernel m_pieceCaptureKernel;
+    cl_kernel m_wPawnCaptureKernel;
+    cl_kernel m_bPawnCaptureKernel;
+
     int RunEvalKernel(const Board& board);
 
-    std::vector<Move> RunPawnMoveKernel(const Board& board);
-    std::vector<Move> RunPieceMoveKernel(const Board& b);
-
+    std::vector<Move> RunPawnMoveKernel(const Board& board, const bool capture = false);
+    std::vector<Move> RunPieceMoveKernel(const Board& b, const bool capture = false);
 
   private:
 

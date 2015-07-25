@@ -16,6 +16,9 @@ uint OCL::possible_piece_moves = 30;
 #define PIECEMOVEKERNEL "moveKernel"
 #define WPAWNMOVEKERNEL "WhitePawnKernel"
 #define BPAWNMOVEKERNEL "BlackPawnKernel"
+#define PIECECAPTUREKERNEL "moveCapture"
+#define WPAWNCAPTUREKERNEL "WhitePawnCapture"
+#define BPAWNCAPTUREKERNEL "BlackPawnCapture"
 #define EVAL_PROGRAM_FILE "/EvalKernel.cl"
 #define MOVE_PROGRAM_FILE "/moveKernel.cl"
 
@@ -120,6 +123,24 @@ OCL::OCL()
         std::cout << "Couldn't create OCL kernel "<<BPAWNMOVEKERNEL << " "<<err<<std::endl;
         exit(1);
     }
+
+    m_pieceCaptureKernel = clCreateKernel(m_moveProgram,PIECECAPTUREKERNEL,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create OCL kernel "<<PIECEMOVEKERNEL << " "<<err<<std::endl;
+        exit(1);
+    }
+
+    m_wPawnCaptureKernel = clCreateKernel(m_moveProgram,WPAWNCAPTUREKERNEL,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create OCL kernel "<<WPAWNMOVEKERNEL << " "<<err<<std::endl;
+        exit(1);
+    }
+
+    m_bPawnCaptureKernel = clCreateKernel(m_moveProgram,BPAWNCAPTUREKERNEL,&err);
+    if (err < 0) {
+        std::cout << "Couldn't create OCL kernel "<<BPAWNMOVEKERNEL << " "<<err<<std::endl;
+        exit(1);
+    }
 }
 
 void OCL::BuildProgram()
@@ -202,7 +223,7 @@ void OCL::BuildProgram()
 }
 
 
-std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
+std::vector<Move> OCL::RunPawnMoveKernel(const Board& b, const bool capture)
 {
     
     std::vector<Move> pawn_move_vec;
@@ -254,8 +275,14 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b)
     const size_t global_size = pawns;
     const size_t local_size = pawns;
     
+    cl_kernel kernel;
+    if(capture)
+        kernel = b.m_side == Colour::WHITE ? m_wPawnCaptureKernel : m_bPawnCaptureKernel;
+    else
+        kernel = b.m_side == Colour::WHITE ? m_wPawnMoveKernel : m_bPawnMoveKernel;
+    
 
-    cl_kernel kernel = b.m_side == Colour::WHITE ? m_wPawnMoveKernel : m_bPawnMoveKernel;
+   
 
 
     /* Set kernel args */
@@ -325,7 +352,7 @@ void OCL::SetPieceHostBuffer(unsigned int* pieces, bitboard bb, unsigned int& it
     }
 }
 
-std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
+std::vector<Move> OCL::RunPieceMoveKernel(const Board& b, const bool capture)
 {
 
     static const Piece SlidePce[2][3] = {{wB, wR, wQ}, {bB, bR, bQ}};
@@ -432,6 +459,8 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b)
         std::cout << "D Couldn't set Piece move kernel arg\n";
         exit(1);
     }
+
+    cl_kernel kernel = capture ? m_pieceCaptureKernel : m_pieceMoveKernel;
 
     /* Enqueue Kernel*/
     err = clEnqueueNDRangeKernel(m_queue,m_pieceMoveKernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
