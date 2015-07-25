@@ -7,6 +7,5 @@ Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
 ### OCL Move Kernel
 
-+ Add score to movegen
-+ do capture movegen
-
++ Test Whole game
++ Optimize search

@@ -23,6 +23,23 @@ uint OCL::possible_piece_moves = 30;
 #define MOVE_PROGRAM_FILE "/moveKernel.cl"
 
 
+// Most Valuable attacker, least valuable victim
+static int32_t  MvvLvaScores[13][13] = {
+  { 141743112, 32767, -37664, 32767, -141682440, 32767, 54012236, 0,   -37680, 32767, -136429924, 32767, 0},
+  { 0,         105,   104,    103,   102,        101,   100,      105, 104,    103,   102,        101,   100},
+  { -37824,    205,   204,    203,   202,        201,   200,      205, 204,    203,   202,        201,   200},
+  { 32767,     305,   304,    303,   302,        301,   300,      305, 304,    303,   302,        301,   300},
+  { 4301065,   405,   404,    403,   402,        401,   400,      405, 404,    403,   402,        401,   400},
+  { 32767,     505,   504,    503,   502,        501,   500,      505, 504,    503,   502,        501,   500},
+  { 0,         605,   604,    603,   602,        601,   600,      605, 604,    603,   602,        601,   600},
+  { 0,         105,   104,    103,   102,        101,   100,      105, 104,    103,   102,        101,   100},
+  { -1,        205,   204,    203,   202,        201,   200,      205, 204,    203,   202,        201,   200},
+  { 0,         305,   304,    303,   302,        301,   300,      305, 304,    303,   302,        301,   300},
+  { 16,        405,   404,    403,   402,        401,   400,      405, 404,    403,   402,        401,   400},
+  { 0,         505,   504,    503,   502,        501,   500,      505, 504,    503,   502,        501,   500},
+  { 1,         605,   604,    603,   602,        601,   600,      605, 604,    603,   602,        601,   600}
+};
+
 
 
 std::string OCL::getSourceDir()
@@ -323,6 +340,19 @@ std::vector<Move> OCL::RunPawnMoveKernel(const Board& b, const bool capture)
 
         Move m;
         m.m_move = moves[i];
+
+
+        if(m.m_move & MFLAGEP)
+            m.m_score = 105 + 1000000;
+        if(CAPTURED(m.m_move))
+            m.m_score = MvvLvaScores[CAPTURED(m.m_move)][b.m_board[FROMSQ(m.m_move)]] + 1000000;
+        else if (b.m_searchKillers[0][b.m_ply] ==  m.m_move)
+            m.m_score = 900000;
+        else if (b.m_searchKillers[1][b.m_ply] ==  m.m_move)
+            m.m_score = 800000;
+        else
+            m.m_score = b.m_searchHistory[b.m_board[FROMSQ(m.m_move)]][TOSQ(m.m_move)];
+
         pawn_move_vec.push_back(m);
     }
 
@@ -488,6 +518,17 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b, const bool capture)
 
         Move m;
         m.m_move = moves[i];
+
+
+        if(CAPTURED(m.m_move))
+            m.m_score = MvvLvaScores[CAPTURED(m.m_move)][b.m_board[FROMSQ(m.m_move)]] + 1000000;
+        else if (b.m_searchKillers[0][b.m_ply] ==  m.m_move)
+            m.m_score = 900000;
+        else if (b.m_searchKillers[1][b.m_ply] ==  m.m_move)
+            m.m_score = 800000;
+        else
+            m.m_score = b.m_searchHistory[b.m_board[FROMSQ(m.m_move)]][TOSQ(m.m_move)];
+
         piece_move_vec.push_back(m);
     }
 
