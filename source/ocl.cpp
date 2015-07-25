@@ -467,33 +467,32 @@ std::vector<Move> OCL::RunPieceMoveKernel(const Board& b, const bool capture)
         exit(1);
     }
 
+    cl_kernel kernel = capture ? m_pieceCaptureKernel : m_pieceMoveKernel;
 
     /* Set kernel args */
-    err = clSetKernelArg(m_pieceMoveKernel,0,sizeof(cl_mem),&square_buffer);
+    err = clSetKernelArg(kernel,0,sizeof(cl_mem),&square_buffer);
      if (err < 0) {
         std::cout << "A Couldn't set Piece move kernel arg\n";
         exit(1);
     }
-    err |= clSetKernelArg(m_pieceMoveKernel,1,sizeof(cl_mem),&side_buffer);
+    err |= clSetKernelArg(kernel,1,sizeof(cl_mem),&side_buffer);
      if (err < 0) {
         std::cout << "B Couldn't set Piece move kernel arg\n";
         exit(1);
     }
-    err |= clSetKernelArg(m_pieceMoveKernel,2,sizeof(cl_mem),&pieces_buffer);
+    err |= clSetKernelArg(kernel,2,sizeof(cl_mem),&pieces_buffer);
      if (err < 0) {
         std::cout << "C Couldn't set Piece move kernel arg: "<< err<<"\n";
         exit(1);
     }
-    err |= clSetKernelArg(m_pieceMoveKernel,3,sizeof(cl_mem),&moves_buffer);
+    err |= clSetKernelArg(kernel,3,sizeof(cl_mem),&moves_buffer);
     if (err < 0) {
         std::cout << "D Couldn't set Piece move kernel arg\n";
         exit(1);
     }
 
-    cl_kernel kernel = capture ? m_pieceCaptureKernel : m_pieceMoveKernel;
-
     /* Enqueue Kernel*/
-    err = clEnqueueNDRangeKernel(m_queue,m_pieceMoveKernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
+    err = clEnqueueNDRangeKernel(m_queue,kernel,1,NULL,&global_size,&local_size,0,NULL,NULL);
     if (err < 0) {
         std::cout << "Couldn't enqueue the kernel "<<err <<"\n";
         exit(1);
