@@ -73,13 +73,8 @@ class MoveList {
     void genAllMoves(const Board& b); // Generate all moves for a board position
     void genAllCaps(const Board& b);  //  Generate all capture moves
     void addQuietMove(const Board& b, uint32_t move);
-    void addCaptureMove(const Board& b, uint32_t move);
-    void addEnPassantMove(const Board& b, uint32_t move);
 
     void printList() const;
-
-    template <Colour colour>
-    void addPawnCapMove(const Board& b, const int from, const int to, const Piece cap);
 
     std::vector<Move> m_move_vec;
 };

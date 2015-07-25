@@ -7,21 +7,6 @@
 #include <iostream>
 #include <cassert>
 
-// Directions that each piece can move in
-static const int PceDir[13][8] = {{0, 0, 0, 0, 0, 0, 0},
-                                  {0, 0, 0, 0, 0, 0, 0},
-                                  {-8, -19, -21, -12, 8, 19, 21, 12},
-                                  {-9, -11, 11, 9, 0, 0, 0, 0},
-                                  {-1, -10, 1, 10, 0, 0, 0, 0},
-                                  {-1, -10, 1, 10, -9, -11, 11, 9},
-                                  {-1, -10, 1, 10, -9, -11, 11, 9},
-                                  {0, 0, 0, 0, 0, 0, 0},
-                                  {-8, -19, -21, -12, 8, 19, 21, 12},
-                                  {-9, -11, 11, 9, 0, 0, 0, 0},
-                                  {-1, -10, 1, 10, 0, 0, 0, 0},
-                                  {-1, -10, 1, 10, -9, -11, 11, 9},
-                                  {-1, -10, 1, 10, -9, -11, 11, 9}};
-
 // Castle Permission Array
 // All initally set to 0xF apart from a1,e1,h1,a8,e8, and h8
 // Every time a piece is moved the permission &= castlePerm[form/to]
@@ -32,8 +17,6 @@ static const int CastlePerm[120] = {
     15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 7,  15, 15, 15, 3,
     15, 15, 11, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15};
 
-// How many directinons each piece has
-static const int NumDir[13] = {0, 0, 8, 4, 4, 8, 8, 0, 8, 4, 4, 8, 8};
 
 MoveList::MoveList()
 {
@@ -160,44 +143,6 @@ void MoveList::genAllCaps(const Board& b)
 }
 
 
-template <Colour colour>
-void MoveList::addPawnCapMove(const Board& b, const int from, const int to, const Piece cap)
-{
-
-    assert(cap >= EMPTY && cap <= bK);
-    assert(!SQOFFBOARD(from));
-    assert(!SQOFFBOARD(to));
-
-    if (Board::RanksBrd[from] == RANK_7 && colour == WHITE) {
-        addCaptureMove(b, MOVE(from, to, cap, wQ, 0));
-        addCaptureMove(b, MOVE(from, to, cap, wR, 0));
-        addCaptureMove(b, MOVE(from, to, cap, wB, 0));
-        addCaptureMove(b, MOVE(from, to, cap, wN, 0));
-    }
-    else if (Board::RanksBrd[from] == RANK_2 && colour == BLACK) {
-        addCaptureMove(b, MOVE(from, to, cap, bQ, 0));
-        addCaptureMove(b, MOVE(from, to, cap, bR, 0));
-        addCaptureMove(b, MOVE(from, to, cap, bB, 0));
-        addCaptureMove(b, MOVE(from, to, cap, bN, 0));
-    }
-    else {
-        addCaptureMove(b, MOVE(from, to, cap, EMPTY, 0));
-    }
-}
-
-// Adds en passant move to move list
-void MoveList::addEnPassantMove(const Board& b, uint32_t move)
-{
-
-    assert(!SQOFFBOARD(FROMSQ(move)));
-    assert(!SQOFFBOARD(TOSQ(move)));
-
-    Move m;
-    m.m_move = move;
-    m.m_score = 105 + 1000000;
-    m_move_vec.push_back(m);
-}
-
 // add quiet move to move list
 void MoveList::addQuietMove(const Board& b, uint32_t move)
 {
@@ -214,15 +159,6 @@ void MoveList::addQuietMove(const Board& b, uint32_t move)
     m_move_vec.push_back(m);
 }
 
-// adds capture move to move list
-void MoveList::addCaptureMove(const Board& b, uint32_t move)
-{
-    Move m;
-    m.m_move = move;
-    m.m_score = MvvLvaScores[CAPTURED(move)][b.m_board[FROMSQ(move)]] + 1000000;
-
-    m_move_vec.push_back(m);
-}
 
 // prints invidual moves in move list
 void MoveList::printList() const
