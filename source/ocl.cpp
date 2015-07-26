@@ -179,7 +179,10 @@ void OCL::BuildProgram()
     rewind(fp);
     char* program_buffer = new char[programSize + 1];
     program_buffer[programSize] = '\0';
-    fread(program_buffer, sizeof(char), programSize, fp);
+    size_t read_size = fread(program_buffer, sizeof(char), programSize, fp);
+    if(read_size != programSize)
+        std::cout << "Reading Error\n";
+
     fclose(fp);
 
 
@@ -213,7 +216,9 @@ void OCL::BuildProgram()
     rewind(fp);
     program_buffer = new char[programSize + 1];
     program_buffer[programSize] = '\0';
-    fread(program_buffer, sizeof(char), programSize, fp);
+    read_size = fread(program_buffer, sizeof(char), programSize, fp);
+    if(read_size != programSize)
+        std::cout << "Reading Error\n";
     fclose(fp);
 
 
