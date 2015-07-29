@@ -33,3 +33,8 @@ libc.so.6`gsignal:
     frame #10: 0x00000000004075e9 WeeChess
 
     *** stack smashing detected ***: ./WeeChess terminated
+
+How to replicate:
+	setboard 2kr1b1r/p1p1pppp/2p1q3/3pN3/3PbB2/4P2P/PPP1QPP1/R4RK1 w - - 0 20
+	e2a6
+	go
