@@ -1,18 +1,16 @@
 #ifndef OCL_H
 #define OCL_H
 
-#include <CL/cl.h>
 #include "board.hpp"
 #include "move.hpp"
+#include <CL/cl.h>
 #include <string>
 #include <vector>
 
-
-
 // Singleton class used for holding OpenCL objects
-class OCL {
-
- public:
+class OCL
+{
+  public:
     static OCL* getInstance();
 
     cl_platform_id m_platform;
@@ -22,10 +20,9 @@ class OCL {
     cl_program m_evalProgram;
     cl_program m_moveProgram;
 
-
     cl_command_queue m_queue;
     cl_kernel m_evalKernel;
-    
+
     cl_kernel m_pieceMoveKernel;
     cl_kernel m_wPawnMoveKernel;
     cl_kernel m_bPawnMoveKernel;
@@ -40,8 +37,6 @@ class OCL {
     std::vector<Move> RunPieceMoveKernel(const Board& b, const bool capture = false);
 
   private:
-
-
     static OCL* m_instance;
     static std::string getSourceDir();
     static uint possible_pawn_moves;
@@ -55,8 +50,6 @@ class OCL {
     void operator=(OCL const&);
     ~OCL();
 
-
-};  // end class
-
+}; // end class
 
 #endif // OCL_H

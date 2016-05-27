@@ -1,11 +1,11 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include "boardStaticData.hpp"
+#include "pvtable.hpp"
+#include "types.hpp"
 #include <stdint.h> //Standard Integer Types
 #include <string>
-#include "types.hpp"
-#include "pvtable.hpp"
-#include "boardStaticData.hpp"
 
 /*
    MACROS
@@ -17,18 +17,18 @@
 #define CLRBIT(bb, sq) ((bb) &= Bitboard::ClearMask[(sq)]) // Clear bitboard bit
 #define SETBIT(bb, sq) ((bb) |= Bitboard::SetMask[(sq)])   // Set bitboard bit
 
-namespace Bitboard {
+namespace Bitboard
+{
+int popBit(bitboard* bb); // returns the index of least signifcant bit and sets it to zero
 
-    int popBit(bitboard* bb); // returns the index of least signifcant bit and sets it to zero
+int countBits(bitboard b); // Counts the number of bits which are set in the bitboard
 
-    int countBits(bitboard b); // Counts the number of bits which are set in the bitboard
-
-    void printBitboard(bitboard bb); // Prints bitboard to stdout
-
+void printBitboard(bitboard bb); // Prints bitboard to stdout
 } // namespace
 
 // Inividual records in move history
-struct Undo {
+struct Undo
+{
     int move;
     uchar castlingPerm;
     Square enPas;
@@ -36,7 +36,8 @@ struct Undo {
     uint64_t posHash;
 };
 
-class Board {
+class Board
+{
   private:
     // Disable copy and assign
     Board& operator=(const Board&);
@@ -144,7 +145,6 @@ class Board {
 
     int m_searchKillers[2][MAXDEPTH]; // Stores to move that most recently caused beta cutoff, but
                                       // aren't captures
-
 }; // Board
 
 #endif // BOARD_H

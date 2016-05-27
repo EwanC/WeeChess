@@ -1,9 +1,9 @@
-#include <iostream>
-#include "protocols.hpp"
 #include "eval.hpp"
-#include "perft.hpp"
 #include "ocl.hpp"
+#include "perft.hpp"
+#include "protocols.hpp"
 #include <cstring>
+#include <iostream>
 
 void printWelcome(Mode mode)
 {
@@ -19,10 +19,12 @@ void printWelcome(Mode mode)
     std::cout << " \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___|  \\__\\___/   \\/  \\/ "
                  "\\___|\\___|\\____/_| |_|\\___||___/___/\n\n";
 
-    if (mode == XBMODE) {
+    if (mode == XBMODE)
+    {
         std::cout << "\nWeeChess is running in XBoard/WinBoard mode\n\n";
     }
-    else if (mode == UCIMODE) {
+    else if (mode == UCIMODE)
+    {
         std::cout << "\nWeeChess is running in UCI mode\n\n";
     }
 }
@@ -31,7 +33,8 @@ Mode parseCommandLineArgs(int argc, char* argv[])
 {
     Mode mode = UCIMODE; // default mode
 
-    for (int i = 1; i < argc; ++i) {
+    for (int i = 1; i < argc; ++i)
+    {
 
         if (strncmp(argv[i], "--help", 6) == 0 || strncmp(argv[i], "-h", 2) == 0) // print help
         {
@@ -67,63 +70,65 @@ Mode parseCommandLineArgs(int argc, char* argv[])
     return mode;
 }
 
-
 void initStaticData()
 {
-   Board::initStaticMembers(); 
-   OCL *ptr = OCL::getInstance();
+    Board::initStaticMembers();
+    OCL* ptr = OCL::getInstance();
 }
 
 int main(int argc, char* argv[])
 {
-
     Mode protocol = parseCommandLineArgs(argc, argv);
-    
+
     printWelcome(protocol);
 
     initStaticData();
     Board b;
     SearchInfo info;
 
-    if(protocol == PERFTMODE)
+    if (protocol == PERFTMODE)
     {
         const int level = 3;
-        std::cout << "Running Perft to level "<<level <<std::endl;
-        if(runPerft(b, level))
+        std::cout << "Running Perft to level " << level << std::endl;
+        if (runPerft(b, level))
             std::cout << "Perft passed\n";
         else
             std::cout << "Perft failed\n";
     }
     else
     {
- 
+
         setbuf(stdin, NULL);
         setbuf(stdout, NULL);
 
-        while (true) {
+        while (true)
+        {
 
             fflush(stdout);
 
             // Pick protocl to interact with engine, TODO parse these from invoke args
-            if (protocol == UCIMODE) {
+            if (protocol == UCIMODE)
+            {
                 UCI::UCILoop(b, info);
 
                 if (info.quit == true)
                     break;
                 continue;
             }
-            else if (protocol == XBMODE) {
+            else if (protocol == XBMODE)
+            {
                 XBoard::XBoardLoop(b, info);
 
                 if (info.quit == true)
                     break;
                 continue;
             }
-            else if (protocol == CONSOLEMODE) {
-                 CLI::consoleLoop(b, info);
+            else if (protocol == CONSOLEMODE)
+            {
+                CLI::consoleLoop(b, info);
 
                 if (info.quit == true)
-                     break;
+                    break;
                 continue;
             }
         }

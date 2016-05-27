@@ -1,13 +1,13 @@
-#include <iostream>
 #include <cassert>
-#include <vector>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
+#include "board.hpp"
 #include "move.hpp"
 #include "perft.hpp"
-#include "board.hpp"
 
 // Run perftest to defined depth
 bool runPerft(Board& b, const int depth)
@@ -21,14 +21,15 @@ bool runPerft(Board& b, const int depth)
     assert(depth > 0 && depth < 7);
     unsigned short passes = 0;
     unsigned short tests = 0;
-    while (std::getline(infile, line)) {
+    while (std::getline(infile, line))
+    {
 
-       
         b.parseFen(line.c_str());
 
         std::size_t pos = 0; // expected leaf nodes
 
-        for (int i = 0; i < depth; ++i) {
+        for (int i = 0; i < depth; ++i)
+        {
             pos = line.find(";", pos + 1); // expected leaf nodes
         }
 
@@ -38,20 +39,20 @@ bool runPerft(Board& b, const int depth)
         std::cout << "\nTest " << std::dec << count++ << " to depth " << depth;
         std::cout << " ===> expected: " << expected << ", calculated " << result;
 
-
-
-        if (expected == result) {
+        if (expected == result)
+        {
             std::cout << " PASS\n";
             ++passes;
         }
-        else {
+        else
+        {
             std::cout << " FAIL\n";
             pass = false;
         }
         ++tests;
     }
 
-    std::cout << "\nPassed "<<passes<< "/"<<tests<<std::endl;
+    std::cout << "\nPassed " << passes << "/" << tests << std::endl;
     if (pass)
         std::cout << "\nPerft Success\n";
     else
@@ -63,13 +64,12 @@ bool runPerft(Board& b, const int depth)
 // Run pert test on single board
 uint32_t Perft(const int depth, Board& b, const bool verbose)
 {
-
     assert(b.checkBoard());
 
-    if (depth == 0) {
+    if (depth == 0)
+    {
         return 1;
     }
-
 
     if (verbose)
         b.printBoard();
@@ -80,12 +80,14 @@ uint32_t Perft(const int depth, Board& b, const bool verbose)
     std::vector<Move>::iterator itr;
 
     int nodesAccum = 0;
-    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
-  
+    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++)
+    {
+
         if (verbose)
-            std::cout << itr->moveString()<<std::endl;
-        
-        if (!MoveGen::makeMove(b, itr->m_move)) {
+            std::cout << itr->moveString() << std::endl;
+
+        if (!MoveGen::makeMove(b, itr->m_move))
+        {
             continue;
         }
         nodesAccum += Perft(depth - 1, b, verbose);
@@ -98,7 +100,6 @@ uint32_t Perft(const int depth, Board& b, const bool verbose)
 // Run individual perft test
 uint32_t PerftTest(const int depth, Board& b, bool verbose)
 {
-
     assert(b.checkBoard());
 
     if (verbose)
@@ -111,16 +112,18 @@ uint32_t PerftTest(const int depth, Board& b, bool verbose)
 
     std::vector<Move>::iterator itr;
     int moveNum = 0;
-    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
+    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++)
+    {
 
         if (verbose)
-            std::cout <<std::dec << "move " << moveNum++ << " : " << itr->moveString()<<std::endl;
+            std::cout << std::dec << "move " << moveNum++ << " : " << itr->moveString() << std::endl;
 
         uint32_t move = itr->m_move;
-        if (!MoveGen::makeMove(b, move)) {
+        if (!MoveGen::makeMove(b, move))
+        {
             continue;
         }
-        uint32_t calcNodes = Perft(depth - 1, b,verbose);
+        uint32_t calcNodes = Perft(depth - 1, b, verbose);
         leafNodes += calcNodes;
         MoveGen::takeMove(b);
     }

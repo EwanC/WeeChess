@@ -3,10 +3,16 @@
 Log* Log::m_instance = 0; // Singleton instance
 
 // Open log file debug info is written to
-Log::Log() { m_logfile.open("log.txt"); }
+Log::Log()
+{
+    m_logfile.open("log.txt");
+}
 
 // close log file
-Log::~Log() { m_logfile.close(); }
+Log::~Log()
+{
+    m_logfile.close();
+}
 
 // Singleton class
 Log* Log::getInstance()
@@ -17,7 +23,13 @@ Log* Log::getInstance()
 }
 
 // Write line to log file
-void Log::writeLine(std::string str) { m_logfile << str; }
+void Log::writeLine(std::string str)
+{
+    m_logfile << str;
+}
 
 // Write line to log file
-void Log::writeLine(char* str) { m_logfile << str; }
+void Log::writeLine(char* str)
+{
+    m_logfile << str;
+}

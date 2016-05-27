@@ -5,31 +5,31 @@
 #include "search.hpp"
 
 // UCI GUI protocol
-namespace UCI {
-
-    void UCILoop(Board& b, SearchInfo& info);
-    void ParsePosition(char* lineIn, Board& b);
-    void ParseGo(char* line, SearchInfo& info, Board& b);
-    void ReadInput( SearchInfo& info);
-    int InputWaiting();
-
+namespace UCI
+{
+void UCILoop(Board& b, SearchInfo& info);
+void ParsePosition(char* lineIn, Board& b);
+void ParseGo(char* line, SearchInfo& info, Board& b);
+void ReadInput(SearchInfo& info);
+int InputWaiting();
 }
 
 // interact with engine thorugh command line
-namespace CLI{
-    void consoleLoop(Board& b, SearchInfo& info);
-    void printHelp();
-    void printUsage();
-
+namespace CLI
+{
+void consoleLoop(Board& b, SearchInfo& info);
+void printHelp();
+void printUsage();
 }
 
 // XBOARD/WINBoard GUI protocl
-namespace XBoard{
-    void XBoardLoop(Board& b, SearchInfo& info);
-    void PrintOptions();
-    bool checkResult(Board& b);
-    bool DrawMaterial(const Board& b);
-    int ThreeFoldRep(const Board& b);
+namespace XBoard
+{
+void XBoardLoop(Board& b, SearchInfo& info);
+void PrintOptions();
+bool checkResult(Board& b);
+bool DrawMaterial(const Board& b);
+int ThreeFoldRep(const Board& b);
 }
 
-#endif //PROTO_H
+#endif // PROTO_H

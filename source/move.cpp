@@ -1,24 +1,25 @@
 #include "move.hpp"
 #include "board.hpp"
-#include "search.hpp"
 #include "eval.hpp"
 #include "ocl.hpp"
-#include <algorithm>    // std::sort
-#include <iostream>
+#include "search.hpp"
+#include <algorithm> // std::sort
 #include <cassert>
+#include <iostream>
 
 // Castle Permission Array
 // All initally set to 0xF apart from a1,e1,h1,a8,e8, and h8
 // Every time a piece is moved the permission &= castlePerm[form/to]
-static const int CastlePerm[120] = {
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 13, 15, 15,
-    15, 12, 15, 15, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 7,  15, 15, 15, 3,
-    15, 15, 11, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15};
+static const int CastlePerm[120] = {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+                                    15, 13, 15, 15, 15, 12, 15, 15, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+                                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+                                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+                                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 7,  15, 15, 15, 3,  15, 15, 11, 15,
+                                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15};
 
-
-Move::Move() : m_move(0), m_score(0) {}
+Move::Move() : m_move(0), m_score(0)
+{
+}
 
 // Converts move into string for printing
 std::string Move::moveString() const
@@ -37,15 +38,19 @@ std::string Move::moveString() const
 
     int promoted = PROMOTED(m_move);
 
-    if (promoted) {
+    if (promoted)
+    {
         char pchar = 'q';
-        if (Board::PieceKnight[promoted]) {
+        if (Board::PieceKnight[promoted])
+        {
             pchar = 'n';
         }
-        else if (Board::PieceRookQueen[promoted] && !Board::PieceBishopQueen[promoted]) {
+        else if (Board::PieceRookQueen[promoted] && !Board::PieceBishopQueen[promoted])
+        {
             pchar = 'r';
         }
-        else if (!Board::PieceRookQueen[promoted] && Board::PieceBishopQueen[promoted]) {
+        else if (!Board::PieceRookQueen[promoted] && Board::PieceBishopQueen[promoted])
+        {
             pchar = 'b';
         }
 
@@ -65,45 +70,57 @@ std::string Move::moveString() const
 // Generate all moves for a board position
 void MoveList::genAllMoves(const Board& b)
 {
-
-
     OCL* ocl = OCL::getInstance();
     std::vector<Move> pawn_moves = ocl->RunPawnMoveKernel(b);
-    m_move_vec.insert(m_move_vec.end(),pawn_moves.begin(), pawn_moves.end());
+    m_move_vec.insert(m_move_vec.end(), pawn_moves.begin(), pawn_moves.end());
 
-    if (b.m_side == WHITE) {
-     
+    if (b.m_side == WHITE)
+    {
+
         // castling
-        if (b.m_castling & WKCA) {
-            if (b.m_board[F1] == EMPTY && b.m_board[G1] == EMPTY) {
-                if (!b.isSquareAttacked(E1, BLACK) && !b.isSquareAttacked(F1, BLACK)) {
+        if (b.m_castling & WKCA)
+        {
+            if (b.m_board[F1] == EMPTY && b.m_board[G1] == EMPTY)
+            {
+                if (!b.isSquareAttacked(E1, BLACK) && !b.isSquareAttacked(F1, BLACK))
+                {
                     addQuietMove(b, MOVE(E1, G1, EMPTY, EMPTY, MFLAGCA));
                 }
             }
         }
 
-        if (b.m_castling & WQCA) {
-            if (b.m_board[D1] == EMPTY && b.m_board[C1] == EMPTY && b.m_board[B1] == EMPTY) {
-                if (!b.isSquareAttacked(E1, BLACK) && !b.isSquareAttacked(D1, BLACK)) {
+        if (b.m_castling & WQCA)
+        {
+            if (b.m_board[D1] == EMPTY && b.m_board[C1] == EMPTY && b.m_board[B1] == EMPTY)
+            {
+                if (!b.isSquareAttacked(E1, BLACK) && !b.isSquareAttacked(D1, BLACK))
+                {
                     addQuietMove(b, MOVE(E1, C1, EMPTY, EMPTY, MFLAGCA));
                 }
             }
         }
     }
-    else {
+    else
+    {
 
         // castling
-        if (b.m_castling & BKCA) {
-            if (b.m_board[F8] == EMPTY && b.m_board[G8] == EMPTY) {
-                if (!b.isSquareAttacked(E8, WHITE) && !b.isSquareAttacked(F8, WHITE)) {
+        if (b.m_castling & BKCA)
+        {
+            if (b.m_board[F8] == EMPTY && b.m_board[G8] == EMPTY)
+            {
+                if (!b.isSquareAttacked(E8, WHITE) && !b.isSquareAttacked(F8, WHITE))
+                {
                     addQuietMove(b, MOVE(E8, G8, EMPTY, EMPTY, MFLAGCA));
                 }
             }
         }
 
-        if (b.m_castling & BQCA) {
-            if (b.m_board[D8] == EMPTY && b.m_board[C8] == EMPTY && b.m_board[B8] == EMPTY) {
-                if (!b.isSquareAttacked(E8, WHITE) && !b.isSquareAttacked(D8, WHITE)) {
+        if (b.m_castling & BQCA)
+        {
+            if (b.m_board[D8] == EMPTY && b.m_board[C8] == EMPTY && b.m_board[B8] == EMPTY)
+            {
+                if (!b.isSquareAttacked(E8, WHITE) && !b.isSquareAttacked(D8, WHITE))
+                {
                     addQuietMove(b, MOVE(E8, C8, EMPTY, EMPTY, MFLAGCA));
                 }
             }
@@ -112,9 +129,7 @@ void MoveList::genAllMoves(const Board& b)
 
     std::vector<Move> piece_moves = ocl->RunPieceMoveKernel(b);
 
-    m_move_vec.insert(m_move_vec.end(),piece_moves.begin(), piece_moves.end());
-
-   
+    m_move_vec.insert(m_move_vec.end(), piece_moves.begin(), piece_moves.end());
 }
 
 /*
@@ -122,15 +137,12 @@ void MoveList::genAllMoves(const Board& b)
 */
 void MoveList::genAllCaps(const Board& b)
 {
-
     OCL* ocl = OCL::getInstance();
     std::vector<Move> pawn_caps = ocl->RunPawnMoveKernel(b, true);
-    m_move_vec.insert(m_move_vec.end(),pawn_caps.begin(), pawn_caps.end());
+    m_move_vec.insert(m_move_vec.end(), pawn_caps.begin(), pawn_caps.end());
     std::vector<Move> piece_caps = ocl->RunPieceMoveKernel(b, true);
-    m_move_vec.insert(m_move_vec.end(),piece_caps.begin(), piece_caps.end());
-
+    m_move_vec.insert(m_move_vec.end(), piece_caps.begin(), piece_caps.end());
 }
-
 
 // add quiet move to move list
 void MoveList::addQuietMove(const Board& b, uint32_t move)
@@ -148,22 +160,21 @@ void MoveList::addQuietMove(const Board& b, uint32_t move)
     m_move_vec.push_back(m);
 }
 
-
 // prints invidual moves in move list
 void MoveList::printList() const
 {
     std::vector<Move>::const_iterator itr;
     unsigned int count = 0;
-    for (itr = m_move_vec.begin(); itr != m_move_vec.end(); itr++) {
-        std::cout << "Move " << count << ": " << std::hex << itr->m_move << std::dec
-                  << " score: " << itr->m_score << std::endl;
+    for (itr = m_move_vec.begin(); itr != m_move_vec.end(); itr++)
+    {
+        std::cout << "Move " << count << ": " << std::hex << itr->m_move << std::dec << " score: " << itr->m_score
+                  << std::endl;
     }
 }
 
 // parses algebraic move
 uint32_t MoveGen::parseMove(char* ptrChar, Board& b)
 {
-
     if (ptrChar[1] > '8' || ptrChar[1] < '1')
         return 0;
     if (ptrChar[3] > '8' || ptrChar[3] < '1')
@@ -182,21 +193,28 @@ uint32_t MoveGen::parseMove(char* ptrChar, Board& b)
     list.genAllMoves(b);
 
     std::vector<Move>::iterator itr;
-    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
+    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++)
+    {
         uint32_t move = itr->m_move;
-        if (FROMSQ(move) == from && TOSQ(move) == to) {
+        if (FROMSQ(move) == from && TOSQ(move) == to)
+        {
             Piece promPce = static_cast<Piece>(PROMOTED(move));
-            if (promPce != EMPTY) {
-                if ((promPce == wR || promPce == bR) && ptrChar[4] == 'r') {
+            if (promPce != EMPTY)
+            {
+                if ((promPce == wR || promPce == bR) && ptrChar[4] == 'r')
+                {
                     return move;
                 }
-                else if ((promPce == wB || promPce == bP) && ptrChar[4] == 'b') {
+                else if ((promPce == wB || promPce == bP) && ptrChar[4] == 'b')
+                {
                     return move;
                 }
-                else if ((promPce == wQ || promPce == bQ) && ptrChar[4] == 'q') {
+                else if ((promPce == wQ || promPce == bQ) && ptrChar[4] == 'q')
+                {
                     return move;
                 }
-                else if ((promPce == wN || promPce == bN) && ptrChar[4] == 'n') {
+                else if ((promPce == wN || promPce == bN) && ptrChar[4] == 'n')
+                {
                     return move;
                 }
                 continue;
@@ -211,7 +229,6 @@ uint32_t MoveGen::parseMove(char* ptrChar, Board& b)
 // clears piece from board at 120 sq
 void MoveGen::clearPiece(const int sq, Board& b)
 {
-
     assert(!SQOFFBOARD(sq));
 
     Piece pce = b.m_board[sq];
@@ -225,11 +242,14 @@ void MoveGen::clearPiece(const int sq, Board& b)
     b.m_board[sq] = EMPTY;
     b.m_material[colour] -= Board::PieceVal[pce];
 
-    if (pce != wP && pce != bP) {
-        if (Board::PieceMaj[pce]) {
+    if (pce != wP && pce != bP)
+    {
+        if (Board::PieceMaj[pce])
+        {
             b.m_majPce[colour]--;
         }
-        else {
+        else
+        {
             b.m_minPce[colour]--;
         }
     }
@@ -240,7 +260,6 @@ void MoveGen::clearPiece(const int sq, Board& b)
 // adds piece to the board at 120sq
 void MoveGen::addPiece(const int sq, Board& b, const Piece pce)
 {
-
     assert(pce >= wP && pce <= bK);
     assert(!SQOFFBOARD(sq));
 
@@ -250,11 +269,14 @@ void MoveGen::addPiece(const int sq, Board& b, const Piece pce)
 
     b.m_board[sq] = pce;
 
-    if (pce != wP && pce != bP) {
-        if (Board::PieceMaj[pce]) {
+    if (pce != wP && pce != bP)
+    {
+        if (Board::PieceMaj[pce])
+        {
             b.m_majPce[colour]++;
         }
-        else {
+        else
+        {
             b.m_minPce[colour]++;
         }
     }
@@ -267,8 +289,6 @@ void MoveGen::addPiece(const int sq, Board& b, const Piece pce)
 // Moves piece from a 120sq to another 120sq
 void MoveGen::movePiece(const int from, const int to, Board& b)
 {
-
-    assert(!SQOFFBOARD(from));
     assert(!SQOFFBOARD(to));
 
     Piece pce = b.m_board[from];
@@ -287,7 +307,6 @@ void MoveGen::movePiece(const int from, const int to, Board& b)
 // Modifies board according to move
 bool MoveGen::makeMove(Board& b, int move)
 {
-
     assert(b.checkBoard());
 
     int from = FROMSQ(move);
@@ -301,16 +320,21 @@ bool MoveGen::makeMove(Board& b, int move)
 
     b.m_history[b.m_hisply].posHash = b.m_posHash;
 
-    if (move & MFLAGEP) {
-        if (side == WHITE) {
+    if (move & MFLAGEP)
+    {
+        if (side == WHITE)
+        {
             MoveGen::clearPiece(to - 10, b);
         }
-        else {
+        else
+        {
             MoveGen::clearPiece(to + 10, b);
         }
     }
-    else if (move & MFLAGCA) {
-        switch (to) {
+    else if (move & MFLAGCA)
+    {
+        switch (to)
+        {
         case C1:
             MoveGen::movePiece(A1, D1, b);
             break;
@@ -329,7 +353,8 @@ bool MoveGen::makeMove(Board& b, int move)
         }
     }
 
-    if (b.m_enPas != NO_SQ) {
+    if (b.m_enPas != NO_SQ)
+    {
         HASH_EP;
     }
 
@@ -349,7 +374,8 @@ bool MoveGen::makeMove(Board& b, int move)
     int captured = CAPTURED(move);
     b.m_fiftyMove++;
 
-    if (captured != EMPTY) {
+    if (captured != EMPTY)
+    {
         assert(captured >= wP && captured <= bK);
         MoveGen::clearPiece(to, b);
         b.m_fiftyMove = 0;
@@ -358,14 +384,18 @@ bool MoveGen::makeMove(Board& b, int move)
     b.m_hisply++;
     b.m_ply++;
 
-    if (b.m_board[from] == wP || b.m_board[from] == bP) {
+    if (b.m_board[from] == wP || b.m_board[from] == bP)
+    {
         b.m_fiftyMove = 0;
-        if (move & MFLAGPS) {
-            if (side == WHITE) {
+        if (move & MFLAGPS)
+        {
+            if (side == WHITE)
+            {
                 b.m_enPas = static_cast<Square>(from + 10);
                 assert(Board::RanksBrd[b.m_enPas] == RANK_3);
             }
-            else {
+            else
+            {
                 b.m_enPas = static_cast<Square>(from - 10);
                 assert(Board::RanksBrd[b.m_enPas] == RANK_6);
             }
@@ -376,13 +406,15 @@ bool MoveGen::makeMove(Board& b, int move)
     MoveGen::movePiece(from, to, b);
 
     Piece prPce = static_cast<Piece>(PROMOTED(move));
-    if (prPce != EMPTY) {
+    if (prPce != EMPTY)
+    {
         assert(prPce != bP && prPce > wP && prPce < bK);
         MoveGen::clearPiece(to, b);
         MoveGen::addPiece(to, b, prPce);
     }
 
-    if (Board::PieceKing[b.m_board[to]]) {
+    if (Board::PieceKing[b.m_board[to]])
+    {
         b.m_kingSq[b.m_side] = static_cast<Square>(to);
     }
 
@@ -391,7 +423,8 @@ bool MoveGen::makeMove(Board& b, int move)
 
     assert(b.checkBoard());
 
-    if (b.isSquareAttacked(b.m_kingSq[side], b.m_side)) {
+    if (b.isSquareAttacked(b.m_kingSq[side], b.m_side))
+    {
         MoveGen::takeMove(b);
         return false;
     }
@@ -402,7 +435,6 @@ bool MoveGen::makeMove(Board& b, int move)
 // Takes back last move
 void MoveGen::takeMove(Board& b)
 {
-
     assert(b.checkBoard());
 
     b.m_hisply--;
@@ -415,7 +447,8 @@ void MoveGen::takeMove(Board& b)
     assert(!SQOFFBOARD(from));
     assert(!SQOFFBOARD(to));
 
-    if (b.m_enPas != NO_SQ) {
+    if (b.m_enPas != NO_SQ)
+    {
         HASH_EP;
     }
     HASH_CA;
@@ -424,7 +457,8 @@ void MoveGen::takeMove(Board& b)
     b.m_fiftyMove = b.m_history[b.m_hisply].fiftyMove;
     b.m_enPas = b.m_history[b.m_hisply].enPas;
 
-    if (b.m_enPas != NO_SQ) {
+    if (b.m_enPas != NO_SQ)
+    {
         HASH_EP;
     }
 
@@ -433,16 +467,21 @@ void MoveGen::takeMove(Board& b)
     b.m_side = static_cast<Colour>(b.m_side ^ 1);
     HASH_SIDE;
 
-    if (MFLAGEP & move) {
-        if (b.m_side == WHITE) {
+    if (MFLAGEP & move)
+    {
+        if (b.m_side == WHITE)
+        {
             MoveGen::addPiece(to - 10, b, bP);
         }
-        else {
+        else
+        {
             MoveGen::addPiece(to + 10, b, wP);
         }
     }
-    else if (MFLAGCA & move) {
-        switch (to) {
+    else if (MFLAGCA & move)
+    {
+        switch (to)
+        {
         case C1:
             MoveGen::movePiece(D1, A1, b);
             break;
@@ -463,17 +502,20 @@ void MoveGen::takeMove(Board& b)
 
     MoveGen::movePiece(to, from, b);
 
-    if (Board::PieceKing[b.m_board[from]]) {
+    if (Board::PieceKing[b.m_board[from]])
+    {
         b.m_kingSq[b.m_side] = static_cast<Square>(from);
     }
 
     Piece captured = static_cast<Piece>(CAPTURED(move));
-    if (captured != EMPTY) {
+    if (captured != EMPTY)
+    {
         assert(captured >= wP && captured <= bK);
         MoveGen::addPiece(to, b, captured);
     }
 
-    if (PROMOTED(move) != EMPTY) {
+    if (PROMOTED(move) != EMPTY)
+    {
         Piece prPce = static_cast<Piece>(PROMOTED(move));
         assert(prPce != bP && b.m_board[from] > wP && b.m_board[from] <= bK);
 
@@ -488,17 +530,19 @@ void MoveGen::takeMove(Board& b)
 // Used for GetPVLine to check move at a given depth
 bool MoveGen::moveExists(Board& b, const int move)
 {
-
     MoveList list;
     list.genAllMoves(b);
     std::vector<Move>::iterator itr;
-    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++) {
+    for (itr = list.m_move_vec.begin(); itr != list.m_move_vec.end(); itr++)
+    {
 
-        if (!MoveGen::makeMove(b, itr->m_move)) {
+        if (!MoveGen::makeMove(b, itr->m_move))
+        {
             continue;
         }
         MoveGen::takeMove(b);
-        if (itr->m_move == move) {
+        if (itr->m_move == move)
+        {
             return true;
         }
     }
@@ -508,7 +552,6 @@ bool MoveGen::moveExists(Board& b, const int move)
 // Pass on move if not in check
 void MoveGen::makeNullMove(Board& b)
 {
-
     assert(b.checkBoard());
     Colour opposition = static_cast<Colour>(b.m_side ^ 1);
     assert(!b.isSquareAttacked(b.m_kingSq[b.m_side], opposition));
@@ -578,15 +621,19 @@ std::string MoveGen::moveString(uint32_t move)
 
     int promoted = PROMOTED(move);
 
-    if (promoted) {
+    if (promoted)
+    {
         char pchar = 'q';
-        if (Board::PieceKnight[promoted]) {
+        if (Board::PieceKnight[promoted])
+        {
             pchar = 'n';
         }
-        else if (Board::PieceRookQueen[promoted] && !Board::PieceBishopQueen[promoted]) {
+        else if (Board::PieceRookQueen[promoted] && !Board::PieceBishopQueen[promoted])
+        {
             pchar = 'r';
         }
-        else if (!Board::PieceRookQueen[promoted] && Board::PieceBishopQueen[promoted]) {
+        else if (!Board::PieceRookQueen[promoted] && Board::PieceBishopQueen[promoted])
+        {
             pchar = 'b';
         }
 

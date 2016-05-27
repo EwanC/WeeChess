@@ -5,8 +5,8 @@
 #include <string>
 
 // Singleton class used to log data to a file for debugging
-class Log {
-
+class Log
+{
   public:
     static Log* getInstance();
 
@@ -23,5 +23,4 @@ class Log {
     void operator=(Log const&);
     ~Log();
 };
-
 #endif // LOG_H

@@ -1,10 +1,10 @@
 #ifndef MOVE_H
 #define MOVE_H
 
+#include "types.hpp"
 #include <stdint.h> //Standard Integer Types
 #include <string>
 #include <vector>
-#include "types.hpp"
 
 class Board;
 
@@ -42,31 +42,30 @@ class Board;
 #define HASH_SIDE (b.m_posHash ^= (b.sideKey))                        // hash side
 #define HASH_EP (b.m_posHash ^= (b.pieceKeys[EMPTY][(b.m_enPas)]))    // hash enpassent
 
-class Move {
-
+class Move
+{
   public:
     Move();
 
     uint32_t m_move;
     int m_score;
- 
-    bool operator == (const Move &Rhs) const 
+
+    bool operator==(const Move& Rhs) const
     {
-            return(this->m_move == Rhs.m_move && this->m_score == Rhs.m_score);
+        return (this->m_move == Rhs.m_move && this->m_score == Rhs.m_score);
     }
 
-    bool operator < (const Move &Rhs) const 
+    bool operator<(const Move& Rhs) const
     {
-            return(this->m_move < Rhs.m_move);
+        return (this->m_move < Rhs.m_move);
     }
 
     std::string moveString() const; // Converts move into string for printing
 };
 
-class MoveList {
-
+class MoveList
+{
   public:
-
     void genAllMoves(const Board& b); // Generate all moves for a board position
     void genAllCaps(const Board& b);  //  Generate all capture moves
     void addQuietMove(const Board& b, uint32_t move);
@@ -76,18 +75,17 @@ class MoveList {
     std::vector<Move> m_move_vec;
 };
 
-namespace MoveGen {
-    void takeMove(Board& b);           // Takes back last move
-    bool makeMove(Board& b, int move); // Modifies board according to move
-    void movePiece(const int from, const int to,
-                   Board& b); // Moves piece from a 120sq to another 120sq
-    void addPiece(const int sq, Board& b, const Piece pce); // adds piece to the board at 120sq
-    void clearPiece(const int sq, Board& b);                // clears piece from board at 120 sq
-    bool moveExists(Board& b, const int move);              // Checks if move is valid
-    uint32_t parseMove(char* ptrChar, Board& b);            // parses algebraic move
-    void takeNullMove(Board& b);                            // Undo null move
-    void makeNullMove(Board& b);                            // Pass on move if not in check
-    std::string moveString(uint32_t move); // Converts move into string for printing
+namespace MoveGen
+{
+void takeMove(Board& b);                                // Takes back last move
+bool makeMove(Board& b, int move);                      // Modifies board according to move
+void movePiece(const int from, const int to, Board& b); // Moves piece from a 120sq to another 120sq
+void addPiece(const int sq, Board& b, const Piece pce); // adds piece to the board at 120sq
+void clearPiece(const int sq, Board& b);                // clears piece from board at 120 sq
+bool moveExists(Board& b, const int move);              // Checks if move is valid
+uint32_t parseMove(char* ptrChar, Board& b);            // parses algebraic move
+void takeNullMove(Board& b);                            // Undo null move
+void makeNullMove(Board& b);                            // Pass on move if not in check
+std::string moveString(uint32_t move);                  // Converts move into string for printing
 }
-
 #endif // MOVE_H
