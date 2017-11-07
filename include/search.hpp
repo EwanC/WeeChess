@@ -1,16 +1,10 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-#include "board.hpp"
 #include "move.hpp"
+#include "protocols.hpp"
 
-enum Mode
-{
-    CONSOLEMODE = 0,
-    UCIMODE,
-    XBMODE,
-    PERFTMODE
-};
+class Board;
 
 // Information about the current search
 struct SearchInfo

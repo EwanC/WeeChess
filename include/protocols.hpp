@@ -1,8 +1,16 @@
 #ifndef PROTO_H
 #define PROTO_H
 
-#include "board.hpp"
-#include "search.hpp"
+class Board;
+class SearchInfo;
+
+enum Mode
+{
+    CONSOLEMODE = 0,
+    UCIMODE,
+    XBMODE,
+    PERFTMODE
+};
 
 // UCI GUI protocol
 namespace UCI
@@ -14,7 +22,7 @@ void ReadInput(SearchInfo& info);
 int InputWaiting();
 }
 
-// interact with engine thorugh command line
+// interact with engine through command line
 namespace CLI
 {
 void consoleLoop(Board& b, SearchInfo& info);
@@ -22,7 +30,7 @@ void printHelp();
 void printUsage();
 }
 
-// XBOARD/WINBoard GUI protocl
+// XBOARD/WINBoard GUI protocol
 namespace XBoard
 {
 void XBoardLoop(Board& b, SearchInfo& info);

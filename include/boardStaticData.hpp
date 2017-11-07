@@ -1,6 +1,10 @@
 #ifndef BOARD_STATIC_DATA
 #define BOARD_STATIC_DATA
 
+#include <cstdint>
+
+#define TOTAL_SQUARES 120
+
 typedef uint64_t bitboard; // bitboard type
 
 namespace Bitboard
@@ -35,6 +39,7 @@ const uint64_t ClearMask[64] = {
     0xfffbffffffffffff, 0xfff7ffffffffffff, 0xffefffffffffffff, 0xffdfffffffffffff, 0xffbfffffffffffff,
     0xff7fffffffffffff, 0xfeffffffffffffff, 0xfdffffffffffffff, 0xfbffffffffffffff, 0xf7ffffffffffffff,
     0xefffffffffffffff, 0xdfffffffffffffff, 0xbfffffffffffffff, 0x7fffffffffffffff};
+
 // Map of base 64 indexes to base 120
 const int Sq64ToSq120[64] = {21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 41, 42, 43, 44, 45, 46,
                              47, 48, 51, 52, 53, 54, 55, 56, 57, 58, 61, 62, 63, 64, 65, 66, 67, 68, 71, 72, 73, 74,
@@ -71,4 +76,5 @@ const bitboard Rank6_Mask = Rank1_Mask << (8 * 5);
 const bitboard Rank7_Mask = Rank1_Mask << (8 * 6);
 const bitboard Rank8_Mask = Rank1_Mask << (8 * 7);
 } // End namespace
+
 #endif

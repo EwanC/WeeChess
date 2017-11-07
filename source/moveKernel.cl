@@ -13,11 +13,11 @@
 
 // Directions that each piece can move in
 int constant PceDir[5][8] = {
-    {-8, -19, -21, -12, 8, 19, 21, 12}, // WN
-    {-9, -11, 11, 9, 0, 0, 0, 0},       // WB
-    {-1, -10, 1, 10, 0, 0, 0, 0},       // WR
-    {-1, -10, 1, 10, -9, -11, 11, 9},   // WQ
-    {-1, -10, 1, 10, -9, -11, 11, 9}    // WK
+    {-8, -19, -21, -12, 8, 19, 21, 12},  // WN
+    {-9, -11, 11, 9, 0, 0, 0, 0},        // WB
+    {-1, -10, 1, 10, 0, 0, 0, 0},        // WR
+    {-1, -10, 1, 10, -9, -11, 11, 9},    // WQ
+    {-1, -10, 1, 10, -9, -11, 11, 9}     // WK
 };
 
 // How many directinons each piece has
@@ -42,110 +42,78 @@ int constant RanksBrd[120] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 
                               100, 7,   7,   7,   7,   7,   7,   7,   7,   100, 100, 100, 100, 100, 100, 100, 100, 100,
                               100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 
-enum Piece
-{
-    EMPTY = 0,
-    wP,
-    wN,
-    wB,
-    wR,
-    wQ,
-    wK,
-    bP,
-    bN,
-    bB,
-    bR,
-    bQ,
-    bK
-};
-enum Rank
-{
-    RANK_1 = 0,
-    RANK_2,
-    RANK_3,
-    RANK_4,
-    RANK_5,
-    RANK_6,
-    RANK_7,
-    RANK_8,
-    RANK_NONE
-};
-enum Square
-{
-    A1 = 21,
-    B1,
-    C1,
-    D1,
-    E1,
-    F1,
-    G1,
-    H1,
-    A2 = 31,
-    B2,
-    C2,
-    D2,
-    E2,
-    F2,
-    G2,
-    H2,
-    A3 = 41,
-    B3,
-    C3,
-    D3,
-    E3,
-    F3,
-    G3,
-    H3,
-    A4 = 51,
-    B4,
-    C4,
-    D4,
-    E4,
-    F4,
-    G4,
-    H4,
-    A5 = 61,
-    B5,
-    C5,
-    D5,
-    E5,
-    F5,
-    G5,
-    H5,
-    A6 = 71,
-    B6,
-    C6,
-    D6,
-    E6,
-    F6,
-    G6,
-    H6,
-    A7 = 81,
-    B7,
-    C7,
-    D7,
-    E7,
-    F7,
-    G7,
-    H7,
-    A8 = 91,
-    B8,
-    C8,
-    D8,
-    E8,
-    F8,
-    G8,
-    H8,
-    NO_SQ,
-    OFFBOARD
+enum Piece { EMPTY = 0, wP, wN, wB, wR, wQ, wK, bP, bN, bB, bR, bQ, bK };
+enum Rank { RANK_1 = 0, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NONE };
+enum Square {
+  A1 = 21,
+  B1,
+  C1,
+  D1,
+  E1,
+  F1,
+  G1,
+  H1,
+  A2 = 31,
+  B2,
+  C2,
+  D2,
+  E2,
+  F2,
+  G2,
+  H2,
+  A3 = 41,
+  B3,
+  C3,
+  D3,
+  E3,
+  F3,
+  G3,
+  H3,
+  A4 = 51,
+  B4,
+  C4,
+  D4,
+  E4,
+  F4,
+  G4,
+  H4,
+  A5 = 61,
+  B5,
+  C5,
+  D5,
+  E5,
+  F5,
+  G5,
+  H5,
+  A6 = 71,
+  B6,
+  C6,
+  D6,
+  E6,
+  F6,
+  G6,
+  H6,
+  A7 = 81,
+  B7,
+  C7,
+  D7,
+  E7,
+  F7,
+  G7,
+  H7,
+  A8 = 91,
+  B8,
+  C8,
+  D8,
+  E8,
+  F8,
+  G8,
+  H8,
+  NO_SQ,
+  OFFBOARD
 };
 
-enum Colour
-{
-    WHITE = 0,
-    BLACK,
-    BOTH
-};
+enum Colour { WHITE = 0, BLACK, BOTH };
 
 int constant PieceCol[13] = {BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK};
 
@@ -153,281 +121,238 @@ int constant PieceCol[13] = {BOTH, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, BLA
 #define SQOFFBOARD(sq) (FilesBrd[(sq)] == OFFBOARD)
 #define MOVE(f, t, ca, pro, fl) ((f) | ((t) << 7) | ((ca) << 14) | ((pro) << 20) | (fl))
 
-#define MFLAGEP 0x40000 // Move flag En Pass
-#define MFLAGPS 0x80000 // Move flag pawn start
+#define MFLAGEP 0x40000  // Move flag En Pass
+#define MFLAGPS 0x80000  // Move flag pawn start
 
 // Kernel
 // Workgroup - Piece Type
 // WorkItem - Individual Piece
 // No score eval!
 __kernel void moveKernel(__global const unsigned int* squares, __global const int* side, __global const int* pieces,
-                         __global unsigned long* moves // Return Value
-                         )
-{
-    const int group_id = get_group_id(0); // Piece Type
-    const int global_id = get_global_id(0);
+                         __global unsigned long* moves  // Return Value
+                         ) {
+  const int group_id = get_group_id(0);  // Piece Type
+  const int global_id = get_global_id(0);
 
-    unsigned int buffer_idx = 0;
-    const unsigned int buffer_offset = MAX_PIECE_MOVES * global_id;
+  unsigned int buffer_idx = 0;
+  const unsigned int buffer_offset = MAX_PIECE_MOVES * global_id;
 
-    int sq120 = squares[global_id];
-    int myside = side[0];
-    bool slider = isSlider[group_id];
+  int sq120 = squares[global_id];
+  int myside = side[0];
+  bool slider = isSlider[group_id];
 
-    if (sq120 == NO_SQ)
-        return;
+  if (sq120 == NO_SQ) return;
 
-    for (int index = 0; index < NumDir[group_id]; ++index)
-    {
-        int dir = PceDir[group_id][index];
-        int t_sq = sq120 + dir;
+  for (int index = 0; index < NumDir[group_id]; ++index) {
+    int dir = PceDir[group_id][index];
+    int t_sq = sq120 + dir;
 
-        while (!SQOFFBOARD(t_sq))
-        {
-
-            // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-            if (pieces[t_sq] != EMPTY)
-            {
-                if (PieceCol[pieces[t_sq]] == (myside ^ 1))
-                {
-                    moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
-                    buffer_idx++;
-                }
-                break;
-            }
-            else
-            {
-                moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
-                buffer_idx++;
-            }
-
-            if (!slider) // Horrific performace
-                break;
-            else
-                t_sq += dir;
+    while (!SQOFFBOARD(t_sq)) {
+      // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+      if (pieces[t_sq] != EMPTY) {
+        if (PieceCol[pieces[t_sq]] == (myside ^ 1)) {
+          moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+          buffer_idx++;
         }
+        break;
+      } else {
+        moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, EMPTY, EMPTY, 0);
+        buffer_idx++;
+      }
+
+      if (!slider)  // Horrific performace
+        break;
+      else
+        t_sq += dir;
     }
+  }
 }
 
 __kernel void WhitePawnKernel(__global unsigned int* squares, __global const int* pieces, __global int* enpass,
-                              __global unsigned long* moves // Return Value
-                              )
-{
-    const int global_id = get_global_id(0);
+                              __global unsigned long* moves  // Return Value
+                              ) {
+  const int global_id = get_global_id(0);
 
-    unsigned int buffer_idx = 0;
-    const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
+  unsigned int buffer_idx = 0;
+  const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
 
-    int sq120 = squares[global_id];
-    int enPas = enpass[0];
+  int sq120 = squares[global_id];
+  int enPas = enpass[0];
 
-    const unsigned int sqInfront = sq120 + 10;
+  const unsigned int sqInfront = sq120 + 10;
 
-    // Check square infront is empty
-    if (pieces[sqInfront] == EMPTY)
-    {
-        // Pawn can be promoted
-        if (RanksBrd[sq120] == RANK_7)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wQ, 0);
-            buffer_idx++;
+  // Check square infront is empty
+  if (pieces[sqInfront] == EMPTY) {
+    // Pawn can be promoted
+    if (RanksBrd[sq120] == RANK_7) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wQ, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wR, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wR, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wB, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wB, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, EMPTY, 0);
-            buffer_idx++;
-        }
-
-        // Pawn hasn't moved yet, can move two squares
-        if (RanksBrd[sq120] == RANK_2 && pieces[sq120 + 20] == EMPTY)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS);
-            buffer_idx++;
-        }
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, wN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, EMPTY, 0);
+      buffer_idx++;
     }
 
-    // Oppostion piece diagonally to the right
-    const unsigned int sqRight = sq120 + 9;
-    if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == BLACK)
-    {
-
-        // Pawn can be promoted
-        if (RanksBrd[sq120] == RANK_7)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wQ, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wR, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wB, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
-            buffer_idx++;
-        }
+    // Pawn hasn't moved yet, can move two squares
+    if (RanksBrd[sq120] == RANK_2 && pieces[sq120 + 20] == EMPTY) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, (sq120 + 20), EMPTY, EMPTY, MFLAGPS);
+      buffer_idx++;
     }
+  }
 
-    // Oppostion piece diagonally to the left
-    const unsigned int sqLeft = sq120 + 11;
-    if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == BLACK)
-    {
-        if (RanksBrd[sq120] == RANK_7)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wQ, 0);
-            buffer_idx++;
-
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wR, 0);
-            buffer_idx++;
-
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wB, 0);
-            buffer_idx++;
-
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
-            buffer_idx++;
-        }
+  // Oppostion piece diagonally to the right
+  const unsigned int sqRight = sq120 + 9;
+  if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == BLACK) {
+    // Pawn can be promoted
+    if (RanksBrd[sq120] == RANK_7) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wQ, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wR, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wB, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
+      buffer_idx++;
     }
+  }
 
-    // Enpassanet right
-    if (enPas != NO_SQ && sqRight == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
-    }
+  // Oppostion piece diagonally to the left
+  const unsigned int sqLeft = sq120 + 11;
+  if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == BLACK) {
+    if (RanksBrd[sq120] == RANK_7) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wQ, 0);
+      buffer_idx++;
 
-    // Enpassanet left
-    if (enPas != NO_SQ && sqLeft == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wR, 0);
+      buffer_idx++;
+
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wB, 0);
+      buffer_idx++;
+
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
+      buffer_idx++;
     }
+  }
+
+  // Enpassanet right
+  if (enPas != NO_SQ && sqRight == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
+
+  // Enpassanet left
+  if (enPas != NO_SQ && sqLeft == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
 }
 
 __kernel void BlackPawnKernel(__global unsigned int* squares, __global const int* pieces, __global const int* enpass,
-                              __global unsigned long* moves // Return Value
+                              __global unsigned long* moves  // Return Value
 
-                              )
-{
-    const int global_id = get_global_id(0);
+                              ) {
+  const int global_id = get_global_id(0);
 
-    unsigned int buffer_idx = 0;
-    const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
+  unsigned int buffer_idx = 0;
+  const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
 
-    int sq120 = squares[global_id];
-    int enPas = enpass[0];
+  int sq120 = squares[global_id];
+  int enPas = enpass[0];
 
-    const unsigned int sqInfront = sq120 - 10;
+  const unsigned int sqInfront = sq120 - 10;
 
-    // Check square infront is empty
-    if (pieces[sqInfront] == EMPTY)
-    {
-        // Pawn can be promoted
-        if (RanksBrd[sq120] == RANK_2)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bQ, 0);
-            buffer_idx++;
+  // Check square infront is empty
+  if (pieces[sqInfront] == EMPTY) {
+    // Pawn can be promoted
+    if (RanksBrd[sq120] == RANK_2) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bQ, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bR, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bR, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bB, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bB, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, EMPTY, 0);
-            buffer_idx++;
-        }
-
-        // Pawn hasn't moved yet, can move two squares
-        if (RanksBrd[sq120] == RANK_7 && pieces[sq120 - 20] == EMPTY)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, (sq120 - 20), EMPTY, EMPTY, MFLAGPS);
-            buffer_idx++;
-        }
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, bN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqInfront, EMPTY, EMPTY, 0);
+      buffer_idx++;
     }
 
-    // Oppostion piece diagonally to the right
-    const unsigned int sqRight = sq120 - 9;
-    if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == WHITE)
-    {
-
-        // Pawn can be promoted
-        if (RanksBrd[sq120] == RANK_2)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bQ, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bR, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bB, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
-            buffer_idx++;
-        }
+    // Pawn hasn't moved yet, can move two squares
+    if (RanksBrd[sq120] == RANK_7 && pieces[sq120 - 20] == EMPTY) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, (sq120 - 20), EMPTY, EMPTY, MFLAGPS);
+      buffer_idx++;
     }
+  }
 
-    // Oppostion piece diagonally to the left
-    const unsigned int sqLeft = sq120 - 11;
-    if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == WHITE)
-    {
-        if (RanksBrd[sq120] == RANK_2)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bQ, 0);
-            buffer_idx++;
-
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bR, 0);
-            buffer_idx++;
-
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bB, 0);
-            buffer_idx++;
-
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
-            buffer_idx++;
-        }
+  // Oppostion piece diagonally to the right
+  const unsigned int sqRight = sq120 - 9;
+  if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == WHITE) {
+    // Pawn can be promoted
+    if (RanksBrd[sq120] == RANK_2) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bQ, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bR, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bB, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
+      buffer_idx++;
     }
+  }
 
-    // Enpassanet right
-    if (enPas != NO_SQ && sqRight == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
-    }
+  // Oppostion piece diagonally to the left
+  const unsigned int sqLeft = sq120 - 11;
+  if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == WHITE) {
+    if (RanksBrd[sq120] == RANK_2) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bQ, 0);
+      buffer_idx++;
 
-    // Enpassanet left
-    if (enPas != NO_SQ && sqLeft == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bR, 0);
+      buffer_idx++;
+
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bB, 0);
+      buffer_idx++;
+
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
+      buffer_idx++;
     }
+  }
+
+  // Enpassanet right
+  if (enPas != NO_SQ && sqRight == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
+
+  // Enpassanet left
+  if (enPas != NO_SQ && sqLeft == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
 }
 
 //
@@ -439,204 +364,171 @@ __kernel void BlackPawnKernel(__global unsigned int* squares, __global const int
 //
 //
 __kernel void moveCapture(__global const unsigned int* squares, __global const int* side, __global const int* pieces,
-                          __global unsigned long* moves // Return Value
-                          )
-{
-    const int group_id = get_group_id(0); // Piece Type
-    const int global_id = get_global_id(0);
+                          __global unsigned long* moves  // Return Value
+                          ) {
+  const int group_id = get_group_id(0);  // Piece Type
+  const int global_id = get_global_id(0);
 
-    unsigned int buffer_idx = 0;
-    const unsigned int buffer_offset = MAX_PIECE_MOVES * global_id;
+  unsigned int buffer_idx = 0;
+  const unsigned int buffer_offset = MAX_PIECE_MOVES * global_id;
 
-    int sq120 = squares[global_id];
-    int myside = side[0];
-    bool slider = isSlider[group_id];
+  int sq120 = squares[global_id];
+  int myside = side[0];
+  bool slider = isSlider[group_id];
 
-    if (sq120 == NO_SQ)
-        return;
+  if (sq120 == NO_SQ) return;
 
-    for (int index = 0; index < NumDir[group_id]; ++index)
-    {
-        int dir = PceDir[group_id][index];
-        int t_sq = sq120 + dir;
+  for (int index = 0; index < NumDir[group_id]; ++index) {
+    int dir = PceDir[group_id][index];
+    int t_sq = sq120 + dir;
 
-        while (!SQOFFBOARD(t_sq))
-        {
-
-            // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
-            if (pieces[t_sq] != EMPTY)
-            {
-                if (PieceCol[pieces[t_sq]] == (myside ^ 1))
-                {
-                    moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
-                    buffer_idx++;
-                }
-                break;
-            }
-
-            if (!slider) // Horrific performace
-                break;
-            else
-                t_sq += dir;
+    while (!SQOFFBOARD(t_sq)) {
+      // BLACK ^ 1 == WHITE       WHITE ^ 1 == BLACK
+      if (pieces[t_sq] != EMPTY) {
+        if (PieceCol[pieces[t_sq]] == (myside ^ 1)) {
+          moves[buffer_idx + buffer_offset] = MOVE(sq120, t_sq, pieces[t_sq], EMPTY, 0);
+          buffer_idx++;
         }
+        break;
+      }
+
+      if (!slider)  // Horrific performace
+        break;
+      else
+        t_sq += dir;
     }
+  }
 }
 
 __kernel void WhitePawnCapture(__global unsigned int* squares, __global const int* pieces, __global int* enpass,
-                               __global unsigned long* moves // Return Value
-                               )
-{
+                               __global unsigned long* moves  // Return Value
+                               ) {
+  const int global_id = get_global_id(0);
 
-    const int global_id = get_global_id(0);
+  unsigned int buffer_idx = 0;
+  const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
 
-    unsigned int buffer_idx = 0;
-    const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
+  int sq120 = squares[global_id];
+  int enPas = enpass[0];
 
-    int sq120 = squares[global_id];
-    int enPas = enpass[0];
+  const unsigned int sqInfront = sq120 + 10;
 
-    const unsigned int sqInfront = sq120 + 10;
-
-    // Oppostion piece diagonally to the right
-    const unsigned int sqRight = sq120 + 9;
-    if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == BLACK)
-    {
-
-        // Pawn can be promoted
-        if (RanksBrd[sq120] == RANK_7)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wQ, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wR, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wB, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
-            buffer_idx++;
-        }
+  // Oppostion piece diagonally to the right
+  const unsigned int sqRight = sq120 + 9;
+  if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == BLACK) {
+    // Pawn can be promoted
+    if (RanksBrd[sq120] == RANK_7) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wQ, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wR, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wB, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], wN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
+      buffer_idx++;
     }
+  }
 
-    // Oppostion piece diagonally to the left
-    const unsigned int sqLeft = sq120 + 11;
-    if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == BLACK)
-    {
-        if (RanksBrd[sq120] == RANK_7)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wQ, 0);
-            buffer_idx++;
+  // Oppostion piece diagonally to the left
+  const unsigned int sqLeft = sq120 + 11;
+  if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == BLACK) {
+    if (RanksBrd[sq120] == RANK_7) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wQ, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wR, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wR, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wB, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wB, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
-            buffer_idx++;
-        }
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], wN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
+      buffer_idx++;
     }
+  }
 
-    // Enpassanet right
-    if (enPas != NO_SQ && sqRight == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
-    }
+  // Enpassanet right
+  if (enPas != NO_SQ && sqRight == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
 
-    // Enpassanet left
-    if (enPas != NO_SQ && sqLeft == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
-    }
+  // Enpassanet left
+  if (enPas != NO_SQ && sqLeft == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
 }
 
 __kernel void BlackPawnCapture(__global unsigned int* squares, __global const int* pieces, __global const int* enpass,
-                               __global unsigned long* moves // Return Value
+                               __global unsigned long* moves  // Return Value
 
-                               )
-{
+                               ) {
+  const int global_id = get_global_id(0);
 
-    const int global_id = get_global_id(0);
+  unsigned int buffer_idx = 0;
+  const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
 
-    unsigned int buffer_idx = 0;
-    const unsigned int buffer_offset = MAX_PAWN_MOVES * global_id;
+  int sq120 = squares[global_id];
+  int enPas = enpass[0];
 
-    int sq120 = squares[global_id];
-    int enPas = enpass[0];
+  const unsigned int sqInfront = sq120 - 10;
 
-    const unsigned int sqInfront = sq120 - 10;
-
-    // Oppostion piece diagonally to the right
-    const unsigned int sqRight = sq120 - 9;
-    if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == WHITE)
-    {
-
-        // Pawn can be promoted
-        if (RanksBrd[sq120] == RANK_2)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bQ, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bR, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bB, 0);
-            buffer_idx++;
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
-            buffer_idx++;
-        }
+  // Oppostion piece diagonally to the right
+  const unsigned int sqRight = sq120 - 9;
+  if (!SQOFFBOARD(sqRight) && PieceCol[pieces[sqRight]] == WHITE) {
+    // Pawn can be promoted
+    if (RanksBrd[sq120] == RANK_2) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bQ, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bR, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bB, 0);
+      buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], bN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, pieces[sqRight], EMPTY, 0);
+      buffer_idx++;
     }
+  }
 
-    // Oppostion piece diagonally to the left
-    const unsigned int sqLeft = sq120 - 11;
-    if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == WHITE)
-    {
-        if (RanksBrd[sq120] == RANK_2)
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bQ, 0);
-            buffer_idx++;
+  // Oppostion piece diagonally to the left
+  const unsigned int sqLeft = sq120 - 11;
+  if (!SQOFFBOARD(sqLeft) && PieceCol[pieces[sqLeft]] == WHITE) {
+    if (RanksBrd[sq120] == RANK_2) {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bQ, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bR, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bR, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bB, 0);
-            buffer_idx++;
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bB, 0);
+      buffer_idx++;
 
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bN, 0);
-            buffer_idx++;
-        }
-        else
-        {
-            moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
-            buffer_idx++;
-        }
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], bN, 0);
+      buffer_idx++;
+    } else {
+      moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, pieces[sqLeft], EMPTY, 0);
+      buffer_idx++;
     }
+  }
 
-    // Enpassanet right
-    if (enPas != NO_SQ && sqRight == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
-    }
+  // Enpassanet right
+  if (enPas != NO_SQ && sqRight == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqRight, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
 
-    // Enpassanet left
-    if (enPas != NO_SQ && sqLeft == enPas)
-    {
-        moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
-        buffer_idx++;
-    }
+  // Enpassanet left
+  if (enPas != NO_SQ && sqLeft == enPas) {
+    moves[buffer_idx + buffer_offset] = MOVE(sq120, sqLeft, EMPTY, EMPTY, MFLAGEP);
+    buffer_idx++;
+  }
 }

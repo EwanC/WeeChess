@@ -13,20 +13,20 @@
 #define FR2SQ(f, r) ((21 + (f)) + ((r)*10)) // Convert file and rank to square
 
 #define SQ64(sq120) (Bitboard::Sq120ToSq64[(sq120)])       // Convert 120 base board index to 64
-#define SQ120(sq64) (Bitboard::Sq64ToSq120[(sq64)])        // Convery 64 base board index to 120
+#define SQ120(sq64) (Bitboard::Sq64ToSq120[(sq64)])        // Convert 64 base board index to 120
 #define CLRBIT(bb, sq) ((bb) &= Bitboard::ClearMask[(sq)]) // Clear bitboard bit
 #define SETBIT(bb, sq) ((bb) |= Bitboard::SetMask[(sq)])   // Set bitboard bit
 
 namespace Bitboard
 {
-int popBit(bitboard* bb); // returns the index of least signifcant bit and sets it to zero
+int popBit(bitboard* bb); // returns the index of least significant bit and sets it to zero
 
 int countBits(bitboard b); // Counts the number of bits which are set in the bitboard
 
 void printBitboard(bitboard bb); // Prints bitboard to stdout
 } // namespace
 
-// Inividual records in move history
+// Individual records in move history
 struct Undo
 {
     int move;
@@ -89,13 +89,13 @@ class Board
     // Prints board to stdout
     void printBoard() const;
 
-    // Generate Zobrist hash key from board poistion
+    // Generate Zobrist hash key from board position
     uint64_t genHashKey() const;
 
     // Sets up board based on FEN string
     bool parseFen(std::string fen);
 
-    // Returns true if given square is attacked by colour paramter
+    // Returns true if given square is attacked by colour parameter
     bool sqAttacked(const int sq, Colour size);
 
     // Returns true if board has a valid position
@@ -125,7 +125,7 @@ class Board
     uint32_t m_majPce[2]; // Number of major pieces
     uint32_t m_minPce[2]; // Number of minor pieces
 
-    uint32_t m_material[2]; // total peiece values of players pieces
+    uint32_t m_material[2]; // total piece values of players pieces
 
     bitboard m_pList[13]; // Bitboards for each piece type
 

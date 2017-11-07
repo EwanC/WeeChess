@@ -1,11 +1,17 @@
-### WeeChess - OpenCL chess engine
+### WeeChess - chess engine
 
-Ewan Crawford <ewan.cr@gmail.com>, Jan 2015
+Ewan Crawford <ewan.cr@gmail.com> 2017
 
 Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
+### TODO
+* Add License
+* Add build instructions
+* Add travis testing
+  - Perft
+  - Static analysis tools
 
-### OCL Move Kernel
+### OCL Move Kernel Bug
 
 + Fix Stack smashing bug
 

@@ -247,51 +247,49 @@ unsigned long constant conditionMasks[13][64] = {
 };
 
 int constant adjustment[13] = {
-    0,   // ALL
-    -10, // Wp isolated
-    0,   // Wn
-    0,   // Wb
-    0,   // WR
-    0,   // WQ
-    0,   // Wk
-    10,  // Bp isolated
-    0,   // Bk
-    0,   // Bb
-    0,   // br
-    0,   // Bq
-    0    // Bk
+    0,    // ALL
+    -10,  // Wp isolated
+    0,    // Wn
+    0,    // Wb
+    0,    // WR
+    0,    // WQ
+    0,    // Wk
+    10,   // Bp isolated
+    0,    // Bk
+    0,    // Bb
+    0,    // br
+    0,    // Bq
+    0     // Bk
 };
 
-inline int popBit(unsigned long* bb)
-{
-    unsigned long b = *bb ^ (*bb - 1);
-    unsigned int fold = (unsigned int)((b & 0xffffffff) ^ (b >> 32));
-    *bb &= (*bb - 1);
-    return BitTable[(fold * 0x783a9b23) >> 26];
+inline int popBit(unsigned long* bb) {
+  unsigned long b = *bb ^ (*bb - 1);
+  unsigned int fold = (unsigned int)((b & 0xffffffff) ^ (b >> 32));
+  *bb &= (*bb - 1);
+  return BitTable[(fold * 0x783a9b23) >> 26];
 }
 
-__kernel void evalKernel(__global unsigned long* bitboards, __global int* score, __local int* local_score)
-{
-    int group_id = get_group_id(0);
-    int local_id = get_local_id(0);
+__kernel void evalKernel(__global unsigned long* bitboards, __global int* score, __local int* local_score) {
+  int group_id = get_group_id(0);
+  int local_id = get_local_id(0);
 
-    unsigned long board = bitboards[group_id * 13 + local_id];
-    const unsigned long const_board = board;
-    local_score[0] = 0;
-    int priv_score = 0;
-    barrier(CLK_LOCAL_MEM_FENCE);
+  unsigned long board = bitboards[group_id * 13 + local_id];
+  const unsigned long const_board = board;
+  local_score[0] = 0;
+  int priv_score = 0;
+  barrier(CLK_LOCAL_MEM_FENCE);
 
-    while (board != 0)
-    {
-        int sq64 = popBit(&board);
-        priv_score += PieceSqMasks[local_id][sq64];
-        // if ((conditionMasks[local_id][sq64] & const_board) == 0)
-        //    priv_score += adjustment[local_id];
-    }
+  while (board != 0) {
+    int sq64 = popBit(&board);
+    priv_score += PieceSqMasks[local_id][sq64];
+    // if ((conditionMasks[local_id][sq64] & const_board) == 0)
+    //    priv_score += adjustment[local_id];
+  }
 
-    atomic_add(local_score, priv_score);
-    barrier(CLK_LOCAL_MEM_FENCE);
+  atomic_add(local_score, priv_score);
+  barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (local_id == 0)
-        score[group_id] = local_score[0];
+  if (local_id == 0) {
+    score[group_id] = local_score[0];
+  }
 }

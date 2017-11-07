@@ -1,13 +1,12 @@
-BasedOnStyle: LLVM
-IndentWidth: 4
+BasedOnStyle: Google
+IndentWidth: 2
 
 # I like pointers aligned to the left
 DerivePointerAlignment: false
 PointerAlignment: Left
 AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
 UseTab: Never
-BreakBeforeBraces: Allman
 AlwaysBreakTemplateDeclarations: true
 
-# It's 2016!
 ColumnLimit: 120

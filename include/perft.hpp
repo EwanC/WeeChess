@@ -1,6 +1,8 @@
 #ifndef PERFT_H
 #define PERFT_H
 
+class Board;
+
 // Run perftest to defined depth
 bool runPerft(Board& b, const int depth);
 
