@@ -1,14 +1,19 @@
 ### WeeChess - chess engine
-
-Ewan Crawford <ewan.cr@gmail.com> 2017
+####  Author: Ewan Crawford
+#### Email: ewan.cr@gmail.com
+#### License: MIT
 
 Based on 'Programming A Chess Engine in C' youtube series & Stockfish
 
 ## TODO
 * Add build instructions
+* Improve Readme
 * Add travis testing
   - Perft
   - Static analysis tools
+
+### Test status
+[![Build Status](https://travis-ci.org/EwanC/WeeChess.svg)](https://travis-ci.org/EwanC/WeeChess) Master
 
 ## License
 Copyright 2017 Ewan Crawford

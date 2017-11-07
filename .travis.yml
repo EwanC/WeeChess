@@ -1,0 +1,17 @@
+language: cpp
+
+os: linux
+
+compiler:
+    - clang
+    - gcc
+
+install:
+    - sudo apt-get install cmake
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ../
+  - make
+  - ./WeeChess --help
